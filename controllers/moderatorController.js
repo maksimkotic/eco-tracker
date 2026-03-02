@@ -1,4 +1,4 @@
-const { Habit, User, Achievement, UserAchievement, Role } = require('../models');
+const { Habit, User, Achievement, UserAchievement, Role, Checkin } = require('../models');
 const { Op } = require('sequelize');
 
 const moderatorController = {
@@ -202,6 +202,11 @@ const moderatorController = {
       }
 
       const habitTitle = habit.title;
+
+      await Checkin.destroy({
+        where: { habitId: habit.id }
+      });
+
       await habit.destroy();
 
       // Логируем действие
