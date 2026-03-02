@@ -1,0 +1,475 @@
+<div class="container py-4">
+    <!-- Заголовок с ролью -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>
+                <i class="bi bi-shield-check text-danger"></i> Панель администратора
+            </h1>
+            <p class="text-muted mb-0">Полное управление системой</p>
+        </div>
+        <div class="dropdown">
+            <button class="btn btn-outline-danger dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-person-check"></i>
+                <%= user.username %> (Админ)
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="/profile">
+                        <i class="bi bi-person-circle"></i> Мой профиль
+                    </a></li>
+                <li><a class="dropdown-item" href="/moderator">
+                        <i class="bi bi-shield-check"></i> Панель модератора
+                    </a></li>
+                <li><a class="dropdown-item" href="/admin">
+                        <i class="bi bi-speedometer2"></i> Панель администратора
+                    </a></li>
+                <li>
+                    <hr class="dropdown-divider">
+                </li>
+                <li><a class="dropdown-item text-danger" href="/logout">
+                        <i class="bi bi-box-arrow-right"></i> Выйти
+                    </a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Основная статистика -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-danger border-2">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="display-6 fw-bold text-danger">
+                                <%= stats.totalUsers || 0 %>
+                            </div>
+                            <small class="text-muted">Пользователей</small>
+                        </div>
+                        <i class="bi bi-people text-danger" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-primary border-2">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="display-6 fw-bold text-primary">
+                                <%= stats.newUsersToday || 0 %>
+                            </div>
+                            <small class="text-muted">Новых сегодня</small>
+                        </div>
+                        <i class="bi bi-person-plus text-primary" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-success border-2">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="display-6 fw-bold text-success">
+                                <%= stats.activeUsers || 0 %>
+                            </div>
+                            <small class="text-muted">Активных за неделю</small>
+                        </div>
+                        <i class="bi bi-activity text-success" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-warning border-2">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="display-6 fw-bold text-warning">
+                                <%= stats.totalHabits || 0 %>
+                            </div>
+                            <small class="text-muted">Всего привычек</small>
+                        </div>
+                        <i class="bi bi-list-check text-warning" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Быстрые действия -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="bi bi-lightning"></i> Быстрые действия администратора</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-2">
+                            <a href="/admin/users" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-people"></i> Пользователи
+                            </a>
+                        </div>
+                        <div class="col-md-2">
+                            <a href="/moderator/habits" class="btn btn-outline-success w-100">
+                                <i class="bi bi-list-check"></i> Привычки
+                            </a>
+                        </div>
+                        <div class="col-md-2">
+                            <a href="/moderator/achievements" class="btn btn-outline-warning w-100">
+                                <i class="bi bi-trophy"></i> Достижения
+                            </a>
+                        </div>
+                        <div class="col-md-2">
+                            <a href="/admin/roles" class="btn btn-outline-info w-100">
+                                <i class="bi bi-shield"></i> Роли
+                            </a>
+                        </div>
+                        <div class="col-md-2">
+                            <a href="/admin/logs" class="btn btn-outline-secondary w-100">
+                                <i class="bi bi-journal-text"></i> Логи
+                            </a>
+                        </div>
+                        <div class="col-md-2">
+                            <a href="/admin/settings" class="btn btn-outline-dark w-100">
+                                <i class="bi bi-gear"></i> Настройки
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Распределение пользователей по ролям -->
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Пользователи по ролям</h5>
+                </div>
+                <div class="card-body">
+                    <% if (stats.usersByRole && Object.keys(stats.usersByRole).length> 0) { %>
+                        <div class="row">
+                            <% for (const roleName in stats.usersByRole) { const count=stats.usersByRole[roleName];
+                                const percentage=(count / stats.totalUsers * 100).toFixed(1); %>
+                                <div class="col-md-6 mb-3">
+                                    <div class="card border-0">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <div>
+                                                    <span class="badge bg-<%= 
+                                                    roleName === 'admin' ? 'danger' : 
+                                                    roleName === 'moderator' ? 'warning' : 'primary' 
+                                                %>">
+                                                        <%= roleName==='admin' ? 'Админы' : roleName==='moderator'
+                                                            ? 'Модераторы' : roleName==='user' ? 'Пользователи'
+                                                            : 'Другие' %>
+                                                    </span>
+                                                </div>
+                                                <div class="display-6 fw-bold">
+                                                    <%= count %>
+                                                </div>
+                                            </div>
+                                            <div class="progress" style="height: 10px;">
+                                                <div class="progress-bar bg-<%= 
+                                                roleName === 'admin' ? 'danger' : 
+                                                roleName === 'moderator' ? 'warning' : 'primary' 
+                                            %>" style="width: <%= percentage %>%"></div>
+                                            </div>
+                                            <div class="text-end mt-1">
+                                                <small class="text-muted">
+                                                    <%= percentage %>% от всех пользователей
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <% } %>
+                        </div>
+                        <% } else { %>
+                            <div class="text-center py-4">
+                                <i class="bi bi-pie-chart" style="font-size: 3rem; color: #ccc;"></i>
+                                <p class="mt-3">Нет данных о распределении по ролям</p>
+                            </div>
+                            <% } %>
+                </div>
+            </div>
+
+            <!-- Недавние действия системы -->
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Последние системные события</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <% const sampleEvents=[ { type: 'user_register' , text: 'Новый пользователь зарегистрировался' ,
+                            time: '5 минут назад' }, { type: 'habit_created' , text: 'Создана новая привычка' ,
+                            time: '15 минут назад' }, { type: 'achievement_earned' ,
+                            text: 'Пользователь получил достижение' , time: '30 минут назад' }, {
+                            type: 'moderator_action' , text: 'Модератор отредактировал привычку' , time: '1 час назад'
+                            }, { type: 'admin_action' , text: 'Администратор изменил роль пользователя' ,
+                            time: '2 часа назад' } ]; %>
+
+                            <% sampleEvents.forEach(event=> { %>
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <div>
+                                            <i class="bi bi-<%= 
+                                        event.type.includes('user') ? 'person' : 
+                                        event.type.includes('habit') ? 'list-check' : 
+                                        event.type.includes('achievement') ? 'trophy' : 
+                                        event.type.includes('moderator') ? 'shield-check' : 'shield' 
+                                    %> me-2"></i>
+                                            <%= event.text %>
+                                        </div>
+                                        <small class="text-muted">
+                                            <%= event.time %>
+                                        </small>
+                                    </div>
+                                </div>
+                                <% }); %>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="/admin/logs" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-journal-text"></i> Просмотреть все логи
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Последние пользователи -->
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-plus"></i> Недавно зарегистрированные пользователи
+                    </h5>
+                    <a href="/admin/users" class="btn btn-sm btn-outline-danger">
+                        Все пользователи →
+                    </a>
+                </div>
+                <div class="card-body">
+                    <% if (recentUsers && recentUsers.length> 0) { %>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Пользователь</th>
+                                        <th>Роль</th>
+                                        <th>Дата регистрации</th>
+                                        <th>Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% recentUsers.forEach(user=> { %>
+                                        <tr>
+                                            <td>
+                                                <%= user.id %>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <% if (user.avatar) { %>
+                                                        <img src="/uploads/avatars/<%= user.avatar %>" width="32"
+                                                            height="32" class="rounded-circle me-2">
+                                                        <% } else { %>
+                                                            <i class="bi bi-person-circle me-2"></i>
+                                                            <% } %>
+                                                                <div>
+                                                                    <div>
+                                                                        <%= user.username %>
+                                                                    </div>
+                                                                    <small class="text-muted">
+                                                                        <%= user.email %>
+                                                                    </small>
+                                                                </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-<%= 
+                                                user.Role.name === 'admin' ? 'danger' : 
+                                                user.Role.name === 'moderator' ? 'warning' : 'primary' 
+                                            %>">
+                                                    <%= user.Role.name==='admin' ? 'Админ' :
+                                                        user.Role.name==='moderator' ? 'Модератор' :
+                                                        user.Role.name==='user' ? 'Пользователь' : 'Другая' %>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <%= new Date(user.createdAt).toLocaleDateString('ru-RU') %>
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        <%= new Date(user.createdAt).toLocaleTimeString('ru-RU', {
+                                                            hour: '2-digit' , minute: '2-digit' }) %>
+                                                    </small>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="/admin/users/<%= user.id %>"
+                                                        class="btn btn-outline-primary" title="Просмотреть">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-outline-warning"
+                                                        title="Изменить роль" data-bs-toggle="modal"
+                                                        data-bs-target="#changeRoleModal<%= user.id %>">
+                                                        <i class="bi bi-shield"></i>
+                                                    </button>
+                                                    <% if (user.id !==currentUser.id) { %>
+                                                        <button type="button" class="btn btn-outline-danger"
+                                                            title="Удалить"
+                                                            onclick="confirmDeleteUser(<%= user.id %>, '<%= user.username %>')">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                        <% } %>
+                                                </div>
+
+                                                <!-- Модальное окно смены роли -->
+                                                <div class="modal fade" id="changeRoleModal<%= user.id %>"
+                                                    tabindex="-1">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title">Смена роли пользователя</h5>
+                                                                <button type="button" class="btn-close"
+                                                                    data-bs-dismiss="modal"></button>
+                                                            </div>
+                                                            <form action="/admin/users/<%= user.id %>/role"
+                                                                method="POST">
+                                                                <div class="modal-body">
+                                                                    <p>Пользователь: <strong>
+                                                                            <%= user.username %>
+                                                                        </strong></p>
+                                                                    <p>Текущая роль:
+                                                                        <span class="badge bg-<%= 
+                                                                        user.Role.name === 'admin' ? 'danger' : 
+                                                                        user.Role.name === 'moderator' ? 'warning' : 'primary' 
+                                                                    %>">
+                                                                            <%= user.Role.name %>
+                                                                        </span>
+                                                                    </p>
+
+                                                                    <div class="mb-3">
+                                                                        <label for="roleId<%= user.id %>"
+                                                                            class="form-label">Новая роль</label>
+                                                                        <select class="form-select"
+                                                                            id="roleId<%= user.id %>" name="roleId"
+                                                                            required>
+                                                                            <% if (roles && roles.length> 0) { %>
+                                                                                <% roles.forEach(role=> { %>
+                                                                                    <option value="<%= role.id %>"
+                                                                                        <%=user.roleId===role.id
+                                                                                        ? 'selected' : '' %>>
+                                                                                        <%= role.name %>
+                                                                                            <% if (role.description) {
+                                                                                                %> - <%=
+                                                                                                    role.description %>
+                                                                                                    <% } %>
+                                                                                    </option>
+                                                                                    <% }); %>
+                                                                                        <% } else { %>
+                                                                                            <option value="1">user
+                                                                                            </option>
+                                                                                            <option value="2">moderator
+                                                                                            </option>
+                                                                                            <option value="3">admin
+                                                                                            </option>
+                                                                                            <% } %>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary"
+                                                                        data-bs-dismiss="modal">Отмена</button>
+                                                                    <button type="submit"
+                                                                        class="btn btn-primary">Сохранить
+                                                                        изменения</button>
+                                                                </div>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                        <% } else { %>
+                            <div class="text-center py-4">
+                                <i class="bi bi-people" style="font-size: 3rem; color: #ccc;"></i>
+                                <p class="mt-3">Нет недавно зарегистрированных пользователей</p>
+                            </div>
+                            <% } %>
+                </div>
+            </div>
+
+            <!-- Информация о системе -->
+            <div class="card shadow">
+                <div class="card-header bg-dark text-white">
+                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> Информация о системе</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-cpu text-primary me-2"></i>
+                                <div>
+                                    <strong>Версия системы</strong>
+                                    <div class="small text-muted">1.0.0</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-calendar text-success me-2"></i>
+                                <div>
+                                    <strong>Дата запуска</strong>
+                                    <div class="small text-muted">
+                                        <%= '2025-12-12' %>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-database text-warning me-2"></i>
+                                <div>
+                                    <strong>Размер базы данных</strong>
+                                    <div class="small text-muted">
+                                        <%= systemInfo.dbSize || '~5 MB' %>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-clock text-info me-2"></i>
+                                <div>
+                                    <strong>Время работы</strong>
+                                    <div class="small text-muted">
+                                        <%= '8 дней' %>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <h6>Действия администратора:</h6>
+                        <div class="d-grid gap-2">
+                            <a href="/admin/users?action=export" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-download"></i> Экспорт пользователей
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-warning"
+                                onclick="runSystemMaintenance()">
+                                <i class="bi bi-tools"></i> Техническое обслуживание
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

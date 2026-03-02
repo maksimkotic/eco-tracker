@@ -1,0 +1,169 @@
+<!-- views/habits/index.ejs -->
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-list-check"></i> Мои привычки</h1>
+    <a href="/habits/new" class="btn btn-success">
+      <i class="bi bi-plus-circle"></i> Добавить привычку
+    </a>
+  </div>
+
+  <!-- Фильтры -->
+  <div class="card shadow mb-4">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <select class="form-select" id="categoryFilter">
+            <option value="">Все категории</option>
+            <option value="water">💧 Экономия воды</option>
+            <option value="energy">⚡ Экономия энергии</option>
+            <option value="waste">🗑️ Сортировка отходов</option>
+            <option value="transport">🚗 Экотранспорт</option>
+            <option value="food">🍎 Экопитание</option>
+            <option value="other">🌱 Прочее</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <select class="form-select" id="statusFilter">
+            <option value="">Все статусы</option>
+            <option value="active">Активные</option>
+            <option value="inactive">Неактивные</option>
+            <option value="completed">Выполненные</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Поиск по названию..."
+            id="searchInput"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Список привычек -->
+  <% if (habits && habits.length > 0) { %>
+  <div class="row" id="habitsList">
+    <% habits.forEach(habit => { %>
+    <div
+      class="col-md-6 mb-4 habit-item"
+      data-category="<%= habit.category %>"
+      data-status="<%= habit.isActive ? 'active' : 'inactive' %>"
+      data-name="<%= habit.title.toLowerCase() %>"
+    >
+      <div class="card shadow h-100">
+        <div
+          class="card-header d-flex justify-content-between align-items-center"
+          style="border-left: 5px solid #28a745"
+        >
+          <div>
+            <h5 class="mb-0"><%= habit.title %></h5>
+            <small class="text-muted">
+              <i
+                class="bi bi-<%= habit.category === 'water' ? 'droplet' : habit.category === 'energy' ? 'lightning' : habit.category === 'waste' ? 'trash' : habit.category === 'transport' ? 'car-front' : habit.category === 'food' ? 'apple' : 'leaf' %>"
+              ></i>
+              <%= habit.category === 'water' ? 'Экономия воды' : habit.category
+              === 'energy' ? 'Экономия энергии' : habit.category === 'waste' ?
+              'Сортировка отходов' : habit.category === 'transport' ?
+              'Экотранспорт' : habit.category === 'food' ? 'Экопитание' :
+              'Прочее' %>
+            </small>
+          </div>
+          <span
+            class="badge bg-<%= habit.isActive ? 'success' : 'secondary' %>"
+          >
+            <%= habit.isActive ? 'Активна' : 'Неактивна' %>
+          </span>
+        </div>
+        <div class="card-body">
+          <p class="card-text"><%= habit.description || 'Нет описания' %></p>
+
+          <!-- Прогресс -->
+          <div class="mb-3">
+            <div class="d-flex justify-content-between mb-1">
+              <small>Прогресс</small>
+              <small
+                ><strong
+                  ><%= habit.currentStreak || 0 %> / <%= habit.targetValue
+                  %></strong
+                ></small
+              >
+            </div>
+            <div class="progress" style="height: 10px">
+              <div
+                class="progress-bar bg-success"
+                style=" width: <%= Math.min(((habit.currentStreak || 0) / habit.targetValue) * 100, 100 )%>%;"
+              ></div>
+            </div>
+          </div>
+
+          <!-- Детали -->
+          <div class="row text-center mb-3">
+            <div class="col-4">
+              <div class="text-muted small">Цель</div>
+              <div class="fw-bold">
+                <%= habit.targetValue %> <%= habit.unit %>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="text-muted small">Частота</div>
+              <div class="fw-bold">
+                <%= habit.frequency === 'daily' ? 'Ежедневно' : habit.frequency
+                === 'weekly' ? 'Еженедельно' : 'Ежемесячно' %>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="text-muted small">Подряд</div>
+              <div class="fw-bold"><%= habit.currentStreak || 0 %> дн.</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer bg-transparent">
+          <div class="d-flex justify-content-between">
+            <a
+              href="/habits/<%= habit.id %>"
+              class="btn btn-sm btn-outline-primary"
+            >
+              <i class="bi bi-eye"></i> Подробнее
+            </a>
+            <div>
+              <a
+                href="/habits/<%= habit.id %>/check"
+                class="btn btn-sm btn-success me-2"
+              >
+                <i class="bi bi-check-lg"></i> Отметить
+              </a>
+              <a
+                href="/habits/<%= habit.id %>/edit"
+                class="btn btn-sm btn-outline-warning"
+              >
+                <i class="bi bi-pencil"></i>
+              </a>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-danger"
+                onclick="confirmDelete('<%= habit.id %>', '<%= habit.title %>')"
+              >
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+  <% } else { %>
+  <div class="text-center py-5">
+    <i class="bi bi-list-check" style="font-size: 4rem; color: #ccc"></i>
+    <h4 class="mt-3">У вас пока нет привычек</h4>
+    <p class="text-muted mb-4">
+      Начните отслеживать свои экологические привычки прямо сейчас
+    </p>
+    <a href="/habits/new" class="btn btn-success btn-lg">
+      <i class="bi bi-plus-circle"></i> Создать первую привычку
+    </a>
+  </div>
+  <% } %>
+</div>

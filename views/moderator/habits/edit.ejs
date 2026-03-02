@@ -1,0 +1,173 @@
+<!-- views/moderator/habits/edit.ejs -->
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>
+                <i class="bi bi-pencil text-warning"></i> Редактирование привычки
+            </h1>
+            <p class="text-muted mb-0">ID: <%= habit.id %> | Владелец: <%= habit.User ? habit.User.username : 'Неизвестно' %></p>
+        </div>
+        <div class="btn-group">
+            <a href="/moderator/habits" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Все привычки
+            </a>
+            <a href="/habits/<%= habit.id %>" class="btn btn-outline-primary">
+                <i class="bi bi-eye"></i> Просмотр
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0">Редактирование привычки: <%= habit.title %></h5>
+                </div>
+                <div class="card-body">
+                    <form action="/moderator/habits/<%= habit.id %>?_method=PUT" method="POST">
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label class="form-label">Название привычки</label>
+                                <input type="text" class="form-control" name="title" 
+                                       value="<%= habit.title %>" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Категория</label>
+                                <select class="form-select" name="category" required>
+                                    <option value="water" <%= habit.category === 'water' ? 'selected' : '' %>>💧 Экономия воды</option>
+                                    <option value="energy" <%= habit.category === 'energy' ? 'selected' : '' %>>⚡ Экономия энергии</option>
+                                    <option value="waste" <%= habit.category === 'waste' ? 'selected' : '' %>>🗑️ Сортировка отходов</option>
+                                    <option value="transport" <%= habit.category === 'transport' ? 'selected' : '' %>>🚗 Экотранспорт</option>
+                                    <option value="food" <%= habit.category === 'food' ? 'selected' : '' %>>🍎 Экопитание</option>
+                                    <option value="other" <%= habit.category === 'other' ? 'selected' : '' %>>🌱 Прочее</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Описание</label>
+                            <textarea class="form-control" name="description" rows="3"><%= habit.description || '' %></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Частота</label>
+                                <select class="form-select" name="frequency" required>
+                                    <option value="daily" <%= habit.frequency === 'daily' ? 'selected' : '' %>>Ежедневно</option>
+                                    <option value="weekly" <%= habit.frequency === 'weekly' ? 'selected' : '' %>>Еженедельно</option>
+                                    <option value="monthly" <%= habit.frequency === 'monthly' ? 'selected' : '' %>>Ежемесячно</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Целевое значение</label>
+                                <input type="number" class="form-control" name="targetValue" 
+                                       value="<%= habit.targetValue %>" step="0.1" min="0.1" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Единица измерения</label>
+                                <input type="text" class="form-control" name="unit" 
+                                       value="<%= habit.unit %>" placeholder="раз, литров, минут...">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Цвет</label>
+                                <input type="color" class="form-control form-control-color" name="color" 
+                                       value="<%= habit.color || '#28a745' %>" title="Выберите цвет">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Статус</label>
+                                <div class="form-check form-switch mt-2">
+                                    <input class="form-check-input" type="checkbox" name="isActive" 
+                                           id="isActive" <%= habit.isActive ? 'checked' : '' %>>
+                                    <label class="form-check-label" for="isActive">
+                                        Активная привычка
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> 
+                            <strong>Внимание:</strong> Вы редактируете чужую привычку. Изменения повлияют на статистику пользователя.
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="/moderator/habits" class="btn btn-secondary me-md-2">
+                                Отмена
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-save"></i> Сохранить изменения
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Статистика привычки -->
+            <div class="card shadow mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Статистика привычки</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4 mb-3">
+                            <div class="display-6 fw-bold text-primary"><%= habit.currentStreak || 0 %></div>
+                            <small class="text-muted">Текущая серия</small>
+                        </div>
+                        <div class="col-4 mb-3">
+                            <div class="display-6 fw-bold text-success"><%= habit.bestStreak || 0 %></div>
+                            <small class="text-muted">Лучшая серия</small>
+                        </div>
+                        <div class="col-4 mb-3">
+                            <div class="display-6 fw-bold text-warning"><%= habit.totalCompletions || 0 %></div>
+                            <small class="text-muted">Всего выполнено</small>
+                        </div>
+                    </div>
+                    <% if (habit.lastCompleted) { %>
+                    <div class="text-center">
+                        <small class="text-muted">
+                            Последнее выполнение: <%= new Date(habit.lastCompleted).toLocaleString('ru-RU') %>
+                        </small>
+                    </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Информация о пользователе -->
+            <% if (habit.User) { %>
+            <div class="card shadow mt-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-person"></i> Владелец привычки</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <% if (habit.User.avatar) { %>
+                            <img src="/uploads/avatars/<%= habit.User.avatar %>" 
+                                 class="rounded-circle me-3" width="64" height="64">
+                        <% } else { %>
+                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-3" 
+                                 style="width: 64px; height: 64px;">
+                                <i class="bi bi-person text-white" style="font-size: 2rem;"></i>
+                            </div>
+                        <% } %>
+                        <div>
+                            <h5 class="mb-1"><%= habit.User.username %></h5>
+                            <p class="mb-1">
+                                <span class="badge bg-success">
+                                    <i class="bi bi-lightning-charge"></i> <%= habit.User.ecoPoints %> очков
+                                </span>
+                                <span class="badge bg-info ms-1">Уровень <%= habit.User.level %></span>
+                            </p>
+                            <small class="text-muted">
+                                Зарегистрирован: <%= new Date(habit.User.createdAt).toLocaleDateString('ru-RU') %>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <% } %>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,201 @@
+<!-- views/moderator/habits/index.ejs -->
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="bi bi-list-check text-primary"></i> Все привычки</h1>
+            <p class="text-muted mb-0">Управление привычками пользователей</p>
+        </div>
+        <div class="btn-group">
+            <a href="/moderator" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Назад
+            </a>
+            <a href="/moderator/habits?status=active" class="btn btn-outline-success">
+                <i class="bi bi-check-circle"></i> Активные
+            </a>
+        </div>
+    </div>
+
+    <!-- Фильтры -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" class="form-control" name="search" 
+                           placeholder="Поиск по названию или описанию..."
+                           value="<%= filters.search || '' %>">
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" name="category">
+                        <option value="">Все категории</option>
+                        <option value="water" <%= filters.category === 'water' ? 'selected' : '' %>>💧 Вода</option>
+                        <option value="energy" <%= filters.category === 'energy' ? 'selected' : '' %>>⚡ Энергия</option>
+                        <option value="waste" <%= filters.category === 'waste' ? 'selected' : '' %>>🗑️ Отходы</option>
+                        <option value="transport" <%= filters.category === 'transport' ? 'selected' : '' %>>🚗 Транспорт</option>
+                        <option value="food" <%= filters.category === 'food' ? 'selected' : '' %>>🍎 Питание</option>
+                        <option value="other" <%= filters.category === 'other' ? 'selected' : '' %>>🌱 Прочее</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" name="status">
+                        <option value="">Все статусы</option>
+                        <option value="active" <%= filters.status === 'active' ? 'selected' : '' %>>Активные</option>
+                        <option value="inactive" <%= filters.status === 'inactive' ? 'selected' : '' %>>Неактивные</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-funnel"></i> Фильтр
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Таблица привычек -->
+    <div class="card shadow">
+        <div class="card-body">
+            <% if (habits.length > 0) { %>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Название</th>
+                                <th>Пользователь</th>
+                                <th>Категория</th>
+                                <th>Прогресс</th>
+                                <th>Статус</th>
+                                <th>Создана</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% habits.forEach(habit => { 
+                                const progress = Math.min((habit.currentStreak / habit.targetValue) * 100, 100);
+                            %>
+                            <tr>
+                                <td><%= habit.id %></td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="color-indicator me-2" 
+                                             style="width: 10px; height: 10px; background-color: <%= habit.color || '#28a745' %>;"></div>
+                                        <a href="/habits/<%= habit.id %>" class="text-decoration-none">
+                                            <%= habit.title %>
+                                        </a>
+                                    </div>
+                                    <% if (habit.description) { %>
+                                    <small class="text-muted d-block" style="max-width: 200px;">
+                                        <%= habit.description.length > 50 ? habit.description.substring(0, 50) + '...' : habit.description %>
+                                    </small>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <% if (habit.User && habit.User.avatar) { %>
+                                        <img src="/uploads/avatars/<%= habit.User.avatar %>" 
+                                             width="32" height="32" class="rounded-circle me-2">
+                                        <% } else { %>
+                                        <i class="bi bi-person-circle me-2"></i>
+                                        <% } %>
+                                        <div>
+                                            <div><%= habit.User ? habit.User.username : 'Неизвестно' %></div>
+                                            <small class="text-muted">Уровень: <%= habit.User ? habit.User.level : '?' %></small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-<%= 
+                                        habit.category === 'water' ? 'primary' : 
+                                        habit.category === 'energy' ? 'warning' : 
+                                        habit.category === 'waste' ? 'danger' : 'success'
+                                    %>">
+                                        <%= habit.category === 'water' ? '💧 Вода' : 
+                                           habit.category === 'energy' ? '⚡ Энергия' : 
+                                           habit.category === 'waste' ? '🗑️ Отходы' : 
+                                           habit.category === 'transport' ? '🚗 Транспорт' : 
+                                           habit.category === 'food' ? '🍎 Питание' : '🌱 Прочее' %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="progress flex-grow-1" style="height: 10px;">
+                                            <div class="progress-bar bg-success" style="width: <%= progress %>%"></div>
+                                        </div>
+                                        <small class="ms-2"><%= Math.round(progress) %>%</small>
+                                    </div>
+                                    <small class="text-muted">
+                                        <%= habit.currentStreak %>/<%= habit.targetValue %> <%= habit.unit %>
+                                    </small>
+                                </td>
+                                <td>
+                                    <% if (habit.isActive) { %>
+                                        <span class="badge bg-success">Активна</span>
+                                    <% } else { %>
+                                        <span class="badge bg-secondary">Неактивна</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <%= new Date(habit.createdAt).toLocaleDateString('ru-RU') %>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="/habits/<%= habit.id %>" class="btn btn-outline-primary" title="Просмотреть">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="/moderator/habits/<%= habit.id %>/edit" class="btn btn-outline-warning" title="Редактировать">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-outline-danger" title="Удалить"
+                                                onclick="confirmDeleteHabit(<%= habit.id %>, '<%= habit.title %>')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Пагинация -->
+                <% if (totalPages > 1) { %>
+                <nav aria-label="Пагинация">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                            <a class="page-link" href="?page=<%= currentPage - 1 %>&search=<%= filters.search || '' %>&category=<%= filters.category || '' %>&status=<%= filters.status || '' %>">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                        
+                        <% for (let i = 1; i <= totalPages; i++) { %>
+                            <% if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) { %>
+                            <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                <a class="page-link" href="?page=<%= i %>&search=<%= filters.search || '' %>&category=<%= filters.category || '' %>&status=<%= filters.status || '' %>">
+                                    <%= i %>
+                                </a>
+                            </li>
+                            <% } else if (i === currentPage - 3 || i === currentPage + 3) { %>
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                            <% } %>
+                        <% } %>
+                        
+                        <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                            <a class="page-link" href="?page=<%= currentPage + 1 %>&search=<%= filters.search || '' %>&category=<%= filters.category || '' %>&status=<%= filters.status || '' %>">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                <% } %>
+            <% } else { %>
+                <div class="text-center py-5">
+                    <i class="bi bi-list-check" style="font-size: 4rem; color: #ccc;"></i>
+                    <h4 class="mt-3">Привычки не найдены</h4>
+                    <p class="text-muted">Попробуйте изменить параметры фильтрации</p>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>

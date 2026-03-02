@@ -1,0 +1,289 @@
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Карточка привычки -->
+            <div class="card shadow mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center"
+                    style="border-left: 8px solid #28a745;">
+                    <div>
+                        <h3 class="mb-1">
+                            <%= habit.title %>
+                        </h3>
+                        <div>
+                            <span class="badge bg-<%= 
+                                habit.category === 'water' ? 'primary' : 
+                                habit.category === 'energy' ? 'warning' : 
+                                habit.category === 'waste' ? 'danger' : 
+                                habit.category === 'transport' ? 'info' : 
+                                habit.category === 'food' ? 'success' : 'secondary' 
+                            %> me-2">
+                                <%= habit.category==='water' ? '💧 Экономия воды' : habit.category==='energy'
+                                    ? '⚡ Экономия энергии' : habit.category==='waste' ? '🗑️ Сортировка отходов' :
+                                    habit.category==='transport' ? '🚗 Экотранспорт' : habit.category==='food'
+                                    ? '🍎 Экопитание' : '🌱 Прочее' %>
+                            </span>
+                            <span class="badge bg-<%= habit.isActive ? 'success' : 'secondary' %>">
+                                <%= habit.isActive ? 'Активна' : 'Неактивна' %>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                            data-bs-toggle="dropdown">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="/habits/<%= habit.id %>/edit">
+                                    <i class="bi bi-pencil"></i> Редактировать
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="#"
+                                    onclick="confirmDelete('<%= habit.id %>', '<%= habit.title %>')">
+                                    <i class="bi bi-trash"></i> Удалить
+                                </a>
+                            </li>
+                            <% if (currentUser.Role.name==='moderator' || currentUser.Role.name==='admin' ) { %>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="/moderator/habits/<%= habit.id %>/edit">
+                                        <i class="bi bi-shield-check"></i> Модерация
+                                    </a>
+                                </li>
+                                <% } %>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Описание -->
+                    <div class="mb-4">
+                        <h5><i class="bi bi-card-text"></i> Описание</h5>
+                        <p class="card-text">
+                            <%= habit.description || 'Описание отсутствует' %>
+                        </p>
+                    </div>
+
+                    <!-- Статистика -->
+                    <div class="row mb-4">
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body text-center">
+                                    <div class="display-6 fw-bold text-primary">
+                                        <%= habit.currentStreak || 0 %>
+                                    </div>
+                                    <small class="text-muted">Текущая серия</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body text-center">
+                                    <div class="display-6 fw-bold text-success">
+                                        <%= habit.bestStreak || 0 %>
+                                    </div>
+                                    <small class="text-muted">Лучшая серия</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body text-center">
+                                    <div class="display-6 fw-bold text-info">
+                                        <%= habit.targetValue %>
+                                    </div>
+                                    <small class="text-muted">Цель (<%= habit.unit %>)</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body text-center">
+                                    <div class="display-6 fw-bold text-warning">
+                                        <%= habit.frequency==='daily' ? 'Ежедневно' : habit.frequency==='weekly'
+                                            ? 'Еженедельно' : 'Ежемесячно' %>
+                                    </div>
+                                    <small class="text-muted">Частота</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Прогресс бар -->
+                    <div class="mb-4">
+                        <h5><i class="bi bi-graph-up"></i> Прогресс</h5>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Выполнение цели</span>
+                            <span>
+                                <strong>
+                                    <%= Math.min(((habit.currentStreak || 0) / habit.targetValue) * 100, 100).toFixed(1)
+                                        %>%
+                                </strong>
+                                (<%= habit.currentStreak || 0 %>/<%= habit.targetValue %>)
+                            </span>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-success" style="width: <%= progressPercentage %>%">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Быстрая отметка выполнения -->
+                    <div class="mb-4">
+                        <h5><i class="bi bi-check-circle"></i> Отметить выполнение</h5>
+                        <form action="/habits/<%= habit.id %>/check" method="POST" class="row g-2">
+                            <div class="col-md-8">
+                                <input type="number" class="form-control" name="value"
+                                    placeholder="Сколько <%= habit.unit %> сегодня?" min="1" max="100" value="1"
+                                    required>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="bi bi-check-lg"></i> Отметить
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <small class="text-muted">
+                        <i class="bi bi-calendar"></i> Создано:
+                        <%= new Date(habit.createdAt).toLocaleDateString('ru-RU', { year: 'numeric' , month: 'long' ,
+                            day: 'numeric' }) %>
+                    </small>
+                </div>
+            </div>
+
+            <!-- История выполнений (если есть) -->
+            <% if (checkins && checkins.length> 0) { %>
+                <div class="card shadow">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-clock-history"></i> История выполнений</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Дата</th>
+                                        <th>Количество</th>
+                                        <th>Прогресс</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% checkins.forEach(check=> { %>
+                                        <tr>
+                                            <td>
+                                                <%= new Date(check.date).toLocaleDateString('ru-RU') %>
+                                            </td>
+                                            <td>
+                                                <%= check.value %>
+                                                    <%= habit.unit %>
+                                            </td>
+                                            <td>
+                                                <div class="progress" style="height: 6px;">
+                                                    <div class="progress-bar bg-success" 
+                                                        style="width: <%= (check.value / habit.targetValue) * 100 %>%">
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <% } %>
+        </div>
+
+        <!-- Правая колонка: Дополнительная информация -->
+        <div class="col-md-4">
+            <!-- Экологический вклад -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0"><i class="bi bi-globe"></i> Экологический вклад</h6>
+                </div>
+                <div class="card-body">
+                    <% if (habit.category==='water' ) { %>
+                        <p>Экономия <strong>
+                                <%= (habit.currentStreak || 0) * 10 %>
+                            </strong> литров воды</p>
+                        <p class="small text-muted">*Примерно 10 литров за каждое выполнение</p>
+                        <% } else if (habit.category==='energy' ) { %>
+                            <p>Экономия <strong>
+                                    <%= (habit.currentStreak || 0) * 0.5 %>
+                                </strong> кВт·ч энергии</p>
+                            <p class="small text-muted">*Примерно 0.5 кВт·ч за каждое выполнение</p>
+                            <% } else if (habit.category==='waste' ) { %>
+                                <p>Переработано <strong>
+                                        <%= (habit.currentStreak || 0) * 0.2 %>
+                                    </strong> кг отходов</p>
+                                <p class="small text-muted">*Примерно 0.2 кг за каждое выполнение</p>
+                                <% } else { %>
+                                    <p>Ваша привычка уже сделала планету чище!</p>
+                                    <% } %>
+                </div>
+            </div>
+
+            <!-- Советы -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="bi bi-lightbulb"></i> Советы по улучшению</h6>
+                </div>
+                <div class="card-body">
+                    <% if (habit.category==='water' ) { %>
+                        <ul class="mb-0">
+                            <li>Установите аэратор на кран</li>
+                            <li>Принимайте душ вместо ванны</li>
+                            <li>Собирайте дождевую воду для полива</li>
+                        </ul>
+                        <% } else if (habit.category==='energy' ) { %>
+                            <ul class="mb-0">
+                                <li>Используйте LED-лампы</li>
+                                <li>Выключайте приборы из розетки</li>
+                                <li>Установите программируемый термостат</li>
+                            </ul>
+                            <% } else if (habit.category==='waste' ) { %>
+                                <ul class="mb-0">
+                                    <li>Используйте многоразовые сумки</li>
+                                    <li>Покупайте продукты без упаковки</li>
+                                    <li>Компостируйте пищевые отходы</li>
+                                </ul>
+                                <% } else { %>
+                                    <p>Продолжайте в том же духе! Каждый маленький шаг имеет значение.</p>
+                                    <% } %>
+                </div>
+            </div>
+
+            <!-- Кнопки действий -->
+            <div class="d-grid gap-2">
+                <a href="/habits/<%= habit.id %>/check" class="btn btn-success btn-lg">
+                    <i class="bi bi-check-lg"></i> Отметить выполнение
+                </a>
+                <a href="/habits" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> К списку привычек
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function confirmDelete(habitId, habitTitle) {
+        if (confirm(`Вы уверены, что хотите удалить привычку "${habitTitle}"?`)) {
+            fetch(`/habits/${habitId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => {
+                if (response.ok) {
+                    window.location.href = '/habits';
+                }
+            });
+        }
+    }
+</script>

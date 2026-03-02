@@ -1,0 +1,185 @@
+<div class="container py-4">
+  <div class="row">
+    <!-- Левая колонка - информация о пользователе -->
+    <div class="col-md-4 mb-4">
+      <div class="card shadow">
+        <div class="card-body text-center">
+          <!-- Аватар -->
+          <div class="mb-3">
+            <% if (user.avatar && user.avatar !== 'default-avatar.png') { %>
+              <img src="/uploads/avatars/<%= user.avatar %>" 
+                   class="rounded-circle" 
+                   width="120" height="120"
+                   alt="Аватар <%= user.username %>">
+            <% } else { %>
+              <div class="rounded-circle bg-success d-inline-flex align-items-center justify-content-center"
+                   style="width: 120px; height: 120px;">
+                <span class="text-white display-5">
+                  <%= user.username.charAt(0).toUpperCase() %>
+                </span>
+              </div>
+            <% } %>
+          </div>
+          
+          <!-- Имя и email -->
+          <h3 class="card-title mb-1"><%= user.username %></h3>
+          <p class="text-muted mb-3"><%= user.email %></p>
+          
+          <!-- Роль -->
+          <span class="badge bg-<%= user.Role.name === 'admin' ? 'danger' : user.Role.name === 'moderator' ? 'warning' : 'success' %> mb-3">
+            <%= user.Role.name === 'admin' ? '👑 Администратор' : 
+               user.Role.name === 'moderator' ? '🛡️ Модератор' : ' Пользователь' %>
+          </span>
+          
+          <!-- Кнопки действий -->
+          <div class="d-grid gap-2 mt-4">
+            <a href="/profile/edit" class="btn btn-outline-primary">
+              <i class="bi bi-pencil"></i> Редактировать профиль
+            </a>
+            <a href="/habits" class="btn btn-success">
+              <i class="bi bi-list-check"></i> Мои привычки
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Статистика -->
+      <div class="card shadow mt-4">
+        <div class="card-header bg-info text-white">
+          <h6 class="mb-0"><i class="bi bi-graph-up"></i> Статистика</h6>
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-6 mb-3">
+              <div class="text-muted small">Эко-очки</div>
+              <div class="fw-bold h4 text-success"><%= stats.totalPoints || 0 %></div>
+            </div>
+            <div class="col-6 mb-3">
+              <div class="text-muted small">Уровень</div>
+              <div class="fw-bold h4 text-primary">#<%= user.level || 1 %></div>
+            </div>
+            <div class="col-6">
+              <div class="text-muted small">Привычек</div>
+              <div class="fw-bold h4"><%= stats.totalHabits || 0 %></div>
+            </div>
+            <div class="col-6">
+              <div class="text-muted small">Активных</div>
+              <div class="fw-bold h4 text-success"><%= stats.activeHabits || 0 %></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Правая колонка - активность -->
+    <div class="col-md-8">
+      <!-- Последние привычки -->
+      <div class="card shadow mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0"><i class="bi bi-list-check"></i> Последние привычки</h5>
+          <a href="/habits" class="btn btn-sm btn-outline-primary">Все привычки</a>
+        </div>
+        <div class="card-body">
+          <% if (habits && habits.length > 0) { %>
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Привычка</th>
+                    <th>Категория</th>
+                    <th>Прогресс</th>
+                    <th>Статус</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% habits.forEach(habit => { %>
+                  <tr>
+                    <td>
+                      <a href="/habits/<%= habit.id %>" class="text-decoration-none">
+                        <%= habit.title %>
+                      </a>
+                    </td>
+                    <td>
+                      <span class="badge bg-<%= 
+                        habit.category === 'water' ? 'primary' : 
+                        habit.category === 'energy' ? 'warning' : 
+                        habit.category === 'waste' ? 'danger' : 
+                        habit.category === 'transport' ? 'info' : 'secondary' 
+                      %>">
+                        <%= habit.category === 'water' ? '💧 Вода' : 
+                           habit.category === 'energy' ? '⚡ Энергия' : 
+                           habit.category === 'waste' ? '🗑️ Отходы' : 
+                           habit.category === 'transport' ? '🚗 Транспорт' : '🌱 Прочее' %>
+                      </span>
+                    </td>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                          <div class="progress-bar bg-success" 
+                               style="width: <%= Math.min((habit.currentStreak || 0) / habit.targetValue * 100, 100) %>%">
+                          </div>
+                        </div>
+                        <small><%= habit.currentStreak || 0 %>/<%= habit.targetValue %></small>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge bg-<%= habit.isActive ? 'success' : 'secondary' %>">
+                        <%= habit.isActive ? 'Активна' : 'Неактивна' %>
+                      </span>
+                    </td>
+                  </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          <% } else { %>
+            <div class="text-center py-3">
+              <i class="bi bi-list-check display-4 text-muted"></i>
+              <p class="mt-2">У вас пока нет привычек</p>
+              <a href="/habits/new" class="btn btn-success">Создать первую привычку</a>
+            </div>
+          <% } %>
+        </div>
+      </div>
+      
+      <!-- Достижения -->
+      <div class="card shadow">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0"><i class="bi bi-trophy"></i> Достижения</h5>
+          <a href="/achievements" class="btn btn-sm btn-outline-warning">Все достижения</a>
+        </div>
+        <div class="card-body">
+          <% if (achievements && achievements.length > 0) { %>
+            <div class="row">
+              <% achievements.forEach(ua => { %>
+                <% const achievement = ua.Achievement; %>
+                <div class="col-md-4 mb-3">
+                  <div class="card border-success border-2">
+                    <div class="card-body text-center">
+                      <div class="mb-2">
+                        <i class="bi bi-trophy-fill text-warning" style="font-size: 2rem;"></i>
+                      </div>
+                      <h6 class="card-title"><%= achievement.name %></h6>
+                      <p class="card-text small text-muted"><%= achievement.description %></p>
+                      <small class="text-muted">
+                        Получено: <%= new Date(ua.earnedAt).toLocaleDateString('ru-RU') %>
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              <% }); %>
+            </div>
+          <% } else { %>
+            <div class="text-center py-3">
+              <i class="bi bi-trophy display-4 text-muted"></i>
+              <p class="mt-2">У вас пока нет достижений</p>
+              <p class="text-muted small">
+                Создавайте привычки и отмечайте их выполнение, чтобы получить достижения!
+              </p>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

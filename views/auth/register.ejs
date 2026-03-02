@@ -1,0 +1,56 @@
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="bi bi-person-plus"></i> Регистрация</h4>
+                </div>
+                <div class="card-body p-4">
+                    <% if (errors && errors.length) { %>
+                        <div class="alert alert-danger">
+                            <% errors.forEach(error => { %>
+                                <p class="mb-1"><%= error.msg || error %></p>
+                            <% }); %>
+                        </div>
+                    <% } %>
+                    
+                    <form action="/auth/register" method="POST">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Имя пользователя *</label>
+                            <input type="text" class="form-control" id="username" name="username" 
+                                   value="<%= oldInput && oldInput.username || '' %>" required>
+                            <div class="form-text">От 3 до 20 символов</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email адрес *</label>
+                            <input type="email" class="form-control" id="email" name="email"
+                                   value="<%= oldInput && oldInput.email || '' %>" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Пароль *</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                            <div class="form-text">Не менее 6 символов</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="confirmPassword" class="form-label">Подтверждение пароля *</label>
+                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-person-check"></i> Создать аккаунт
+                            </button>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <p>Уже есть аккаунт? <a href="/auth/login">Войдите здесь</a></p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

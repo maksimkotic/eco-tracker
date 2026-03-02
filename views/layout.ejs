@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %> | Эко-Трекер</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css"
+    />
+
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f8f9fa;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .error-container {
+        min-height: 70vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .error-icon {
+        font-size: 5rem;
+        color: #6c757d;
+      }
+
+      .color-option {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 2px solid transparent;
+      }
+
+      .color-option:hover {
+        transform: scale(1.1);
+      }
+
+      .navbar-brand {
+        font-weight: 700;
+        font-size: 1.5rem;
+      }
+
+      .main-content {
+        flex: 1;
+      }
+
+      .footer {
+        margin-top: auto;
+        background-color: #343a40;
+      }
+
+      .card {
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+      }
+
+      .btn-success:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+      }
+
+      .hero {
+        background: linear-gradient(135deg, #1e7e34 0%, #28a745 100%);
+        color: white;
+        padding: 5rem 0;
+      }
+
+      .feature-card {
+        transition: transform 0.3s;
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .feature-card:hover {
+        transform: translateY(-5px);
+      }
+
+      .stats-counter {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #28a745;
+      }
+
+      .table td {
+        vertical-align: middle;
+      }
+
+      .form-check-label {
+        font-size: 0.9rem;
+        cursor: pointer;
+      }
+
+      .color-indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      .border-purple {
+        border-color: #6f42c1 !important;
+      }
+
+      .modal-backdrop {
+        z-index: 1040;
+      }
+
+      .modal {
+        z-index: 1050;
+      }
+
+      .color-indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      pre {
+        font-size: 0.8rem;
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 5px;
+        max-height: 200px;
+        overflow-y: auto;
+      }
+
+      .color-indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      .table-purple {
+        --bs-table-bg: rgba(111, 66, 193, 0.05);
+        --bs-table-striped-bg: rgba(111, 66, 193, 0.1);
+        --bs-table-hover-bg: rgba(111, 66, 193, 0.2);
+      }
+
+      .color-option {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: all 0.2s;
+      }
+
+      .color-option:hover {
+        transform: scale(1.1);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+
+      .color-option.selected {
+        border: 2px solid #000;
+        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+      }
+
+      .sticky-top {
+        position: sticky;
+        z-index: 100;
+      }
+
+      .text-purple {
+        color: #6f42c1;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success shadow-sm">
+      <div class="container">
+        <a class="navbar-brand" href="/">
+          <i class="bi bi-tree-fill"></i> Эко-Трекер
+        </a>
+
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="bi bi-house"></i> Главная
+              </a>
+            </li>
+
+            <% if (user) { %>
+            <li class="nav-item">
+              <a class="nav-link" href="/habits">
+                <i class="bi bi-list-check"></i> Мои привычки
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/achievements">
+                <i class="bi bi-trophy"></i> Достижения
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/profile">
+                <i class="bi bi-person-circle"></i> Профиль
+              </a>
+            </li>
+            <% } else { %>
+            <li class="nav-item">
+              <a class="nav-link" href="/guide">
+                <i class="bi bi-question-circle"></i> Как это работает
+              </a>
+            </li>
+            <% } %>
+
+            <li class="nav-item">
+              <a class="nav-link" href="/contacts">
+                <i class="bi bi-envelope"></i> Контакты
+              </a>
+            </li>
+          </ul>
+
+          <!-- Правая часть навигации -->
+          <ul class="navbar-nav">
+            <% if (user) { %>
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                role="button"
+                data-bs-toggle="dropdown"
+              >
+                <i class="bi bi-person-circle"></i>
+                <%= user.username %>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                  <a class="dropdown-item" href="/profile">
+                    <i class="bi bi-person-circle"></i> Мой профиль
+                  </a>
+                </li>
+                <li>
+                  <hr class="dropdown-divider" />
+                </li>
+                <li>
+                  <a class="dropdown-item text-danger" href="/auth/logout">
+                    <i class="bi bi-box-arrow-right"></i> Выйти
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <% } else { %>
+            <li class="nav-item">
+              <a class="nav-link" href="/auth/login">
+                <i class="bi bi-box-arrow-in-right"></i> Войти
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="btn btn-outline-light ms-2" href="/auth/register">
+                <i class="bi bi-person-plus"></i> Регистрация
+              </a>
+            </li>
+            <% } %>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Flash сообщения -->
+    <% if (success && success.length> 0) { %>
+    <div class="container mt-3">
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <%= success %>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+        ></button>
+      </div>
+    </div>
+    <% } %> <% if (error && error.length> 0) { %>
+    <div class="container mt-3">
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <%= error %>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+        ></button>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- Основной контент -->
+    <main class="main-content"><%- body %></main>
+
+    <!-- Футер -->
+    <footer class="footer text-white py-4 mt-4">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <h5><i class="bi bi-tree"></i> Эко-Трекер</h5>
+            <p class="mb-0 small">
+              Отслеживайте свои экологические привычки и делайте планету чище
+              вместе с нами.
+            </p>
+          </div>
+          <div class="col-md-4 mb-3">
+            <h5>Навигация</h5>
+            <ul class="list-unstyled">
+              <li>
+                <a href="/" class="text-white text-decoration-none">Главная</a>
+              </li>
+              <% if (user) { %>
+              <li>
+                <a href="/habits" class="text-white text-decoration-none"
+                  >Мои привычки</a
+                >
+              </li>
+              <li>
+                <a href="/achievements" class="text-white text-decoration-none"
+                  >Достижения</a
+                >
+              </li>
+              <li>
+                <a href="/profile" class="text-white text-decoration-none"
+                  >Профиль</a
+                >
+              </li>
+              <% } else { %>
+              <li>
+                <a href="/auth/login" class="text-white text-decoration-none"
+                  >Войти</a
+                >
+              </li>
+              <li>
+                <a href="/auth/register" class="text-white text-decoration-none"
+                  >Регистрация</a
+                >
+              </li>
+              <% } %>
+              <li>
+                <a href="/contacts" class="text-white text-decoration-none"
+                  >Контакты</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div class="col-md-4 mb-3">
+            <h5>Информация</h5>
+            <p class="small mb-0">
+              Курсовая работа по дисциплине "Веб-программирование".<br />
+              Разработано с использованием Node.js, Express, Sequelize и
+              Bootstrap 5.
+            </p>
+          </div>
+        </div>
+        <hr class="bg-light" />
+        <div class="row">
+          <div class="col-md-6">
+            <small>&copy; 2025 Эко-Трекер. Все права защищены.</small>
+          </div>
+          <div class="col-md-6 text-md-end">
+            <small>
+              <a href="/privacy" class="text-white text-decoration-none me-3"
+                >Конфиденциальность</a
+              >
+              <a href="/terms" class="text-white text-decoration-none"
+                >Условия использования</a
+              >
+            </small>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      window.confirmDelete = function (habitId, habitTitle) {
+        console.log(
+          "confirmDelete вызвана! habitId:",
+          habitId,
+          "habitTitle:",
+          habitTitle
+        );
+
+        if (!habitId || !habitTitle) {
+          console.error("Ошибка: нет данных о привычке");
+          return false;
+        }
+
+        if (
+          confirm(`Вы уверены, что хотите удалить привычку "${habitTitle}"?`)
+        ) {
+          console.log("Пользователь подтвердил удаление");
+
+          const form = document.createElement("form");
+          form.method = "POST";
+          form.action = "/habits/" + habitId;
+          form.style.display = "none";
+
+          const methodInput = document.createElement("input");
+          methodInput.type = "hidden";
+          methodInput.name = "_method";
+          methodInput.value = "DELETE";
+
+          form.appendChild(methodInput);
+          document.body.appendChild(form);
+
+          console.log("Отправляем форму удаления...");
+          form.submit();
+
+          return false;
+        }
+
+        return false;
+      };
+
+      try {
+        document.addEventListener("DOMContentLoaded", function () {
+          const categoryFilter = document.getElementById("categoryFilter");
+          const statusFilter = document.getElementById("statusFilter");
+          const searchInput = document.getElementById("searchInput");
+
+          const habitItems = document.querySelectorAll(".habit-item");
+
+          function filterHabits() {
+            console.log("Фильтрация...");
+            const category = categoryFilter.value;
+            const status = statusFilter.value;
+            const search = searchInput.value.toLowerCase();
+
+            habitItems.forEach((item) => {
+              const itemCategory = item.getAttribute("data-category");
+              const itemStatus = item.getAttribute("data-status");
+              const itemName = item.getAttribute("data-name");
+
+              const matchCategory = !category || itemCategory === category;
+              const matchStatus = !status || itemStatus === status;
+              const matchSearch = !search || itemName.includes(search);
+
+              item.style.display =
+                matchCategory && matchStatus && matchSearch ? "block" : "none";
+            });
+          }
+
+          categoryFilter.addEventListener("change", filterHabits);
+          statusFilter.addEventListener("change", filterHabits);
+          searchInput.addEventListener("input", filterHabits);
+        });
+      } catch (error) {}
+
+      function deleteUser(userId, username) {
+        if (
+          confirm(
+            `Вы уверены, что хотите удалить пользователя "${username}"? Это удалит все его привычки и достижения. Действие нельзя отменить.`
+          )
+        ) {
+          fetch(`/admin/users/${userId}`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }).then((response) => {
+            if (response.ok) {
+              location.reload();
+            } else {
+              alert("Ошибка удаления пользователя");
+            }
+          });
+        }
+      }
+
+      function resetPassword(userId, username) {
+        if (
+          confirm(
+            `Сбросить пароль для пользователя "${username}"? Новый пароль будет показан один раз.`
+          )
+        ) {
+          fetch(`/admin/users/${userId}/reset-password`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                alert(`Пароль сброшен. Новый пароль: ${data.password}`);
+                location.reload();
+              } else {
+                alert("Ошибка сброса пароля");
+              }
+            });
+        }
+      }
+
+      function confirmDeleteUser(userId, username) {
+        if (
+          confirm(
+            `Вы уверены, что хотите удалить пользователя "${username}"? Это удалит все его привычки и достижения. Действие нельзя отменить.`
+          )
+        ) {
+          fetch(`/admin/users/${userId}/delete`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }).then((response) => {
+            if (response.ok) {
+              location.reload();
+            }
+          });
+        }
+      }
+
+      function runSystemMaintenance() {
+        if (
+          confirm(
+            "Запустить техническое обслуживание системы? Это может занять несколько секунд."
+          )
+        ) {
+          fetch("/admin/system/maintenance", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }).then((response) => {
+            if (response.ok) {
+              alert("Техническое обслуживание завершено успешно");
+            }
+          });
+        }
+      }
+
+      function assignAchievement(userId, username) {
+        document.getElementById("assignUserId").value = userId;
+        document.getElementById("assignUserName").textContent = username;
+
+        // Загружаем список достижений
+        fetch("/moderator/achievements/api/list")
+          .then((response) => response.json())
+          .then((achievements) => {
+            const select = document.querySelector(
+              '#assignAchievementModal select[name="achievementId"]'
+            );
+            select.innerHTML = "";
+            achievements.forEach((achievement) => {
+              const option = document.createElement("option");
+              option.value = achievement.id;
+              option.textContent = `${achievement.title} (+${achievement.points} очков)`;
+              select.appendChild(option);
+            });
+
+            new bootstrap.Modal(
+              document.getElementById("assignAchievementModal")
+            ).show();
+          });
+      }
+
+      // Автоматическое обновление статистики каждые 60 секунд
+      setTimeout(() => {
+        location.reload();
+      }, 60000);
+
+      // Динамическое изменение placeholder для текстового поля
+      document
+        .getElementById("subject")
+        .addEventListener("change", function () {
+          const messageField = document.getElementById("message");
+          const subject = this.value;
+
+          const placeholders = {
+            bug: "Опишите ошибку подробно. Укажите, какие действия привели к ошибке, и что вы ожидали увидеть...",
+            feature:
+              "Опишите ваше предложение по улучшению. Как это сделает сервис лучше?...",
+            question:
+              "Задайте ваш вопрос. Мы постараемся ответить как можно скорее...",
+            partnership: "Расскажите о вашем предложении по сотрудничеству...",
+            other: "Опишите ваше сообщение...",
+          };
+
+          messageField.placeholder =
+            placeholders[subject] ||
+            "Опишите вашу проблему, вопрос или предложение...";
+        });
+
+      // Валидация формы
+      document
+        .getElementById("contactForm")
+        .addEventListener("submit", function (e) {
+          const name = document.getElementById("name").value.trim();
+          const email = document.getElementById("email").value.trim();
+          const subject = document.getElementById("subject").value;
+          const message = document.getElementById("message").value.trim();
+
+          if (!name || !email || !subject || !message) {
+            e.preventDefault();
+            alert("Пожалуйста, заполните все обязательные поля (отмечены *)");
+          }
+        });
+
+      // Выбор цвета
+      document.addEventListener("DOMContentLoaded", function () {
+        const colorOptions = document.querySelectorAll(".color-option");
+        const colorInput = document.getElementById("color");
+
+        colorOptions.forEach((option) => {
+          option.addEventListener("click", function () {
+            // Убираем выделение со всех
+            colorOptions.forEach((opt) => opt.classList.remove("selected"));
+
+            // Выделяем выбранный
+            this.classList.add("selected");
+
+            // Устанавливаем значение
+            colorInput.value = this.dataset.color;
+          });
+        });
+
+        // Автоматический выбор единиц измерения по категории
+        const categorySelect = document.getElementById("category");
+        const unitSelect = document.getElementById("unit");
+
+        categorySelect.addEventListener("change", function () {
+          const category = this.value;
+
+          switch (category) {
+            case "water":
+              unitSelect.value = "liters";
+              break;
+            case "energy":
+              unitSelect.value = "kwh";
+              break;
+            case "waste":
+              unitSelect.value = "kg";
+              break;
+            default:
+              unitSelect.value = "times";
+          }
+        });
+
+        // Подтверждение сброса статистики
+        window.resetHabit = function (habitId, habitTitle) {
+          if (
+            confirm(
+              `Сбросить всю статистику для привычки "${habitTitle}"? Текущая серия и история выполнений будут обнулены.`
+            )
+          ) {
+            fetch(`/habits/${habitId}/reset`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            })
+              .then((response) => {
+                if (response.ok) {
+                  alert("Статистика сброшена");
+                  location.reload();
+                } else {
+                  alert("Ошибка при сбросе статистики");
+                }
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+                alert("Ошибка сети");
+              });
+          }
+        };
+      });
+      function confirmDeleteHabit(habitId, habitTitle) {
+        if (
+          confirm(
+            `Вы уверены, что хотите удалить привычку "${habitTitle}"? Это действие нельзя отменить.`
+          )
+        ) {
+          fetch(`/moderator/habits/${habitId}/delete`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }).then((response) => {
+            if (response.ok) {
+              location.reload();
+            }
+          });
+        }
+      }
+
+      function deleteAchievement(achievementId, achievementTitle) {
+        if (
+          confirm(
+            `Вы уверены, что хотите удалить достижение "${achievementTitle}"? Это действие нельзя отменить.`
+          )
+        ) {
+          fetch(`/moderator/achievements/${achievementId}`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }).then((response) => {
+            if (response.ok) {
+              location.reload();
+            } else {
+              alert("Ошибка удаления достижения");
+            }
+          });
+        }
+      }
+
+      function deleteRole(roleId, roleName) {
+        if (
+          confirm(
+            `Вы уверены, что хотите удалить роль "${roleName}"? Пользователи с этой ролью будут переведены в роль "user".`
+          )
+        ) {
+          fetch(`/admin/roles/${roleId}`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }).then((response) => {
+            if (response.ok) {
+              location.reload();
+            } else {
+              alert("Ошибка удаления роли");
+            }
+          });
+        }
+      }
+
+      // Инициализация popover'ов
+      document.addEventListener("DOMContentLoaded", function () {
+        const popoverTriggerList = [].slice.call(
+          document.querySelectorAll('[data-bs-toggle="popover"]')
+        );
+        const popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+          return new bootstrap.Popover(popoverTriggerEl, {
+            html: true,
+            trigger: "hover",
+          });
+        });
+      });
+
+      function refreshLogs() {
+        location.reload();
+      }
+
+      function clearLogs() {
+        if (
+          confirm(
+            "Вы уверены, что хотите очистить все логи? Это действие нельзя отменить."
+          )
+        ) {
+          fetch("/admin/logs/clear", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }).then((response) => {
+            if (response.ok) {
+              location.reload();
+            }
+          });
+        }
+      }
+
+      function exportLogs() {
+        const form = document.getElementById("filterForm");
+        const params = new URLSearchParams(new FormData(form));
+        window.open(`/admin/logs/export?${params.toString()}`, "_blank");
+      }
+
+      function resetFilters() {
+        document.getElementById("filterForm").reset();
+        document.getElementById("filterForm").submit();
+      }
+
+      // Автообновление логов
+      let autoRefreshInterval;
+      document
+        .getElementById("autoRefresh")
+        .addEventListener("change", function (e) {
+          if (e.target.checked) {
+            autoRefreshInterval = setInterval(refreshLogs, 30000); // 30 секунд
+          } else {
+            clearInterval(autoRefreshInterval);
+          }
+        });
+
+      // Запускаем автообновление
+      if (document.getElementById("autoRefresh").checked) {
+        autoRefreshInterval = setInterval(refreshLogs, 30000);
+      }
+
+      // Валидация формы
+      $(document).ready(function () {
+        $("form").submit(function (e) {
+          const username = $('input[name="username"]').val().trim();
+          const email = $('input[name="email"]').val().trim();
+          const password = $('input[name="password"]').val();
+
+          if (username.length < 3) {
+            alert("Имя пользователя должно быть не менее 3 символов");
+            e.preventDefault();
+            return;
+          }
+
+          if (!isValidEmail(email)) {
+            alert("Введите корректный email");
+            e.preventDefault();
+            return;
+          }
+
+          if (password && password.length < 6) {
+            alert("Пароль должен быть не менее 6 символов");
+            e.preventDefault();
+            return;
+          }
+        });
+
+        function isValidEmail(email) {
+          const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          return re.test(email);
+        }
+      });
+
+      // Выбор цвета
+      document.querySelectorAll(".color-option").forEach((option) => {
+        option.addEventListener("click", function () {
+          document.querySelectorAll(".color-option").forEach((opt) => {
+            opt.style.border = "2px solid transparent";
+          });
+          this.style.border = "2px solid #000";
+          document.getElementById("color").value = this.dataset.color;
+        });
+      });
+
+      const tabEl = document.querySelectorAll('button[data-bs-toggle="tab"]');
+      tabEl.forEach((tab) => {
+        tab.addEventListener("shown.bs.tab", (event) => {});
+      });
+
+      // Изменение единиц измерения в зависимости от категории
+      document
+        .getElementById("category")
+        .addEventListener("change", function () {
+          const category = this.value;
+          const unitSelect = document.getElementById("unit");
+
+          switch (category) {
+            case "water":
+              unitSelect.value = "liters";
+              break;
+            case "energy":
+              unitSelect.value = "kwh";
+              break;
+            case "waste":
+              unitSelect.value = "kg";
+              break;
+            default:
+              unitSelect.value = "times";
+          }
+        });
+    </script>
+  </body>
+</html>

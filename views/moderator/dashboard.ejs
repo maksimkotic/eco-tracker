@@ -1,0 +1,281 @@
+<!-- views/moderator/dashboard.ejs -->
+<div class="container py-4">
+    <!-- Заголовок с ролью -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>
+                <i class="bi bi-shield-check text-warning"></i> Панель модератора
+            </h1>
+            <p class="text-muted mb-0">Управление привычками и достижениями пользователей</p>
+        </div>
+        <div class="dropdown">
+            <button class="btn btn-outline-warning dropdown-toggle" type="button" 
+                    data-bs-toggle="dropdown">
+                <i class="bi bi-person-check"></i> <%= user.username %>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="/profile">
+                    <i class="bi bi-person-circle"></i> Мой профиль
+                </a></li>
+                <li><a class="dropdown-item" href="/moderator">
+                    <i class="bi bi-speedometer2"></i> Панель модератора
+                </a></li>
+                    <li><a class="dropdown-item" href="/admin">
+                    <i class="bi bi-speedometer2"></i> Панель администратора
+                </a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="/logout">
+                    <i class="bi bi-box-arrow-right"></i> Выйти
+                </a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Статистика -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-warning border-2">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="display-6 fw-bold text-warning"><%= stats.totalHabits || 0 %></div>
+                            <small class="text-muted">Всего привычек</small>
+                        </div>
+                        <i class="bi bi-list-check text-warning" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-primary border-2">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="display-6 fw-bold text-primary"><%= stats.activeHabits || 0 %></div>
+                            <small class="text-muted">Активных привычек</small>
+                        </div>
+                        <i class="bi bi-check-circle text-primary" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-success border-2">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="display-6 fw-bold text-success"><%= stats.totalAchievements || 0 %></div>
+                            <small class="text-muted">Достижений</small>
+                        </div>
+                        <i class="bi bi-trophy text-success" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-info border-2">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="display-6 fw-bold text-info"><%= stats.totalUsers || 0 %></div>
+                            <small class="text-muted">Пользователей</small>
+                        </div>
+                        <i class="bi bi-people text-info" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Быстрые действия -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0"><i class="bi bi-lightning"></i> Быстрые действия</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <a href="/moderator/habits" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-list-check"></i> Все привычки
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="/moderator/achievements" class="btn btn-outline-warning w-100">
+                                <i class="bi bi-trophy"></i> Достижения
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="/moderator/achievements/new" class="btn btn-outline-success w-100">
+                                <i class="bi bi-plus-circle"></i> Создать достижение
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="/moderator/achievements/assign" class="btn btn-outline-info w-100">
+                                <i class="bi bi-person-plus"></i> Назначить достижение
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Последние привычки -->
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history"></i> Недавно созданные привычки
+                    </h5>
+                    <a href="/moderator/habits" class="btn btn-sm btn-outline-primary">
+                        Все привычки →
+                    </a>
+                </div>
+                <div class="card-body">
+                    <% if (recentHabits && recentHabits.length > 0) { %>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Название</th>
+                                        <th>Пользователь</th>
+                                        <th>Категория</th>
+                                        <th>Дата создания</th>
+                                        <th>Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% recentHabits.forEach(habit => { %>
+                                    <tr>
+                                        <td><%= habit.id %></td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="color-indicator me-2" 
+                                                     style="width: 10px; height: 10px; background-color: <%= habit.color || '#28a745' %>;"></div>
+                                                <span class="text-truncate" style="max-width: 150px;" 
+                                                      title="<%= habit.title %>">
+                                                    <%= habit.title %>
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <% if (habit.User && habit.User.avatar) { %>
+                                                <img src="/uploads/avatars/<%= habit.User.avatar %>" 
+                                                     width="24" height="24" class="rounded-circle me-2">
+                                                <% } else { %>
+                                                <i class="bi bi-person-circle me-2"></i>
+                                                <% } %>
+                                                <span><%= habit.User ? habit.User.username : 'Неизвестно' %></span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-<%= 
+                                                habit.category === 'water' ? 'primary' : 
+                                                habit.category === 'energy' ? 'warning' : 
+                                                habit.category === 'waste' ? 'danger' : 'success' 
+                                            %>">
+                                                <%= habit.category === 'water' ? 'Вода' : 
+                                                   habit.category === 'energy' ? 'Энергия' : 
+                                                   habit.category === 'waste' ? 'Отходы' : 'Прочее' %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <%= new Date(habit.createdAt).toLocaleDateString('ru-RU') %>
+                                            <br>
+                                            <small class="text-muted">
+                                                <%= new Date(habit.createdAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) %>
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="/habits/<%= habit.id %>" 
+                                                   class="btn btn-outline-primary" 
+                                                   title="Просмотреть">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <a href="/moderator/habits/<%= habit.id %>/edit" 
+                                                   class="btn btn-outline-warning" 
+                                                   title="Редактировать">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <button type="button" 
+                                                        class="btn btn-outline-danger" 
+                                                        title="Удалить"
+                                                        onclick="confirmDeleteHabit(<%= habit.id %>, '<%= habit.title %>')">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    <% } else { %>
+                        <div class="text-center py-4">
+                            <i class="bi bi-list-check" style="font-size: 3rem; color: #ccc;"></i>
+                            <p class="mt-3">Нет недавно созданных привычек</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Активность модератора -->
+        <div class="col-md-4">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-activity"></i> Поиск для ачивок и привычек</h5>
+                </div>
+                <div class="card-body">
+                    <div>
+                        <h6>Быстрый поиск:</h6>
+                        <form action="/moderator/habits" method="GET" class="mb-3">
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="search" 
+                                       placeholder="Поиск привычек...">
+                                <button class="btn btn-outline-primary" type="submit">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <form action="/moderator/achievements/assign" method="GET">
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="userSearch" 
+                                       placeholder="Поиск пользователя...">
+                                <button class="btn btn-outline-warning" type="submit">
+                                    <i class="bi bi-person-plus"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Информация о правах -->
+            <div class="card shadow">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="mb-0"><i class="bi bi-shield-check"></i> Ваши права модератора</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0 ps-3">
+                        <li>Просмотр всех привычек</li>
+                        <li>Редактирование любых привычек</li>
+                        <li>Удаление привычек</li>
+                        <li>Создание достижений</li>
+                        <li>Назначение достижений пользователям</li>
+                    </ul>
+                    <div class="mt-3 small text-muted">
+                        <i class="bi bi-info-circle"></i> Для управления пользователями обратитесь к администратору
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

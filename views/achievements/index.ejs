@@ -1,0 +1,314 @@
+<div class="container py-4">
+    <h1 class="mb-4">
+        <i class="bi bi-trophy"></i> Мои достижения
+    </h1>
+
+    <!-- Статистика достижений -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 bg-primary bg-opacity-10">
+                <div class="card-body text-center">
+                    <div class="display-6 fw-bold text-primary">
+                        <%= earnedCount || 0 %>
+                    </div>
+                    <small class="text-muted">Заработано</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 bg-success bg-opacity-10">
+                <div class="card-body text-center">
+                    <div class="display-6 fw-bold text-success">
+                        <%= totalCount || 0 %>
+                    </div>
+                    <small class="text-muted">Всего доступно</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 bg-warning bg-opacity-10">
+                <div class="card-body text-center">
+                    <div class="display-6 fw-bold text-warning">
+                        <%= progressPercentage %>%
+                    </div>
+                    <small class="text-muted">Коллекция</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 bg-info bg-opacity-10">
+                <div class="card-body text-center">
+                    <div class="display-6 fw-bold text-info">
+                        <%= totalPoints || 0 %>
+                    </div>
+                    <small class="text-muted">Всего очков</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Прогресс бар -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between mb-1">
+                <span>Прогресс коллекции</span>
+                <span><strong>
+                        <%= progressPercentage %>%
+                    </strong></span>
+            </div>
+            <div class="progress" style="height: 20px;">
+                <div class="progress-bar" style="width: <%= progressPercentage %>%"></div>
+            </div>
+            <div class="text-center mt-2">
+                <small>Собрано <%= earnedCount %> из <%= totalCount %> достижений</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Вкладки -->
+    <ul class="nav nav-tabs mb-4" id="achievementsTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="earned-tab" data-bs-toggle="tab" data-bs-target="#earned" type="button">
+                <i class="bi bi-check-circle"></i> Заработанные (<%= earnedCount || 0 %>)
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="available-tab" data-bs-toggle="tab" data-bs-target="#available" type="button">
+                <i class="bi bi-clock"></i> Доступные (<%= availableCount || 0 %>)
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="locked-tab" data-bs-toggle="tab" data-bs-target="#locked" type="button">
+                <i class="bi bi-lock"></i> Заблокированные (<%= lockedCount || 0 %>)
+            </button>
+        </li>
+    </ul>
+
+    <!-- Содержимое вкладок -->
+    <div class="tab-content" id="achievementsTabContent">
+        <!-- Заработанные достижения -->
+        <div class="tab-pane fade show active" id="earned" role="tabpanel">
+            <% if (earnedAchievements && earnedAchievements.length> 0) { %>
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    <% earnedAchievements.forEach(achievement=> {
+                        if (!achievement) return;
+
+                        // Определяем редкость с проверкой
+                        const rarity = achievement.rarity || 'common';
+
+                        // Получаем информацию о получении
+                        let earnedAt = null;
+                        if (achievement.Users && achievement.Users.length > 0 &&
+                        achievement.Users[0].UserAchievement) {
+                        earnedAt = achievement.Users[0].UserAchievement.earnedAt;
+                        }
+                        %>
+                        <div class="col">
+                            <div class="card h-100 shadow border-<%= 
+                    rarity === 'legendary' ? 'danger border-2' : 
+                    rarity === 'epic' ? 'warning border-2' : 
+                    rarity === 'rare' ? 'primary' : 'secondary' 
+                %>">
+                                <div class="card-header bg-<%= 
+                        rarity === 'legendary' ? 'danger' : 
+                        rarity === 'epic' ? 'warning' : 
+                        rarity === 'rare' ? 'primary' : 'secondary' 
+                    %> text-white text-center">
+                                    <i class="bi bi-<%= achievement.icon || 'trophy' %>" style="font-size: 2.5rem;"></i>
+                                </div>
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">
+                                        <%= achievement.title %>
+                                    </h5>
+                                    <p class="card-text">
+                                        <%= achievement.description %>
+                                    </p>
+
+                                    <div class="d-flex justify-content-center mb-3">
+                                        <span class="badge bg-<%= 
+                                rarity === 'legendary' ? 'danger' : 
+                                rarity === 'epic' ? 'warning' : 
+                                rarity === 'rare' ? 'primary' : 'secondary' 
+                            %> me-2">
+                                            <%= rarity==='legendary' ? 'Легендарное' : rarity==='epic' ? 'Эпическое' :
+                                                rarity==='rare' ? 'Редкое' : 'Обычное' %>
+                                        </span>
+                                        <span class="badge bg-warning">
+                                            <i class="bi bi-star"></i>
+                                            <%= achievement.points %> очков
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-transparent text-center">
+                                    <% if (earnedAt) { %>
+                                        <small class="text-muted">
+                                            <i class="bi bi-calendar"></i> Получено:
+                                            <%= new Date(earnedAt).toLocaleDateString('ru-RU') %>
+                                        </small>
+                                        <% } else { %>
+                                            <small class="text-muted">
+                                                <i class="bi bi-check-circle"></i> Заработано
+                                            </small>
+                                            <% } %>
+                                </div>
+                            </div>
+                        </div>
+                        <% }); %>
+                </div>
+                <% } else { %>
+                    <div class="text-center py-5">
+                        <i class="bi bi-trophy" style="font-size: 4rem; color: #ccc;"></i>
+                        <h4 class="mt-3">У вас пока нет достижений</h4>
+                        <p class="text-muted mb-4">Создавайте и выполняйте привычки, чтобы зарабатывать достижения</p>
+                        <a href="/habits/new" class="btn btn-success">
+                            <i class="bi bi-plus-circle"></i> Создать привычку
+                        </a>
+                    </div>
+                    <% } %>
+        </div>
+
+        <!-- Доступные достижения -->
+        <div class="tab-pane fade" id="available" role="tabpanel">
+            <% if (availableAchievements && availableAchievements.length> 0) { %>
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    <% availableAchievements.forEach(achievement=> {
+                        if (!achievement) return;
+                        const rarity = achievement.rarity || 'common';
+                        %>
+                        <div class="col">
+                            <div class="card h-100 shadow">
+                                <div class="card-header text-white text-center" style="background-color: <%= 
+                                    rarity === 'legendary' ? '#dc3545' : 
+                                    rarity === 'epic' ? '#fd7e14' : 
+                                    rarity === 'rare' ? '#0d6efd' : '#6c757d' 
+                                 %>; opacity: 0.7;">
+                                    <i class="bi bi-<%= achievement.icon || 'trophy' %>" style="font-size: 2.5rem;"></i>
+                                </div>
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">
+                                        <%= achievement.title %>
+                                    </h5>
+                                    <p class="card-text">
+                                        <%= achievement.description %>
+                                    </p>
+
+                                    <div class="mb-3">
+                                        <span class="badge bg-<%= 
+                                        rarity === 'legendary' ? 'danger' : 
+                                        rarity === 'epic' ? 'warning' : 
+                                        rarity === 'rare' ? 'primary' : 'secondary' 
+                                    %>">
+                                            <%= rarity==='legendary' ? 'Легендарное' : rarity==='epic' ? 'Эпическое' :
+                                                rarity==='rare' ? 'Редкое' : 'Обычное' %>
+                                        </span>
+                                    </div>
+
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge bg-warning">
+                                            <i class="bi bi-star"></i>
+                                            <%= achievement.points %> очков
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <% }); %>
+                </div>
+                <% } else { %>
+                    <div class="text-center py-5">
+                        <i class="bi bi-check-circle" style="font-size: 4rem; color: #ccc;"></i>
+                        <h4 class="mt-3">Нет доступных достижений</h4>
+                        <p class="text-muted">Все доступные достижения уже отображаются в других вкладках</p>
+                    </div>
+                    <% } %>
+        </div>
+
+        <!-- Заблокированные достижения -->
+        <div class="tab-pane fade" id="locked" role="tabpanel">
+            <% if (lockedAchievements && lockedAchievements.length> 0) { %>
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    <% lockedAchievements.forEach(achievement=> {
+                        if (!achievement) return;
+                        const rarity = achievement.rarity || 'common';
+                        %>
+                        <div class="col">
+                            <div class="card h-100 shadow" style="filter: grayscale(100%); opacity: 0.6;">
+                                <div class="card-header text-center bg-secondary">
+                                    <i class="bi bi-lock" style="font-size: 2.5rem; color: #fff;"></i>
+                                </div>
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">???</h5>
+                                    <p class="card-text">Секретное достижение</p>
+
+                                    <div class="mb-3">
+                                        <span class="badge bg-secondary">
+                                            <%= rarity==='legendary' ? 'Легендарное' : rarity==='epic' ? 'Эпическое' :
+                                                rarity==='rare' ? 'Редкое' : 'Обычное' %>
+                                        </span>
+                                    </div>
+
+                                    <p class="small text-muted">
+                                        <i class="bi bi-question-circle"></i>
+                                        Это достижение будет разблокировано позже
+                                    </p>
+                                </div>
+                                <div class="card-footer bg-transparent text-center">
+                                    <small class="text-muted">
+                                        <i class="bi bi-star"></i> ??? очков
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <% }); %>
+                </div>
+                <% } else { %>
+                    <div class="text-center py-5">
+                        <i class="bi bi-lock" style="font-size: 4rem; color: #ccc;"></i>
+                        <h4 class="mt-3">Нет заблокированных достижений</h4>
+                        <p class="text-muted">Все достижения доступны для получения</p>
+                    </div>
+                    <% } %>
+        </div>
+    </div>
+
+    <!-- Пояснения по редкости -->
+    <div class="card shadow mt-4">
+        <div class="card-header">
+            <h6 class="mb-0"><i class="bi bi-info-circle"></i> О редкости достижений</h6>
+        </div>
+        <div class="card-body">
+            <div class="row text-center">
+                <div class="col-md-3 mb-3">
+                    <div class="p-3 border rounded">
+                        <i class="bi bi-trophy" style="font-size: 2rem; color: #6c757d;"></i>
+                        <h6 class="mt-2">Обычные</h6>
+                        <p class="small text-muted mb-0">10-25 очков</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="p-3 border rounded border-primary">
+                        <i class="bi bi-trophy" style="font-size: 2rem; color: #0d6efd;"></i>
+                        <h6 class="mt-2">Редкие</h6>
+                        <p class="small text-muted mb-0">25-50 очков</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="p-3 border rounded border-warning">
+                        <i class="bi bi-trophy" style="font-size: 2rem; color: #fd7e14;"></i>
+                        <h6 class="mt-2">Эпические</h6>
+                        <p class="small text-muted mb-0">50-100 очков</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="p-3 border rounded border-danger">
+                        <i class="bi bi-trophy" style="font-size: 2rem; color: #dc3545;"></i>
+                        <h6 class="mt-2">Легендарные</h6>
+                        <p class="small text-muted mb-0">100+ очков</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,264 @@
+<!-- views/admin/logs.ejs -->
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="bi bi-journal-text text-secondary"></i> Системные логи</h1>
+            <p class="text-muted mb-0">Логи действий пользователей и системы</p>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-outline-secondary" onclick="refreshLogs()">
+                <i class="bi bi-arrow-clockwise"></i> Обновить
+            </button>
+            <button class="btn btn-outline-danger" onclick="clearLogs()">
+                <i class="bi bi-trash"></i> Очистить логи
+            </button>
+            <button class="btn btn-outline-primary" onclick="exportLogs()">
+                <i class="bi bi-download"></i> Экспорт
+            </button>
+        </div>
+    </div>
+
+    <!-- Фильтры -->
+    <div class="card shadow mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="bi bi-funnel"></i> Фильтры логов</h5>
+        </div>
+        <div class="card-body">
+            <form id="filterForm" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Тип действия</label>
+                    <select class="form-select" name="type">
+                        <option value="all">Все действия</option>
+                        <option value="user">Действия с пользователями</option>
+                        <option value="habit">Действия с привычками</option>
+                        <option value="achievement">Действия с достижениями</option>
+                        <option value="system">Системные действия</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Уровень важности</label>
+                    <select class="form-select" name="level">
+                        <option value="all">Все уровни</option>
+                        <option value="info">Информация</option>
+                        <option value="warning">Предупреждение</option>
+                        <option value="error">Ошибка</option>
+                        <option value="critical">Критично</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Дата с</label>
+                    <input type="date" class="form-control" name="dateFrom" 
+                           value="<%= new Date().toISOString().split('T')[0] %>">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Дата по</label>
+                    <input type="date" class="form-control" name="dateTo" 
+                           value="<%= new Date().toISOString().split('T')[0] %>">
+                </div>
+                <div class="col-12">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" name="showAdminOnly" id="showAdminOnly">
+                        <label class="form-check-label" for="showAdminOnly">
+                            Только действия администраторов
+                        </label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" name="showModeratorOnly" id="showModeratorOnly">
+                        <label class="form-check-label" for="showModeratorOnly">
+                            Только действия модераторов
+                        </label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-funnel"></i> Применить фильтры
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="resetFilters()">
+                        <i class="bi bi-x-circle"></i> Сбросить
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Логи -->
+    <div class="card shadow">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-list-ul"></i> Записи логов
+                <span class="badge bg-primary ms-2"><%= logs.length %> записей</span>
+            </h5>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="autoRefresh" checked>
+                <label class="form-check-label" for="autoRefresh">Автообновление</label>
+            </div>
+        </div>
+        <div class="card-body">
+            <% if (logs && logs.length > 0) { %>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Время</th>
+                                <th>Пользователь</th>
+                                <th>Роль</th>
+                                <th>Уровень</th>
+                                <th>Действие</th>
+                                <th>Детали</th>
+                                <th>IP</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% logs.forEach(log => { %>
+                            <tr class="<%= 
+                                log.level === 'critical' ? 'table-danger' : 
+                                log.level === 'error' ? 'table-warning' : 
+                                log.level === 'warning' ? 'table-info' : ''
+                            %>">
+                                <td>
+                                    <%= new Date(log.timestamp).toLocaleString('ru-RU') %>
+                                    <br>
+                                    <small class="text-muted">
+                                        <%= new Date(log.timestamp).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) %>
+                                    </small>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <% if (log.user && log.user.avatar) { %>
+                                            <img src="/uploads/avatars/<%= log.user.avatar %>" 
+                                                 width="24" height="24" class="rounded-circle me-2">
+                                        <% } else { %>
+                                            <i class="bi bi-person-circle me-2"></i>
+                                        <% } %>
+                                        <div>
+                                            <div><%= log.user ? log.user.username : 'Система' %></div>
+                                            <small class="text-muted">ID: <%= log.user ? log.user.id : 'N/A' %></small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <% if (log.user && log.user.role) { %>
+                                    <span class="badge bg-<%= 
+                                        log.user.role === 'admin' ? 'danger' : 
+                                        log.user.role === 'moderator' ? 'warning' : 'primary'
+                                    %>">
+                                        <%= log.user.role %>
+                                    </span>
+                                    <% } else { %>
+                                    <span class="badge bg-secondary">Система</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <span class="badge bg-<%= 
+                                        log.level === 'critical' ? 'danger' : 
+                                        log.level === 'error' ? 'warning' : 
+                                        log.level === 'warning' ? 'info' : 'secondary'
+                                    %>">
+                                        <%= log.level === 'critical' ? 'Критично' : 
+                                           log.level === 'error' ? 'Ошибка' : 
+                                           log.level === 'warning' ? 'Предупреждение' : 'Информация' %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <code><%= log.action %></code>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-info" 
+                                            type="button"
+                                            data-bs-toggle="collapse" 
+                                            data-bs-target="#details<%= log.id || log.timestamp %>">
+                                        <i class="bi bi-eye"></i> Показать
+                                    </button>
+                                    <div class="collapse mt-2" id="details<%= log.id || log.timestamp %>">
+                                        <div class="card card-body small">
+                                            <pre class="mb-0"><%= JSON.stringify(log.details, null, 2) %></pre>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <small class="text-muted"><%= log.ip || 'N/A' %></small>
+                                </td>
+                            </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Пагинация -->
+                <nav aria-label="Пагинация логов">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item active">
+                            <a class="page-link" href="#">1</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">2</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">3</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            <% } else { %>
+                <div class="text-center py-5">
+                    <i class="bi bi-journal-text" style="font-size: 4rem; color: #ccc;"></i>
+                    <h4 class="mt-3">Логи отсутствуют</h4>
+                    <p class="text-muted">Нет записей логов за выбранный период</p>
+                </div>
+            <% } %>
+        </div>
+    </div>
+    
+    <!-- Статистика логов -->
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card border-info border-2">
+                <div class="card-body text-center">
+                    <div class="display-6 fw-bold text-info">
+                        <%= logs.filter(l => l.level === 'info').length %>
+                    </div>
+                    <small class="text-muted">Информационных</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-warning border-2">
+                <div class="card-body text-center">
+                    <div class="display-6 fw-bold text-warning">
+                        <%= logs.filter(l => l.level === 'warning').length %>
+                    </div>
+                    <small class="text-muted">Предупреждений</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-danger border-2">
+                <div class="card-body text-center">
+                    <div class="display-6 fw-bold text-danger">
+                        <%= logs.filter(l => l.level === 'error' || l.level === 'critical').length %>
+                    </div>
+                    <small class="text-muted">Ошибок</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-success border-2">
+                <div class="card-body text-center">
+                    <div class="display-6 fw-bold text-success">
+                        <%= logs.filter(l => l.user && l.user.role === 'admin').length %>
+                    </div>
+                    <small class="text-muted">Действий админов</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

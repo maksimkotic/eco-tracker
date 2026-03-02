@@ -1,0 +1,128 @@
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="bi bi-plus-circle"></i> Создание новой привычки</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form action="/habits" method="POST" id="habitForm">
+                        <!-- Название -->
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Название привычки *</label>
+                            <input type="text" class="form-control" id="title" name="title" 
+                                   placeholder="Например: Экономия воды при чистке зубов" required>
+                            <div class="form-text">Короткое и понятное название</div>
+                        </div>
+                        
+                        <!-- Категория -->
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Категория *</label>
+                            <select class="form-select" id="category" name="category" required>
+                                <option value="">Выберите категорию</option>
+                                <option value="water">💧 Экономия воды</option>
+                                <option value="energy">⚡ Экономия энергии</option>
+                                <option value="waste">🗑️ Сортировка отходов</option>
+                                <option value="transport">🚗 Экотранспорт</option>
+                                <option value="food">🍎 Экопитание</option>
+                                <option value="other">🌱 Прочее</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Описание -->
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Описание</label>
+                            <textarea class="form-control" id="description" name="description" 
+                                      rows="3" placeholder="Подробнее о вашей привычке..."></textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <!-- Частота -->
+                            <div class="col-md-6 mb-3">
+                                <label for="frequency" class="form-label">Частота выполнения *</label>
+                                <select class="form-select" id="frequency" name="frequency" required>
+                                    <option value="daily">📅 Ежедневно</option>
+                                    <option value="weekly">📆 Еженедельно</option>
+                                    <option value="monthly">📊 Ежемесячно</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Цель -->
+                            <div class="col-md-6 mb-3">
+                                <label for="targetValue" class="form-label">Цель *</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="targetValue" 
+                                           name="targetValue" min="1" max="1000" value="1" required>
+                                    <select class="form-select" id="unit" name="unit" style="max-width: 120px;">
+                                        <option value="times">раз</option>
+                                        <option value="liters">литров</option>
+                                        <option value="kwh">кВт·ч</option>
+                                        <option value="kg">кг</option>
+                                        <option value="items">шт.</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Цвет -->
+                        <div class="mb-4">
+                            <label class="form-label">Цвет для визуализации</label>
+                            <div class="d-flex flex-wrap gap-2" id="colorPicker">
+                                <div class="color-option" data-color="#28a745" style="background-color: #28a745;"></div>
+                                <div class="color-option" data-color="#17a2b8" style="background-color: #17a2b8;"></div>
+                                <div class="color-option" data-color="#007bff" style="background-color: #007bff;"></div>
+                                <div class="color-option" data-color="#6f42c1" style="background-color: #6f42c1;"></div>
+                                <div class="color-option" data-color="#fd7e14" style="background-color: #fd7e14;"></div>
+                                <div class="color-option" data-color="#e83e8c" style="background-color: #e83e8c;"></div>
+                            </div>
+                            <input type="hidden" id="color" name="color" value="#28a745">
+                        </div>
+                        
+                        <!-- Примеры привычек -->
+                        <div class="mb-4">
+                            <h6><i class="bi bi-lightbulb"></i> Примеры привычек</h6>
+                            <div class="row g-2">
+                                <div class="col-md-4">
+                                    <div class="card border-success border-1">
+                                        <div class="card-body p-2 text-center">
+                                            <small class="text-success">💧 Выключать воду при чистке зубов</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card border-warning border-1">
+                                        <div class="card-body p-2 text-center">
+                                            <small class="text-warning">⚡ Выключать свет, выходя из комнаты</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card border-primary border-1">
+                                        <div class="card-body p-2 text-center">
+                                            <small class="text-primary">🗑️ Сортировать пластиковые отходы</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Кнопки -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="/habits" class="btn btn-outline-secondary me-2">
+                                <i class="bi bi-arrow-left"></i> Назад
+                            </a>
+                            <button type="submit" class="btn btn-success px-4">
+                                <i class="bi bi-check-lg"></i> Создать привычку
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<style>
+
+</style>

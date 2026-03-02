@@ -1,0 +1,106 @@
+<section class="hero text-center">
+    <div class="container">
+        <h1 class="display-4 fw-bold">Станьте частью экологического движения</h1>
+        <p class="lead mb-4">Отслеживайте свои эко-привычки, зарабатывайте достижения и вносите реальный вклад в сохранение планеты</p>
+        <% if (!user) { %>
+            <a href="/auth/register" class="btn btn-light btn-lg px-4 me-2">
+                <i class="bi bi-rocket-takeoff"></i> Начать бесплатно
+            </a>
+            <a href="/guide" class="btn btn-outline-light btn-lg px-4">
+                <i class="bi bi-play-circle"></i> Как это работает
+            </a>
+        <% } else { %>
+            <a href="/habits" class="btn btn-light btn-lg px-4">
+                <i class="bi bi-plus-circle"></i> Добавить привычку
+            </a>
+        <% } %>
+    </div>
+</section>
+
+<!-- Преимущества карточками -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Почему выбирают Эко-Трекер?</h2>
+        <div class="row g-4">
+            <!-- Карточка 1 -->
+            <div class="col-md-4">
+                <div class="card feature-card h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-3">
+                            <i class="bi bi-graph-up" style="font-size: 3rem; color: #28a745;"></i>
+                        </div>
+                        <h4 class="card-title">Отслеживание прогресса</h4>
+                        <p class="card-text">Наглядные графики и статистика покажут, как ваши маленькие шаги приводят к большим изменениям</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Карточка 2 -->
+            <div class="col-md-4">
+                <div class="card feature-card h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-3">
+                            <i class="bi bi-trophy" style="font-size: 3rem; color: #ffc107;"></i>
+                        </div>
+                        <h4 class="card-title">Система достижений</h4>
+                        <p class="card-text">Зарабатывайте бейджи и награды за регулярное соблюдение экологических привычек</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Карточка 3 -->
+            <div class="col-md-4">
+                <div class="card feature-card h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-3">
+                            <i class="bi bi-people" style="font-size: 3rem; color: #17a2b8;"></i>
+                        </div>
+                        <h4 class="card-title">Сообщество единомышленников</h4>
+                        <p class="card-text">Присоединяйтесь к тысячам людей, которые уже сделали свой вклад в сохранение планеты</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Статистика сообщества -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5">Наш вклад в цифрах</h2>
+        <div class="row text-center">
+            <div class="col-md-3 mb-4">
+                <div class="stats-counter"><%= totalUsers || 1254 %></div>
+                <p class="text-muted">Пользователей</p>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="stats-counter"><%= totalHabits || 8920 %></div>
+                <p class="text-muted">Привычек создано</p>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="stats-counter"><%= savedWater || 24580 %> л</div>
+                <p class="text-muted">Воды сэкономлено</p>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="stats-counter"><%= reducedCO2 || 156.7 %> кг</div>
+                <p class="text-muted">CO2 предотвращено</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Призыв к действию -->
+<section class="py-5 text-center">
+    <div class="container">
+        <h2 class="mb-4">Готовы начать?</h2>
+        <p class="lead mb-4">Присоединяйтесь к сообществу осознанных людей прямо сейчас</p>
+        <% if (!user) { %>
+            <a href="/auth/register" class="btn btn-success btn-lg px-5">
+                <i class="bi bi-person-plus"></i> Зарегистрироваться бесплатно
+            </a>
+            <p class="text-muted mt-3">Уже есть аккаунт? <a href="/auth/login">Войти</a></p>
+        <% } else { %>
+            <a href="/habits/new" class="btn btn-success btn-lg px-5">
+                <i class="bi bi-plus-circle"></i> Создать первую привычку
+            </a>
+        <% } %>
+    </div>
+</section>

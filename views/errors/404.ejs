@@ -1,0 +1,17 @@
+
+    <div class="container error-container">
+        <div class="text-center">
+            <i class="bi bi-exclamation-triangle error-icon"></i>
+            <h1 class="display-4 mt-4">404</h1>
+            <h2 class="mb-4"><%= title %></h2>
+            <p class="lead mb-4"><%= message || 'Страница, которую вы ищете, не существует.' %></p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <a href="/" class="btn btn-success btn-lg me-md-2">
+                    <i class="bi bi-house"></i> На главную
+                </a>
+                <a href="javascript:history.back()" class="btn btn-outline-secondary btn-lg">
+                    <i class="bi bi-arrow-left"></i> Назад
+                </a>
+            </div>
+        </div>
+    </div>
