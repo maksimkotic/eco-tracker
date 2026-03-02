@@ -11,6 +11,9 @@ const { Op } = require("sequelize");
 const bcrypt = require("bcrypt");
 const logger = require('../utils/logger');
 
+const wantsJson = (req) =>
+  req.xhr || (typeof req.get === 'function' && (req.get('accept') || '').includes('json'));
+
 const adminController = {
   // Панель администратора
   dashboard: async (req, res) => {
@@ -398,7 +401,7 @@ const adminController = {
       );
 
       // Для AJAX запросов
-      if (req.xhr || req.headers.accept.indexOf("json") > -1) {
+      if (wantsJson(req)) {
         return res.json({ success: true, message: "Пользователь удален" });
       }
 
@@ -420,7 +423,7 @@ const adminController = {
       }
 
       // Для AJAX
-      if (req.xhr || req.headers.accept.indexOf("json") > -1) {
+      if (wantsJson(req)) {
         return res.status(500).json({
           success: false,
           error: errorMessage,
