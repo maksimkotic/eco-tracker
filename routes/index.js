@@ -1,19 +1,6 @@
 const express = require('express');
 const router = express.Router();
 
-// Контроллеры
-const authController = require('../controllers/authController');
-const habitController = require('../controllers/habitController');
-const achievementController = require('../controllers/achievementController');
-const profileController = require('../controllers/profileController');
-const moderatorController = require('../controllers/moderatorController');
-const adminController = require('../controllers/adminController');
-
-// Middleware
-const { isAuthenticated, isNotAuthenticated } = require('../middlewares/auth');
-const { hasRole, hasAnyRole } = require('../middlewares/role');
-const { hasPermission } = require('../middlewares/permissions');
-
 // Главная страница
 router.get('/', (req, res) => {
   if (req.session.user) {
@@ -53,7 +40,7 @@ router.get('/contacts', (req, res) => {
 
 router.get('/privacy', (req, res) => {
   res.render('static/privacy', {
-    title: 'Политика конфиденциальность'
+    title: 'Политика конфиденциальности'
   });
 });
 
