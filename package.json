@@ -38,5 +38,10 @@
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
+  },
+  "private": true,
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18"
   }
 }
