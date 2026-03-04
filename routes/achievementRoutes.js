@@ -9,13 +9,13 @@ router.use(isAuthenticated);
 // Список достижений
 router.get('/', achievementController.index);
 
-// Детали достижения
-router.get('/:id', achievementController.show);
-
 // Лидерборд
 router.get('/leaderboard', achievementController.leaderboard);
 
 // API для прогресса (AJAX)
 router.get('/api/progress', achievementController.getProgress);
+
+// Детали достижения
+router.get('/:id', achievementController.show);
 
 module.exports = router;
