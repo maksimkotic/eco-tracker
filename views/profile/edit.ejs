@@ -26,11 +26,14 @@
               <% } %>
               
               <!-- Загрузка аватара -->
-              <div class="mb-3">
+              <form action="/profile/avatar" method="POST" enctype="multipart/form-data" class="mb-3">
                 <label for="avatar" class="form-label">Сменить аватар</label>
-                <input type="file" class="form-control" id="avatar" name="avatar" accept="image/*">
-                <div class="form-text">Максимальный размер: 2MB. Разрешены: JPG, PNG, GIF</div>
-              </div>
+                <div class="input-group">
+                  <input type="file" class="form-control" id="avatar" name="avatar" accept="image/*" required>
+                  <button type="submit" class="btn btn-outline-primary">Загрузить</button>
+                </div>
+                <div class="form-text">Максимальный размер: 5MB. Разрешены: JPG, PNG, GIF</div>
+              </form>
             </div>
             
             <!-- Основная информация -->
