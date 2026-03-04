@@ -7,6 +7,9 @@ const {
 } = require("../models");
 const { Op } = require("sequelize");
 
+const wantsJson = (req) =>
+  req.xhr || (typeof req.get === 'function' && (req.get('accept') || '').includes('json'));
+
 const habitController = {
   // Показать все привычки пользователя
   index: async (req, res) => {
@@ -318,7 +321,7 @@ const habitController = {
       req.flash('success', `Привычка "${habit.title}" успешно удалена`);
       
       // Для AJAX запросов
-      if (req.xhr || req.headers.accept.indexOf('json') > -1) {
+      if (wantsJson(req)) {
         return res.json({ success: true, message: 'Привычка удалена' });
       }
       
@@ -351,7 +354,7 @@ const habitController = {
       }
       
       // Для AJAX
-      if (req.xhr || req.headers.accept.indexOf('json') > -1) {
+      if (wantsJson(req)) {
         return res.status(500).json({ 
           success: false, 
           error: 'Не удалось удалить привычку' 

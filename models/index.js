@@ -49,10 +49,10 @@ UserAchievement.belongsTo(User, { foreignKey: 'userId', as: 'User' });
 Achievement.hasMany(UserAchievement, { foreignKey: 'achievementId', as: 'UserAchievements' });
 UserAchievement.belongsTo(Achievement, { foreignKey: 'achievementId', as: 'Achievement' });
 
-Habit.hasMany(Checkin, { foreignKey: 'habitId' });
-Checkin.belongsTo(Habit, { foreignKey: 'habitId' });
-User.hasMany(Checkin, { foreignKey: 'userId' });
-Checkin.belongsTo(User, { foreignKey: 'userId' });
+Habit.hasMany(Checkin, { foreignKey: 'habitId', onDelete: 'CASCADE', hooks: true });
+Checkin.belongsTo(Habit, { foreignKey: 'habitId', onDelete: 'CASCADE' });
+User.hasMany(Checkin, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
+Checkin.belongsTo(User, { foreignKey: 'userId', onDelete: 'CASCADE' });
 
 module.exports = {
   sequelize,
