@@ -7,7 +7,8 @@
     "start": "node app.js",
     "dev": "nodemon app.js",
     "init-db": "node database/init.js",
-    "reset-db": "node database/init.js --force"
+    "reset-db": "node database/init.js --force",
+    "migrate:checkins-fk": "sqlite3 database.sqlite < database/migrate-checkins-fk.sql"
   },
   "keywords": [
     "eco",
