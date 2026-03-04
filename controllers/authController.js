@@ -92,6 +92,13 @@ const authController = {
   // Обработка входа
   login: async (req, res) => {
     try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        req.flash("error", errors.array()[0].msg);
+        req.flash("oldInput", { email: req.body.email });
+        return res.redirect("/auth/login");
+      }
+
       const { email, password, remember } = req.body;
 
       // Ищем пользователя

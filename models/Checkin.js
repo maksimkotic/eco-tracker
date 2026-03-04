@@ -12,7 +12,9 @@ module.exports = (sequelize, DataTypes) => {
       references: {
         model: 'habits',
         key: 'id'
-      }
+      },
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE'
     },
     userId: {
       type: DataTypes.INTEGER,
@@ -20,7 +22,9 @@ module.exports = (sequelize, DataTypes) => {
       references: {
         model: 'users',
         key: 'id'
-      }
+      },
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE'
     },
     value: {
       type: DataTypes.FLOAT,
