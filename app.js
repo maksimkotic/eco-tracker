@@ -1,12 +1,12 @@
 const express = require('express');
 const session = require('express-session');
-const SQLiteStore = require('connect-sqlite3')(session);
 const path = require('path');
-const fs = require('fs');
 const flash = require('connect-flash');
 const methodOverride = require('method-override');
 const rateLimit = require('express-rate-limit');
 const expressLayouts = require('express-ejs-layouts');
+
+require('dotenv').config();
 
 const { sequelize } = require('./models');
 const { loadUser } = require('./middlewares/auth');
@@ -22,8 +22,6 @@ const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const dbPath = path.join(__dirname, 'database.sqlite');
-
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 500,
@@ -57,11 +55,6 @@ function configureApp() {
 
   app.use(
     session({
-      store: new SQLiteStore({
-        db: 'sessions.db',
-        dir: path.join(__dirname, 'sessions'),
-        table: 'sessions'
-      }),
       secret: process.env.SESSION_SECRET || 'eco-tracker-secret-key-change-in-production',
       resave: false,
       saveUninitialized: false,
@@ -120,14 +113,7 @@ function configureApp() {
 }
 
 async function ensureDatabase() {
-  if (fs.existsSync(dbPath)) {
-    return;
-  }
-
-  console.log('📦 База данных не найдена. Создание новой...');
-  const initDB = require('./database/init');
-  await initDB();
-  console.log('✅ База данных создана. Запуск сервера...');
+  await sequelize.authenticate();
 }
 
 async function startServer() {
@@ -147,6 +133,9 @@ async function startServer() {
   }
 }
 
-startServer();
+if (require.main === module) {
+  startServer();
+}
 
 module.exports = app;
+module.exports.startServer = startServer;

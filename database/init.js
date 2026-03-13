@@ -1,14 +1,27 @@
+require('dotenv').config();
+
 const { sequelize, User, Role, Habit, Achievement, UserAchievement } = require('../models');
 const bcrypt = require('bcrypt');
 
-async function initializeDatabase() {
+async function initializeDatabase(options = {}) {
+  const shouldForceSync = Boolean(options.force);
+
   console.log('🚀 Начало инициализации базы данных...');
-  
+
   try {
     // Синхронизация моделей (создание таблиц)
-    await sequelize.sync({ force: true });
-    console.log('✅ Таблицы созданы успешно');
-    
+    await sequelize.sync({ force: shouldForceSync });
+    console.log(shouldForceSync ? '✅ Таблицы пересозданы успешно' : '✅ Таблицы синхронизированы успешно');
+
+    // При обычной инициализации не дублируем сиды, если роли уже есть
+    if (!shouldForceSync) {
+      const existingRoles = await Role.count();
+      if (existingRoles > 0) {
+        console.log('ℹ️ База уже содержит данные. Для полной пересборки запустите: npm run reset-db');
+        return;
+      }
+    }
+
     // Создание ролей
     console.log('👥 Создание ролей...');
     const roles = await Role.bulkCreate([
@@ -71,16 +84,16 @@ async function initializeDatabase() {
       }
     ]);
     console.log('✅ Роли созданы');
-    
+
     // Создание тестовых пользователей
     console.log('👤 Создание тестовых пользователей...');
-    
+
     // Хеширование паролей
     const adminHash = await bcrypt.hash('admin123', 10);
     const moderatorHash = await bcrypt.hash('moderator123', 10);
     const userHash = await bcrypt.hash('user123', 10);
     const testUserHash = await bcrypt.hash('test123', 10);
-    
+
     const users = await User.bulkCreate([
       {
         username: 'admin',
@@ -129,7 +142,7 @@ async function initializeDatabase() {
       }
     ]);
     console.log('✅ Пользователи созданы');
-    
+
     // Создание достижений
     console.log('🏆 Создание достижений...');
     const achievements = await Achievement.bulkCreate([
@@ -258,14 +271,15 @@ async function initializeDatabase() {
       }
     ]);
     console.log('✅ Достижения созданы');
-    
+
     // Создание привычек для тестовых пользователей
     console.log('🌱 Создание тестовых привычек...');
-    
-    const habits = await Habit.bulkCreate([
-      // Привычки для пользователя 'user'
+
+    const usersByName = Object.fromEntries(users.map(user => [user.username, user]));
+
+    await Habit.bulkCreate([
       {
-        userId: users.find(u => u.username === 'user').id,
+        userId: usersByName.user.id,
         title: 'Экономить воду при чистке зубов',
         description: 'Выключать воду, когда чищу зубы',
         category: 'water',
@@ -280,7 +294,7 @@ async function initializeDatabase() {
         lastCompleted: new Date(Date.now() - 24 * 60 * 60 * 1000)
       },
       {
-        userId: users.find(u => u.username === 'user').id,
+        userId: usersByName.user.id,
         title: 'Выключать свет',
         description: 'Выключать свет, выходя из комнаты',
         category: 'energy',
@@ -295,7 +309,7 @@ async function initializeDatabase() {
         lastCompleted: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
       },
       {
-        userId: users.find(u => u.username === 'user').id,
+        userId: usersByName.user.id,
         title: 'Сортировать пластик',
         description: 'Собирать пластиковые отходы отдельно',
         category: 'waste',
@@ -309,10 +323,8 @@ async function initializeDatabase() {
         color: '#28a745',
         lastCompleted: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
       },
-      
-      // Привычки для пользователя 'ecofriend'
       {
-        userId: users.find(u => u.username === 'ecofriend').id,
+        userId: usersByName.ecofriend.id,
         title: 'Ездить на велосипеде',
         description: 'Ездить на велосипеде на работу',
         category: 'transport',
@@ -327,7 +339,7 @@ async function initializeDatabase() {
         lastCompleted: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
       },
       {
-        userId: users.find(u => u.username === 'ecofriend').id,
+        userId: usersByName.ecofriend.id,
         title: 'Покупать местные продукты',
         description: 'Покупать продукты местного производства',
         category: 'food',
@@ -341,10 +353,8 @@ async function initializeDatabase() {
         color: '#fd7e14',
         lastCompleted: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
       },
-      
-      // Привычки для пользователя 'testuser'
       {
-        userId: users.find(u => u.username === 'testuser').id,
+        userId: usersByName.testuser.id,
         title: 'Использовать многоразовые сумки',
         description: 'Не брать пластиковые пакеты в магазине',
         category: 'waste',
@@ -359,7 +369,7 @@ async function initializeDatabase() {
         lastCompleted: new Date()
       },
       {
-        userId: users.find(u => u.username === 'testuser').id,
+        userId: usersByName.testuser.id,
         title: 'Пить из многоразовой бутылки',
         description: 'Не покупать воду в пластиковых бутылках',
         category: 'waste',
@@ -375,74 +385,76 @@ async function initializeDatabase() {
       }
     ]);
     console.log('✅ Привычки созданы');
-    
+
     // Назначение достижений пользователям
     console.log('🎖 Назначение достижений...');
-    
+
+    const achievementByTitle = Object.fromEntries(achievements.map(item => [item.title, item]));
+
     await UserAchievement.bulkCreate([
       {
-        userId: users.find(u => u.username === 'user').id,
-        achievementId: achievements.find(a => a.title === 'Начало пути').id,
+        userId: usersByName.user.id,
+        achievementId: achievementByTitle['Начало пути'].id,
         earnedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
         notified: true
       },
       {
-        userId: users.find(u => u.username === 'user').id,
-        achievementId: achievements.find(a => a.title === 'Стремительный старт').id,
+        userId: usersByName.user.id,
+        achievementId: achievementByTitle['Стремительный старт'].id,
         earnedAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000),
         notified: true
       },
       {
-        userId: users.find(u => u.username === 'user').id,
-        achievementId: achievements.find(a => a.title === 'Зеленый новичок').id,
+        userId: usersByName.user.id,
+        achievementId: achievementByTitle['Зеленый новичок'].id,
         earnedAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
         notified: true
       },
       {
-        userId: users.find(u => u.username === 'ecofriend').id,
-        achievementId: achievements.find(a => a.title === 'Начало пути').id,
+        userId: usersByName.ecofriend.id,
+        achievementId: achievementByTitle['Начало пути'].id,
         earnedAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
         notified: true
       },
       {
-        userId: users.find(u => u.username === 'ecofriend').id,
-        achievementId: achievements.find(a => a.title === 'Эко-энтузиаст').id,
+        userId: usersByName.ecofriend.id,
+        achievementId: achievementByTitle['Эко-энтузиаст'].id,
         earnedAt: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000),
         notified: true
       },
       {
-        userId: users.find(u => u.username === 'ecofriend').id,
-        achievementId: achievements.find(a => a.title === 'Стремительный старт').id,
+        userId: usersByName.ecofriend.id,
+        achievementId: achievementByTitle['Стремительный старт'].id,
         earnedAt: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000),
         notified: true
       },
       {
-        userId: users.find(u => u.username === 'ecofriend').id,
-        achievementId: achievements.find(a => a.title === 'Эко-воин').id,
+        userId: usersByName.ecofriend.id,
+        achievementId: achievementByTitle['Эко-воин'].id,
         earnedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
         notified: true
       },
       {
-        userId: users.find(u => u.username === 'ecofriend').id,
-        achievementId: achievements.find(a => a.title === 'Эко-герой').id,
+        userId: usersByName.ecofriend.id,
+        achievementId: achievementByTitle['Эко-герой'].id,
         earnedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
         notified: true
       },
       {
-        userId: users.find(u => u.username === 'testuser').id,
-        achievementId: achievements.find(a => a.title === 'Начало пути').id,
+        userId: usersByName.testuser.id,
+        achievementId: achievementByTitle['Начало пути'].id,
         earnedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
         notified: true
       },
       {
-        userId: users.find(u => u.username === 'testuser').id,
-        achievementId: achievements.find(a => a.title === 'Стремительный старт').id,
+        userId: usersByName.testuser.id,
+        achievementId: achievementByTitle['Стремительный старт'].id,
         earnedAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000),
         notified: true
       }
     ]);
     console.log('✅ Достижения назначены');
-    
+
     console.log('🎉 База данных успешно инициализирована!');
     console.log('\n📋 Тестовые аккаунты:');
     console.log('────────────────────────────────────────────');
@@ -457,17 +469,17 @@ async function initializeDatabase() {
     console.log('   Email: test@example.com      (Пароль: test123)');
     console.log('   Email: eco@example.com       (Пароль: test123)');
     console.log('────────────────────────────────────────────');
-    
-    process.exit(0);
   } catch (error) {
     console.error('❌ Ошибка инициализации базы данных:', error);
-    process.exit(1);
+    throw error;
   }
 }
 
 // Запуск инициализации
 if (require.main === module) {
-  initializeDatabase();
+  initializeDatabase({ force: process.argv.includes('--force') })
+    .then(() => process.exit(0))
+    .catch(() => process.exit(1));
 }
 
 module.exports = initializeDatabase;
