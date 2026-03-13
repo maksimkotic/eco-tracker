@@ -1,6 +1,8 @@
 require('dotenv').config();
 
+const { Op } = require('sequelize');
 const { sequelize, User, Role, Habit, Achievement, UserAchievement } = require('../models');
+const { ensureDefaultRoles } = require('./bootstrap');
 const bcrypt = require('bcrypt');
 
 async function initializeDatabase(options = {}) {
@@ -13,77 +15,26 @@ async function initializeDatabase(options = {}) {
     await sequelize.sync({ force: shouldForceSync });
     console.log(shouldForceSync ? '✅ Таблицы пересозданы успешно' : '✅ Таблицы синхронизированы успешно');
 
-    // При обычной инициализации не дублируем сиды, если роли уже есть
+    // При обычной инициализации не дублируем тестовые сиды, если пользователи уже есть
     if (!shouldForceSync) {
-      const existingRoles = await Role.count();
-      if (existingRoles > 0) {
-        console.log('ℹ️ База уже содержит данные. Для полной пересборки запустите: npm run reset-db');
+      const existingUsers = await User.count();
+      if (existingUsers > 0) {
+        console.log('ℹ️ В базе уже есть пользователи. Для полной пересборки запустите: npm run reset-db');
         return;
       }
     }
 
-    // Создание ролей
-    console.log('👥 Создание ролей...');
-    const roles = await Role.bulkCreate([
-      {
-        name: 'user',
-        description: 'Обычный пользователь',
-        permissions: JSON.stringify({
-          view_profile: true,
-          edit_own_profile: true,
-          create_habit: true,
-          edit_own_habit: true,
-          delete_own_habit: true,
-          view_achievements: true
-        })
-      },
-      {
-        name: 'moderator',
-        description: 'Модератор привычек и достижений',
-        permissions: JSON.stringify({
-          view_profile: true,
-          edit_own_profile: true,
-          create_habit: true,
-          edit_own_habit: true,
-          delete_own_habit: true,
-          view_achievements: true,
-          view_all_habits: true,
-          edit_any_habit: true,
-          delete_any_habit: true,
-          create_achievement: true,
-          edit_achievement: true,
-          delete_achievement: true,
-          assign_achievement: true
-        })
-      },
-      {
-        name: 'admin',
-        description: 'Администратор системы',
-        permissions: JSON.stringify({
-          view_profile: true,
-          edit_own_profile: true,
-          create_habit: true,
-          edit_own_habit: true,
-          delete_own_habit: true,
-          view_achievements: true,
-          view_all_habits: true,
-          edit_any_habit: true,
-          delete_any_habit: true,
-          create_achievement: true,
-          edit_achievement: true,
-          delete_achievement: true,
-          assign_achievement: true,
-          view_all_users: true,
-          edit_user_role: true,
-          delete_user: true,
-          ban_user: true,
-          view_system_logs: true,
-          manage_roles: true,
-          manage_settings: true
-        })
+    // Создание/обновление базовых ролей
+    console.log('👥 Подготовка ролей...');
+    await ensureDefaultRoles();
+    const roles = await Role.findAll({
+      where: {
+        name: {
+          [Op.in]: ['user', 'moderator', 'admin']
+        }
       }
-    ]);
-    console.log('✅ Роли созданы');
+    });
+    console.log('✅ Роли подготовлены');
 
     // Создание тестовых пользователей
     console.log('👤 Создание тестовых пользователей...');
