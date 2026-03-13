@@ -1,16 +1,30 @@
 const { Sequelize, DataTypes } = require('sequelize');
-const path = require('path');
 
-// Создание экземпляра Sequelize для SQLite
-const sequelize = new Sequelize({
-  dialect: 'sqlite',
-  storage: path.join(__dirname, '..', 'database.sqlite'),
+const DB_NAME = process.env.DB_NAME || 'eco_tracker';
+const DB_USER = process.env.DB_USER || 'maksimkotic';
+const DB_PASSWORD = process.env.DB_PASSWORD || '0909';
+const DB_HOST = process.env.DB_HOST || 'localhost';
+const DB_PORT = Number(process.env.DB_PORT || 5432);
+
+// Создание экземпляра Sequelize для PostgreSQL
+const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
+  host: DB_HOST,
+  port: DB_PORT,
+  dialect: 'postgres',
   logging: process.env.NODE_ENV === 'development' ? console.log : false,
   define: {
     timestamps: true,
     underscored: false,
     paranoid: false
-  }
+  },
+  dialectOptions: process.env.DB_SSL === 'true'
+    ? {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false
+        }
+      }
+    : undefined
 });
 
 // Импорт моделей
