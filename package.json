@@ -8,7 +8,6 @@
     "dev": "nodemon app.js",
     "init-db": "node database/init.js",
     "reset-db": "node database/init.js --force",
-    "migrate:checkins-fk": "echo \"SQLite migration is not needed for PostgreSQL\"",
     "check:syntax": "node --check app.js && node --check controllers/*.js && node --check routes/*.js && node --check middlewares/*.js && node --check models/*.js && node --check database/*.js && node --check utils/*.js",
     "check": "npm run check:syntax"
   },
