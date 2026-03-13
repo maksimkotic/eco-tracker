@@ -8,7 +8,7 @@
     "dev": "nodemon app.js",
     "init-db": "node database/init.js",
     "reset-db": "node database/init.js --force",
-    "migrate:checkins-fk": "sqlite3 database.sqlite < database/migrate-checkins-fk.sql",
+    "migrate:checkins-fk": "echo \"SQLite migration is not needed for PostgreSQL\"",
     "check:syntax": "node --check app.js && node --check controllers/*.js && node --check routes/*.js && node --check middlewares/*.js && node --check models/*.js && node --check database/*.js && node --check utils/*.js",
     "check": "npm run check:syntax"
   },
@@ -24,7 +24,6 @@
   "dependencies": {
     "bcrypt": "^5.1.1",
     "connect-flash": "^0.1.1",
-    "connect-sqlite3": "^0.9.13",
     "date-fns": "^4.1.0",
     "dotenv": "^16.3.1",
     "ejs": "^3.1.9",
@@ -36,7 +35,8 @@
     "method-override": "^3.0.0",
     "multer": "^1.4.5-lts.1",
     "sequelize": "^6.35.0",
-    "sqlite3": "^5.1.6"
+    "pg": "^8.13.1",
+    "pg-hstore": "^2.3.4"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
