@@ -9,7 +9,7 @@ const expressLayouts = require('express-ejs-layouts');
 require('dotenv').config();
 
 const { sequelize } = require('./models');
-const { ensureDefaultRoles } = require('./database/bootstrap');
+const initializeDatabase = require('./database/init');
 const { loadUser } = require('./middlewares/auth');
 
 // Импорт маршрутов
@@ -122,9 +122,8 @@ async function startServer() {
     await ensureDatabase();
     configureApp();
 
-    await sequelize.sync({ force: false });
-    await ensureDefaultRoles();
-    console.log('База данных подключена, синхронизирована и базовые роли подготовлены');
+    await initializeDatabase({ force: false });
+    console.log('База данных подключена и инициализирована');
 
     app.listen(PORT, () => {
       console.log(`Сервер запущен на http://localhost:${PORT}`);
