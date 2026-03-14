@@ -1,6 +1,5 @@
 const { User, Role } = require('../models');
 
-// Проверка авторизации
 const isAuthenticated = (req, res, next) => {
   if (req.session.user) {
     next();
@@ -10,7 +9,6 @@ const isAuthenticated = (req, res, next) => {
   }
 };
 
-// Проверка, что пользователь НЕ авторизован
 const isNotAuthenticated = (req, res, next) => {
   if (!req.session.user) {
     next();
@@ -19,7 +17,6 @@ const isNotAuthenticated = (req, res, next) => {
   }
 };
 
-// Загрузка данных пользователя из БД
 const loadUser = async (req, res, next) => {
   if (req.session.user) {
     try {
@@ -41,13 +38,11 @@ const loadUser = async (req, res, next) => {
         req.currentUser = user;
         res.locals.currentUser = user;
         
-        // Обновляем время последней активности
-        if (Date.now() - new Date(user.lastActive).getTime() > 5 * 60 * 1000) { // 5 минут
+        if (Date.now() - new Date(user.lastActive).getTime() > 5 * 60 * 1000) { 
           user.lastActive = new Date();
           await user.save();
         }
       } else {
-        // Пользователь удален из БД
         req.session.destroy();
       }
     } catch (error) {
@@ -57,7 +52,6 @@ const loadUser = async (req, res, next) => {
   next();
 };
 
-// Проверка токена CSRF (упрощенная версия)
 const csrfProtection = (req, res, next) => {
   if (req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE') {
     const csrfToken = req.body._csrf || req.query._csrf;
@@ -70,7 +64,6 @@ const csrfProtection = (req, res, next) => {
     }
   }
   
-  // Генерация нового токена для следующего запроса
   req.session.csrfToken = require('crypto').randomBytes(32).toString('hex');
   res.locals.csrfToken = req.session.csrfToken;
   

@@ -7,7 +7,6 @@ const DB_HOST = process.env.DB_HOST || 'localhost';
 const DB_PORT = Number(process.env.DB_PORT || 5432);
 const DB_LOGGING = process.env.DB_LOGGING === 'true';
 
-// Создание экземпляра Sequelize для PostgreSQL
 const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
   host: DB_HOST,
   port: DB_PORT,
@@ -28,15 +27,12 @@ const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
     : undefined
 });
 
-// Импорт моделей
 const User = require('./User')(sequelize, DataTypes);
 const Role = require('./Role')(sequelize, DataTypes);
 const Habit = require('./Habit')(sequelize, DataTypes);
 const Achievement = require('./Achievement')(sequelize, DataTypes);
 const UserAchievement = require('./UserAchievement')(sequelize, DataTypes);
 const Checkin = require('./Checkin')(sequelize, DataTypes);
-
-// Определение связей
 
 User.belongsTo(Role, { foreignKey: 'roleId', as: 'Role' });
 Role.hasMany(User, { foreignKey: 'roleId', as: 'Users' });

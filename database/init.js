@@ -11,11 +11,9 @@ async function initializeDatabase(options = {}) {
   console.log('🚀 Начало инициализации базы данных...');
 
   try {
-    // Синхронизация моделей (создание таблиц)
     await sequelize.sync({ force: shouldForceSync });
     console.log(shouldForceSync ? '✅ Таблицы пересозданы успешно' : '✅ Таблицы синхронизированы успешно');
 
-    // При обычной инициализации не дублируем тестовые сиды, если пользователи уже есть
     if (!shouldForceSync) {
       const existingUsers = await User.count();
       if (existingUsers > 0) {
@@ -24,7 +22,6 @@ async function initializeDatabase(options = {}) {
       }
     }
 
-    // Создание/обновление базовых ролей
     console.log('👥 Подготовка ролей...');
     await ensureDefaultRoles();
     const roles = await Role.findAll({
@@ -36,10 +33,8 @@ async function initializeDatabase(options = {}) {
     });
     console.log('✅ Роли подготовлены');
 
-    // Создание тестовых пользователей
     console.log('👤 Создание тестовых пользователей...');
 
-    // Хеширование паролей
     const adminHash = await bcrypt.hash('admin123', 10);
     const moderatorHash = await bcrypt.hash('moderator123', 10);
     const userHash = await bcrypt.hash('user123', 10);
@@ -94,7 +89,6 @@ async function initializeDatabase(options = {}) {
     ]);
     console.log('✅ Пользователи созданы');
 
-    // Создание достижений
     console.log('🏆 Создание достижений...');
     const achievements = await Achievement.bulkCreate([
       {

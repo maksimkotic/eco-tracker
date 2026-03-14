@@ -1,5 +1,5 @@
 const { User, Role } = require('../models');
-// Проверка конкретной роли
+
 const hasRole = (roleName) => {
   return async (req, res, next) => {
     try {
@@ -36,7 +36,7 @@ const hasRole = (roleName) => {
     }
   };
 };
-// Проверка нескольких ролей
+
 const hasAnyRole = (...roles) => {
   return async (req, res, next) => {
     try {

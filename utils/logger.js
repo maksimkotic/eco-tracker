@@ -1,4 +1,3 @@
-// utils/logger.js
 const fs = require('fs').promises;
 const path = require('path');
 const { format } = require('date-fns');

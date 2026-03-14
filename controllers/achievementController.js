@@ -2,12 +2,10 @@ const { Achievement, UserAchievement, User } = require('../models');
 const { Op } = require('sequelize');
 
 const achievementController = {
-  // Показать все достижения пользователя
   index: async (req, res) => {
     try {
       const user = req.currentUser;
 
-      // Получаем все достижения с информацией о получении
       const achievements = await Achievement.findAll({
         include: [{
           model: User,
@@ -26,14 +24,12 @@ const achievementController = {
         ]
       });
 
-      // Группируем достижения
       const earnedAchievements = achievements.filter(a => a.Users && a.Users.length > 0);
       const availableAchievements = achievements.filter(a => 
         !a.Users || a.Users.length === 0
       ).filter(a => !a.isHidden);
       const lockedAchievements = achievements.filter(a => a.isHidden);
 
-      // Статистика
       const earnedCount = earnedAchievements.length;
       const totalCount = achievements.filter(a => !a.isHidden).length;
       const progressPercentage = totalCount > 0 ? Math.round((earnedCount / totalCount) * 100) : 0;
@@ -58,7 +54,6 @@ const achievementController = {
     }
   },
 
-  // Показать детали достижения
   show: async (req, res) => {
     try {
       const achievement = await Achievement.findByPk(req.params.id, {
@@ -79,12 +74,10 @@ const achievementController = {
         return res.redirect('/achievements');
       }
 
-      // Статистика по достижению
       const totalEarned = await UserAchievement.count({
         where: { achievementId: achievement.id }
       });
 
-      // Получаем пользователей, получивших это достижение
       const recentEarners = await UserAchievement.findAll({
         where: { achievementId: achievement.id },
         include: [{
@@ -113,14 +106,12 @@ const achievementController = {
     }
   },
 
-  // Показать лидерборд по достижениям
   leaderboard: async (req, res) => {
     try {
       const page = parseInt(req.query.page) || 1;
       const limit = 20;
       const offset = (page - 1) * limit;
 
-      // Получаем пользователей с количеством достижений и очками
       const { count, rows: users } = await User.findAndCountAll({
         attributes: [
           'id', 'username', 'avatar', 'ecoPoints', 'level',
@@ -138,7 +129,6 @@ const achievementController = {
         offset
       });
 
-      // Получаем топ-3 пользователя
       const topUsers = await User.findAll({
         attributes: ['id', 'username', 'avatar', 'ecoPoints', 'level'],
         where: { isBanned: false },
@@ -161,7 +151,6 @@ const achievementController = {
     }
   },
 
-  // API: Получить прогресс по достижениям (для AJAX)
   getProgress: async (req, res) => {
     try {
       const user = req.currentUser;
@@ -187,7 +176,7 @@ const achievementController = {
             current = user.ecoPoints;
             break;
           case 'days_active':
-            current = user.currentStreak; // Упрощенная логика
+            current = user.currentStreak;
             break;
         }
 

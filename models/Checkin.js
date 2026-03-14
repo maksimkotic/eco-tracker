@@ -1,4 +1,3 @@
-// models/Checkin.js
 module.exports = (sequelize, DataTypes) => {
   const Checkin = sequelize.define('Checkin', {
     id: {
