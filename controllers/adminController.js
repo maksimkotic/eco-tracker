@@ -95,8 +95,8 @@ const adminController = {
 
       if (search) {
         whereCondition[Op.or] = [
-          { username: { [Op.like]: `%${search}%` } },
-          { email: { [Op.like]: `%${search}%` } },
+          { username: { [Op.iLike]: `%${search}%` } },
+          { email: { [Op.iLike]: `%${search}%` } },
         ];
       }
 

@@ -66,8 +66,8 @@ const moderatorController = {
 
       if (search) {
         whereCondition[Op.or] = [
-          { title: { [Op.like]: `%${search}%` } },
-          { description: { [Op.like]: `%${search}%` } }
+          { title: { [Op.iLike]: `%${search}%` } },
+          { description: { [Op.iLike]: `%${search}%` } }
         ];
       }
 

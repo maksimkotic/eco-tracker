@@ -41,7 +41,7 @@ const habitController = {
 
 
       if (search) {
-        whereCondition.title = { [Op.like]: `%${search}%` };
+        whereCondition.title = { [Op.iLike]: `%${search}%` };
       }
 
       const { count, rows: habits } = await Habit.findAndCountAll({
