@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const { Op } = require('sequelize');
 const { sequelize, User, Role, Habit, Achievement, UserAchievement } = require('../models');
-const { ensureDefaultRoles } = require('./bootstrap');
+const { ensureDefaultRoles } = require('./roleobj');
 const bcrypt = require('bcrypt');
 
 async function initializeDatabase(options = {}) {
