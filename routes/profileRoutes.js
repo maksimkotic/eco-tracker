@@ -5,7 +5,6 @@ const path = require('path');
 const profileController = require('../controllers/profileController');
 const { isAuthenticated } = require('../middlewares/auth');
 
-
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, path.join(__dirname, '../public/uploads/avatars'));
@@ -32,19 +31,14 @@ const upload = multer({
   }
 });
 
-
 router.use(isAuthenticated);
 
-
 router.get('/', profileController.show);
-
 
 router.get('/edit', profileController.edit);
 router.put('/', profileController.update);
 
-
 router.delete('/', profileController.destroy);
-
 
 router.post('/avatar', upload.single('avatar'), profileController.uploadAvatar);
 

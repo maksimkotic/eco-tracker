@@ -4,7 +4,6 @@ const { body } = require('express-validator');
 const authController = require('../controllers/authController');
 const { isNotAuthenticated } = require('../middlewares/auth');
 
-
 const registerValidation = [
   body('username')
     .trim()
@@ -34,7 +33,6 @@ const registerValidation = [
     })
 ];
 
-
 const loginValidation = [
   body('email')
     .trim()
@@ -47,14 +45,11 @@ const loginValidation = [
     .withMessage('Введите пароль')
 ];
 
-
 router.get('/register', isNotAuthenticated, authController.showRegisterForm);
 router.post('/register', isNotAuthenticated, registerValidation, authController.register);
 
-
 router.get('/login', isNotAuthenticated, authController.showLoginForm);
 router.post('/login', isNotAuthenticated, loginValidation, authController.login);
-
 
 router.get('/logout', authController.logout);
 

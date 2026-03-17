@@ -1,10 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
-
 router.get('/', (req, res) => {
   if (req.session.user) {
-
     if (req.session.user.role === 'admin') {
       res.redirect('/admin');
     } else if (req.session.user.role === 'moderator') {
@@ -24,13 +22,11 @@ router.get('/', (req, res) => {
   }
 });
 
-
 router.get('/guide', (req, res) => {
   res.render('static/guide', {
     title: 'Как это работает'
   });
 });
-
 
 router.get('/contacts', (req, res) => {
   res.render('static/contacts', {
@@ -51,7 +47,6 @@ router.get('/terms', (req, res) => {
 });
 
 
-
 router.get('/404', (req, res) => {
   res.status(404).render('errors/404', {
     title: 'Страница не найдена'
@@ -63,24 +58,5 @@ router.get('/500', (req, res) => {
     title: 'Ошибка сервера'
   });
 });
-
-
-if (process.env.NODE_ENV === 'development') {
-  router.get('/test-db', async (req, res) => {
-    const { User, Role, Habit, Achievement } = require('../models');
-    const users = await User.count();
-    const roles = await Role.count();
-    const habits = await Habit.count();
-    const achievements = await Achievement.count();
-
-    res.json({
-      users,
-      roles,
-      habits,
-      achievements,
-      dbStatus: 'OK'
-    });
-  });
-}
 
 module.exports = router;

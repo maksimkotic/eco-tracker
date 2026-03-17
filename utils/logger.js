@@ -33,7 +33,6 @@ class Logger {
             ip: details.ip || 'unknown'
         };
 
-
         const logFile = path.join(this.logDir, `system-${format(timestamp, 'yyyy-MM-dd')}.json`);
 
         try {
@@ -41,19 +40,16 @@ class Logger {
             try {
                 const data = await fs.readFile(logFile, 'utf8');
                 logs = JSON.parse(data);
-            } catch (e) {
-
-            }
-
+            } catch (e) {}
+            
             logs.push(logEntry);
             await fs.writeFile(logFile, JSON.stringify(logs, null, 2), 'utf8');
         } catch (error) {
             console.error('Ошибка записи лога:', error);
         }
 
-
         const levelColors = {
-            info: '\x1b[36m',
+            info: '\x1b[36m', 
             warning: '\x1b[33m',
             error: '\x1b[31m',
             critical: '\x1b[41m\x1b[37m'
@@ -73,7 +69,6 @@ class Logger {
             const { dateFrom, dateTo, type, level, showAdminOnly, showModeratorOnly } = filters;
             let allLogs = [];
 
-
             for (let i = 0; i < 7; i++) {
                 const date = new Date();
                 date.setDate(date.getDate() - i);
@@ -83,11 +78,8 @@ class Logger {
                     const data = await fs.readFile(logFile, 'utf8');
                     const logs = JSON.parse(data);
                     allLogs = [...allLogs, ...logs];
-                } catch (e) {
-
-                }
+                } catch (e) {}
             }
-
 
             let filteredLogs = allLogs;
 
@@ -124,8 +116,7 @@ class Logger {
                 );
             }
 
-
-            return filteredLogs.sort((a, b) =>
+            return filteredLogs.sort((a, b) => 
                 new Date(b.timestamp) - new Date(a.timestamp)
             ).slice(0, 100);
         } catch (error) {

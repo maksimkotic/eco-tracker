@@ -187,7 +187,6 @@
   </head>
 
   <body>
-
     <nav class="navbar navbar-expand-lg navbar-dark bg-success shadow-sm">
       <div class="container">
         <a class="navbar-brand" href="/">
@@ -242,7 +241,6 @@
             </li>
           </ul>
 
-
           <ul class="navbar-nav">
             <% if (user) { %>
             <li class="nav-item dropdown">
@@ -288,7 +286,6 @@
       </div>
     </nav>
 
-
     <% if (success && success.length> 0) { %>
     <div class="container mt-3">
       <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -313,9 +310,7 @@
     </div>
     <% } %>
 
-
     <main class="main-content"><%- body %></main>
-
 
     <footer class="footer text-white py-4 mt-4">
       <div class="container">
@@ -559,7 +554,6 @@
         document.getElementById("assignUserId").value = userId;
         document.getElementById("assignUserName").textContent = username;
 
-
         fetch("/moderator/achievements/api/list")
           .then((response) => response.json())
           .then((achievements) => {
@@ -580,11 +574,9 @@
           });
       }
 
-
       setTimeout(() => {
         location.reload();
       }, 60000);
-
 
       document
         .getElementById("subject")
@@ -607,7 +599,6 @@
             "Опишите вашу проблему, вопрос или предложение...";
         });
 
-
       document
         .getElementById("contactForm")
         .addEventListener("submit", function (e) {
@@ -622,24 +613,19 @@
           }
         });
 
-
       document.addEventListener("DOMContentLoaded", function () {
         const colorOptions = document.querySelectorAll(".color-option");
         const colorInput = document.getElementById("color");
 
         colorOptions.forEach((option) => {
           option.addEventListener("click", function () {
-
             colorOptions.forEach((opt) => opt.classList.remove("selected"));
 
-
             this.classList.add("selected");
-
 
             colorInput.value = this.dataset.color;
           });
         });
-
 
         const categorySelect = document.getElementById("category");
         const unitSelect = document.getElementById("unit");
@@ -661,7 +647,6 @@
               unitSelect.value = "times";
           }
         });
-
 
         window.resetHabit = function (habitId, habitTitle) {
           if (
@@ -751,7 +736,6 @@
         }
       }
 
-
       document.addEventListener("DOMContentLoaded", function () {
         const popoverTriggerList = [].slice.call(
           document.querySelectorAll('[data-bs-toggle="popover"]')
@@ -798,7 +782,6 @@
         document.getElementById("filterForm").submit();
       }
 
-
       let autoRefreshInterval;
       document
         .getElementById("autoRefresh")
@@ -810,11 +793,9 @@
           }
         });
 
-
       if (document.getElementById("autoRefresh").checked) {
         autoRefreshInterval = setInterval(refreshLogs, 30000);
       }
-
 
       $(document).ready(function () {
         $("form").submit(function (e) {
@@ -847,7 +828,6 @@
         }
       });
 
-
       document.querySelectorAll(".color-option").forEach((option) => {
         option.addEventListener("click", function () {
           document.querySelectorAll(".color-option").forEach((opt) => {
@@ -862,7 +842,6 @@
       tabEl.forEach((tab) => {
         tab.addEventListener("shown.bs.tab", (event) => {});
       });
-
 
       document
         .getElementById("category")
