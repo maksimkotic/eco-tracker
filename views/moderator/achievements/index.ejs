@@ -1,4 +1,3 @@
-<!-- views/moderator/achievements/index.ejs -->
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -15,7 +14,6 @@
         </div>
     </div>
 
-    <!-- Статистика достижений -->
     <div class="row mb-4">
         <div class="col-md-3">
             <div class="card border-warning border-2">
@@ -57,7 +55,6 @@
         </div>
     </div>
 
-    <!-- Таблица достижений -->
     <div class="card shadow">
         <div class="card-body">
             <% if (achievements.length > 0) { %>
@@ -176,7 +173,6 @@
                                         </a>
                                     </div>
 
-                                    <!-- Модальное окно редактирования достижения -->
                                     <div class="modal fade" id="editAchievementModal<%= achievement.id %>" tabindex="-1">
                                         <div class="modal-dialog">
                                             <div class="modal-content">

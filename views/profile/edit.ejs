@@ -9,7 +9,6 @@
           <form action="/profile" method="POST">
             <input type="hidden" name="_method" value="PUT">
             
-            <!-- Аватар -->
             <div class="text-center mb-4">
               <% if (user.avatar && user.avatar !== 'default-avatar.png') { %>
                 <img src="/uploads/avatars/<%= user.avatar %>" 
@@ -25,7 +24,6 @@
                 </div>
               <% } %>
               
-              <!-- Загрузка аватара -->
               <form action="/profile/avatar" method="POST" enctype="multipart/form-data" class="mb-3">
                 <label for="avatar" class="form-label">Сменить аватар</label>
                 <div class="input-group">
@@ -36,7 +34,6 @@
               </form>
             </div>
             
-            <!-- Основная информация -->
             <div class="mb-3">
               <label for="username" class="form-label">Имя пользователя *</label>
               <input type="text" class="form-control" id="username" name="username" 
@@ -49,7 +46,6 @@
                      value="<%= user.email %>" required>
             </div>
             
-            <!-- Смена пароля -->
             <div class="card border-warning mb-4">
               <div class="card-header bg-warning">
                 <h6 class="mb-0">Смена пароля</h6>
@@ -76,8 +72,7 @@
                 </div>
               </div>
             </div>
-            
-            <!-- Кнопки -->
+
             <div class="d-grid gap-2 d-md-flex justify-content-md-between">
               <a href="/profile" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left"></i> Назад к профилю

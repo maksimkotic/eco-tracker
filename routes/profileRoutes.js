@@ -5,7 +5,6 @@ const path = require('path');
 const profileController = require('../controllers/profileController');
 const { isAuthenticated } = require('../middlewares/auth');
 
-// Настройка Multer для загрузки аватаров
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, path.join(__dirname, '../public/uploads/avatars'));
@@ -32,20 +31,15 @@ const upload = multer({
   }
 });
 
-// Все маршруты требуют авторизации
 router.use(isAuthenticated);
 
-// Профиль пользователя
 router.get('/', profileController.show);
 
-// Редактирование профиля
 router.get('/edit', profileController.edit);
 router.put('/', profileController.update);
 
-// Удаление аккаунта
 router.delete('/', profileController.destroy);
 
-// Загрузка аватара
 router.post('/avatar', upload.single('avatar'), profileController.uploadAvatar);
 
 module.exports = router;

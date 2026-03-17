@@ -1,4 +1,3 @@
-<!-- views/admin/users/index.ejs -->
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -15,7 +14,6 @@
         </div>
     </div>
 
-    <!-- Фильтры -->
     <div class="card shadow mb-4">
         <div class="card-body">
             <form method="GET" class="row g-3">
@@ -50,7 +48,6 @@
         </div>
     </div>
 
-    <!-- Таблица пользователей -->
     <div class="card shadow">
         <div class="card-body">
             <% if (users.length > 0) { %>
@@ -167,7 +164,6 @@
                                         <% } %>
                                     </div>
 
-                                    <!-- Модальное окно смены роли -->
                                     <div class="modal fade" id="changeRoleModal<%= user.id %>" tabindex="-1">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
@@ -213,7 +209,6 @@
                     </table>
                 </div>
 
-                <!-- Пагинация -->
                 <% if (totalPages > 1) { %>
                 <nav aria-label="Пагинация">
                     <ul class="pagination justify-content-center">
@@ -256,7 +251,6 @@
     </div>
 </div>
 
-<!-- Модальное окно создания пользователя -->
 <div class="modal fade" id="createUserModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
