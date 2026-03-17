@@ -74,7 +74,7 @@
                         </thead>
                         <tbody>
                             <% achievements.forEach(achievement => { %>
-                            <tr class="<%= 
+                            <tr class="<%=
                                 achievement.rarity === 'legendary' ? 'table-danger' :
                                 achievement.rarity === 'epic' ? 'table-purple' :
                                 achievement.rarity === 'rare' ? 'table-primary' : ''
@@ -82,7 +82,7 @@
                                 <td><%= achievement.id %></td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <i class="bi bi-<%= achievement.icon || 'trophy' %> text-<%= 
+                                        <i class="bi bi-<%= achievement.icon || 'trophy' %> text-<%=
                                             achievement.rarity === 'legendary' ? 'danger' :
                                             achievement.rarity === 'epic' ? 'purple' :
                                             achievement.rarity === 'rare' ? 'primary' : 'warning'
@@ -102,7 +102,7 @@
                                 </td>
                                 <td>
                                     <small>
-                                        <% 
+                                        <%
                                         let conditionText = '';
                                         switch(achievement.conditionType) {
                                             case 'streak':
@@ -134,12 +134,12 @@
                                     <span class="badge bg-success">+<%= achievement.points %></span>
                                 </td>
                                 <td>
-                                    <span class="badge bg-<%= 
+                                    <span class="badge bg-<%=
                                         achievement.rarity === 'legendary' ? 'danger' :
                                         achievement.rarity === 'epic' ? 'purple' :
                                         achievement.rarity === 'rare' ? 'primary' : 'warning'
                                     %>">
-                                        <%= 
+                                        <%=
                                             achievement.rarity === 'legendary' ? 'Легендарное' :
                                             achievement.rarity === 'epic' ? 'Эпическое' :
                                             achievement.rarity === 'rare' ? 'Редкое' : 'Обычное'
@@ -158,16 +158,16 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary" 
-                                                data-bs-toggle="modal" 
+                                        <button class="btn btn-outline-primary"
+                                                data-bs-toggle="modal"
                                                 data-bs-target="#editAchievementModal<%= achievement.id %>">
                                             <i class="bi bi-pencil"></i>
                                         </button>
-                                        <button class="btn btn-outline-danger" 
+                                        <button class="btn btn-outline-danger"
                                                 onclick="deleteAchievement(<%= achievement.id %>, '<%= achievement.title %>')">
                                             <i class="bi bi-trash"></i>
                                         </button>
-                                        <a href="/moderator/achievements/assign?achievementId=<%= achievement.id %>" 
+                                        <a href="/moderator/achievements/assign?achievementId=<%= achievement.id %>"
                                            class="btn btn-outline-success" title="Назначить">
                                             <i class="bi bi-person-plus"></i>
                                         </a>
@@ -184,18 +184,18 @@
                                                     <div class="modal-body">
                                                         <div class="mb-3">
                                                             <label class="form-label">Название</label>
-                                                            <input type="text" class="form-control" name="title" 
+                                                            <input type="text" class="form-control" name="title"
                                                                    value="<%= achievement.title %>" required>
                                                         </div>
                                                         <div class="mb-3">
                                                             <label class="form-label">Описание</label>
-                                                            <textarea class="form-control" name="description" 
+                                                            <textarea class="form-control" name="description"
                                                                       rows="2"><%= achievement.description || '' %></textarea>
                                                         </div>
                                                         <div class="row">
                                                             <div class="col-md-6 mb-3">
                                                                 <label class="form-label">Очки</label>
-                                                                <input type="number" class="form-control" name="points" 
+                                                                <input type="number" class="form-control" name="points"
                                                                        value="<%= achievement.points %>" min="1" required>
                                                             </div>
                                                             <div class="col-md-6 mb-3">
@@ -210,7 +210,7 @@
                                                             </div>
                                                         </div>
                                                         <div class="form-check mb-3">
-                                                            <input class="form-check-input" type="checkbox" name="isHidden" 
+                                                            <input class="form-check-input" type="checkbox" name="isHidden"
                                                                    id="isHidden<%= achievement.id %>" <%= achievement.isHidden ? 'checked' : '' %>>
                                                             <label class="form-check-label" for="isHidden<%= achievement.id %>">
                                                                 Скрытое достижение

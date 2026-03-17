@@ -12,7 +12,7 @@ const { sequelize } = require('./models');
 const initializeDatabase = require('./database/init');
 const { loadUser } = require('./middlewares/auth');
 
-// Импорт маршрутов
+
 const indexRoutes = require('./routes/index');
 const authRoutes = require('./routes/authRoutes');
 const habitRoutes = require('./routes/habitRoutes');

@@ -217,7 +217,7 @@ async function initializeDatabase(options = {}) {
     ]);
     console.log('✅ Достижения созданы');
 
-    // Создание привычек для тестовых пользователей
+
     console.log('🌱 Создание тестовых привычек...');
 
     const usersByName = Object.fromEntries(users.map(user => [user.username, user]));
@@ -331,7 +331,7 @@ async function initializeDatabase(options = {}) {
     ]);
     console.log('✅ Привычки созданы');
 
-    // Назначение достижений пользователям
+
     console.log('🎖 Назначение достижений...');
 
     const achievementByTitle = Object.fromEntries(achievements.map(item => [item.title, item]));
@@ -420,7 +420,7 @@ async function initializeDatabase(options = {}) {
   }
 }
 
-// Запуск инициализации
+
 if (require.main === module) {
   initializeDatabase({ force: process.argv.includes('--force') })
     .then(() => process.exit(0))

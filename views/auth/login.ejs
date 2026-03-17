@@ -11,30 +11,30 @@
                             <%= error %>
                         </div>
                     <% } %>
-                    
+
                     <form action="/auth/login" method="POST">
                         <div class="mb-3">
                             <label for="email" class="form-label">Email адрес</label>
-                            <input type="email" class="form-control" id="email" name="email" 
+                            <input type="email" class="form-control" id="email" name="email"
                                    value="<%= oldInput && oldInput.email || '' %>" required>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label for="password" class="form-label">Пароль</label>
                             <input type="password" class="form-control" id="password" name="password" required>
                         </div>
-                        
+
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" id="remember" name="remember">
                             <label class="form-check-label" for="remember">Запомнить меня</label>
                         </div>
-                        
+
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-success btn-lg">
                                 <i class="bi bi-key"></i> Войти
                             </button>
                         </div>
-                        
+
                         <div class="text-center mt-4">
                             <p>Нет аккаунта? <a href="/auth/register">Зарегистрируйтесь здесь</a></p>
                         </div>

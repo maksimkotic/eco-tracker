@@ -7,7 +7,7 @@
             <p class="text-muted mb-0">Управление привычками и достижениями пользователей</p>
         </div>
         <div class="dropdown">
-            <button class="btn btn-outline-warning dropdown-toggle" type="button" 
+            <button class="btn btn-outline-warning dropdown-toggle" type="button"
                     data-bs-toggle="dropdown">
                 <i class="bi bi-person-check"></i> <%= user.username %>
             </button>
@@ -117,7 +117,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="row">
         <div class="col-md-8">
             <div class="card shadow mb-4">
@@ -149,9 +149,9 @@
                                         <td><%= habit.id %></td>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <div class="color-indicator me-2" 
+                                                <div class="color-indicator me-2"
                                                      style="width: 10px; height: 10px; background-color: <%= habit.color || '#28a745' %>;"></div>
-                                                <span class="text-truncate" style="max-width: 150px;" 
+                                                <span class="text-truncate" style="max-width: 150px;"
                                                       title="<%= habit.title %>">
                                                     <%= habit.title %>
                                                 </span>
@@ -160,7 +160,7 @@
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 <% if (habit.User && habit.User.avatar) { %>
-                                                <img src="/uploads/avatars/<%= habit.User.avatar %>" 
+                                                <img src="/uploads/avatars/<%= habit.User.avatar %>"
                                                      width="24" height="24" class="rounded-circle me-2">
                                                 <% } else { %>
                                                 <i class="bi bi-person-circle me-2"></i>
@@ -169,13 +169,13 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="badge bg-<%= 
-                                                habit.category === 'water' ? 'primary' : 
-                                                habit.category === 'energy' ? 'warning' : 
-                                                habit.category === 'waste' ? 'danger' : 'success' 
+                                            <span class="badge bg-<%=
+                                                habit.category === 'water' ? 'primary' :
+                                                habit.category === 'energy' ? 'warning' :
+                                                habit.category === 'waste' ? 'danger' : 'success'
                                             %>">
-                                                <%= habit.category === 'water' ? 'Вода' : 
-                                                   habit.category === 'energy' ? 'Энергия' : 
+                                                <%= habit.category === 'water' ? 'Вода' :
+                                                   habit.category === 'energy' ? 'Энергия' :
                                                    habit.category === 'waste' ? 'Отходы' : 'Прочее' %>
                                             </span>
                                         </td>
@@ -188,18 +188,18 @@
                                         </td>
                                         <td>
                                             <div class="btn-group btn-group-sm">
-                                                <a href="/habits/<%= habit.id %>" 
-                                                   class="btn btn-outline-primary" 
+                                                <a href="/habits/<%= habit.id %>"
+                                                   class="btn btn-outline-primary"
                                                    title="Просмотреть">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
-                                                <a href="/moderator/habits/<%= habit.id %>/edit" 
-                                                   class="btn btn-outline-warning" 
+                                                <a href="/moderator/habits/<%= habit.id %>/edit"
+                                                   class="btn btn-outline-warning"
                                                    title="Редактировать">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
-                                                <button type="button" 
-                                                        class="btn btn-outline-danger" 
+                                                <button type="button"
+                                                        class="btn btn-outline-danger"
                                                         title="Удалить"
                                                         onclick="confirmDeleteHabit(<%= habit.id %>, '<%= habit.title %>')">
                                                     <i class="bi bi-trash"></i>
@@ -231,17 +231,17 @@
                         <h6>Быстрый поиск:</h6>
                         <form action="/moderator/habits" method="GET" class="mb-3">
                             <div class="input-group">
-                                <input type="text" class="form-control" name="search" 
+                                <input type="text" class="form-control" name="search"
                                        placeholder="Поиск привычек...">
                                 <button class="btn btn-outline-primary" type="submit">
                                     <i class="bi bi-search"></i>
                                 </button>
                             </div>
                         </form>
-                        
+
                         <form action="/moderator/achievements/assign" method="GET">
                             <div class="input-group">
-                                <input type="text" class="form-control" name="userSearch" 
+                                <input type="text" class="form-control" name="userSearch"
                                        placeholder="Поиск пользователя...">
                                 <button class="btn btn-outline-warning" type="submit">
                                     <i class="bi bi-person-plus"></i>

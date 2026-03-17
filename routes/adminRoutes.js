@@ -36,12 +36,12 @@ router.get('/roles/:id/edit', adminController.editRole);
 router.put('/roles/:id', adminController.updateRole);
 router.delete('/roles/:id', adminController.deleteRole);
 
-// Логи
-// router.get('/logs/api', adminController.getLogsApi);
-// router.get('/logs/export', adminController.exportLogs);
 
-// Системные настройки 
-// router.get('/settings', adminController.settings);
-// router.put('/settings', adminController.updateSettings);
+
+
+
+
+
+
 
 module.exports = router;

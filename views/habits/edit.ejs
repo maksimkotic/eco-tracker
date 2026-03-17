@@ -10,16 +10,16 @@
         <div class="card-body p-4">
           <form action="/habits/<%= habit.id %>" method="POST" id="editHabitForm">
             <input type="hidden" name="_method" value="PUT">
-            
-            <!-- Название -->
+
+
             <div class="mb-3">
               <label for="title" class="form-label">Название привычки *</label>
-              <input type="text" class="form-control" id="title" name="title" 
+              <input type="text" class="form-control" id="title" name="title"
                      value="<%= habit.title %>" required>
               <div class="form-text">Короткое и понятное название</div>
             </div>
-            
-            <!-- Категория -->
+
+
             <div class="mb-3">
               <label for="category" class="form-label">Категория *</label>
               <select class="form-select" id="category" name="category" required>
@@ -32,16 +32,16 @@
                 <option value="other" <%= habit.category === 'other' ? 'selected' : '' %>>🌱 Прочее</option>
               </select>
             </div>
-            
-            <!-- Описание -->
+
+
             <div class="mb-3">
               <label for="description" class="form-label">Описание</label>
-              <textarea class="form-control" id="description" name="description" 
+              <textarea class="form-control" id="description" name="description"
                         rows="3" placeholder="Подробнее о вашей привычке..."><%= habit.description || '' %></textarea>
             </div>
-            
+
             <div class="row">
-              <!-- Частота -->
+
               <div class="col-md-6 mb-3">
                 <label for="frequency" class="form-label">Частота выполнения *</label>
                 <select class="form-select" id="frequency" name="frequency" required>
@@ -50,13 +50,13 @@
                   <option value="monthly" <%= habit.frequency === 'monthly' ? 'selected' : '' %>>📊 Ежемесячно</option>
                 </select>
               </div>
-              
-              <!-- Цель -->
+
+
               <div class="col-md-6 mb-3">
                 <label for="targetValue" class="form-label">Цель *</label>
                 <div class="input-group">
-                  <input type="number" class="form-control" id="targetValue" 
-                         name="targetValue" min="1" max="1000" 
+                  <input type="number" class="form-control" id="targetValue"
+                         name="targetValue" min="1" max="1000"
                          value="<%= habit.targetValue %>" required>
                   <select class="form-select" id="unit" name="unit" style="max-width: 120px;">
                     <option value="times" <%= habit.unit === 'times' ? 'selected' : '' %>>раз</option>
@@ -68,35 +68,35 @@
                 </div>
               </div>
             </div>
-            
-            <!-- Цвет -->
+
+
             <div class="mb-4">
               <label class="form-label">Цвет для визуализации</label>
               <div class="d-flex flex-wrap gap-2" id="colorPicker">
-                <div class="color-option <%= habit.color === '#28a745' ? 'selected' : '' %>" 
+                <div class="color-option <%= habit.color === '#28a745' ? 'selected' : '' %>"
                      data-color="#28a745" style="background-color: #28a745;"></div>
-                <div class="color-option <%= habit.color === '#17a2b8' ? 'selected' : '' %>" 
+                <div class="color-option <%= habit.color === '#17a2b8' ? 'selected' : '' %>"
                      data-color="#17a2b8" style="background-color: #17a2b8;"></div>
-                <div class="color-option <%= habit.color === '#007bff' ? 'selected' : '' %>" 
+                <div class="color-option <%= habit.color === '#007bff' ? 'selected' : '' %>"
                      data-color="#007bff" style="background-color: #007bff;"></div>
-                <div class="color-option <%= habit.color === '#6f42c1' ? 'selected' : '' %>" 
+                <div class="color-option <%= habit.color === '#6f42c1' ? 'selected' : '' %>"
                      data-color="#6f42c1" style="background-color: #6f42c1;"></div>
-                <div class="color-option <%= habit.color === '#fd7e14' ? 'selected' : '' %>" 
+                <div class="color-option <%= habit.color === '#fd7e14' ? 'selected' : '' %>"
                      data-color="#fd7e14" style="background-color: #fd7e14;"></div>
-                <div class="color-option <%= habit.color === '#e83e8c' ? 'selected' : '' %>" 
+                <div class="color-option <%= habit.color === '#e83e8c' ? 'selected' : '' %>"
                      data-color="#e83e8c" style="background-color: #e83e8c;"></div>
-                <div class="color-option <%= habit.color === '#20c997' ? 'selected' : '' %>" 
+                <div class="color-option <%= habit.color === '#20c997' ? 'selected' : '' %>"
                      data-color="#20c997" style="background-color: #20c997;"></div>
-                <div class="color-option <%= habit.color === '#ffc107' ? 'selected' : '' %>" 
+                <div class="color-option <%= habit.color === '#ffc107' ? 'selected' : '' %>"
                      data-color="#ffc107" style="background-color: #ffc107;"></div>
               </div>
               <input type="hidden" id="color" name="color" value="<%= habit.color || '#28a745' %>">
             </div>
-            
-            <!-- Статус активности -->
+
+
             <div class="mb-4">
               <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" role="switch" 
+                <input class="form-check-input" type="checkbox" role="switch"
                        id="isActive" name="isActive" <%= habit.isActive ? 'checked' : '' %>>
                 <label class="form-check-label" for="isActive">
                   Привычка активна
@@ -106,8 +106,8 @@
                 Неактивные привычки не отображаются в списках и не учитываются в статистике
               </div>
             </div>
-            
-            <!-- Статистика (только для информации) -->
+
+
             <div class="card border-info mb-4">
               <div class="card-header bg-info text-white">
                 <h6 class="mb-0"><i class="bi bi-graph-up"></i> Текущая статистика</h6>
@@ -129,7 +129,7 @@
                 </div>
                 <div class="text-center mt-2">
                   <small class="text-muted">
-                    Последнее выполнение: 
+                    Последнее выполнение:
                     <% if (habit.lastCompleted) { %>
                       <%= new Date(habit.lastCompleted).toLocaleDateString('ru-RU') %>
                     <% } else { %>
@@ -139,8 +139,8 @@
                 </div>
               </div>
             </div>
-            
-            <!-- Кнопки -->
+
+
             <div class="d-grid gap-2 d-md-flex justify-content-md-between">
               <a href="/habits/<%= habit.id %>" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left"></i> Назад к привычке
@@ -157,8 +157,8 @@
           </form>
         </div>
       </div>
-      
-      <!-- Опасная зона -->
+
+
       <div class="card border-danger mt-4">
         <div class="card-header bg-danger text-white">
           <h6 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Опасная зона</h6>
@@ -175,7 +175,7 @@
               <i class="bi bi-trash"></i> Удалить привычку
             </button>
           </form>
-          <button type="button" class="btn btn-outline-secondary ms-2" 
+          <button type="button" class="btn btn-outline-secondary ms-2"
                   onclick="resetHabit(<%= habit.id %>, '<%= habit.title %>')">
             <i class="bi bi-arrow-clockwise"></i> Сбросить статистику
           </button>

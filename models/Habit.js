@@ -89,7 +89,7 @@ module.exports = (sequelize, DataTypes) => {
     ]
   });
 
-  // Метод для отметки выполнения
+
   Habit.prototype.markCompleted = async function (value = 1, date = new Date()) {
     console.log(`📝 Отмечаем выполнение привычки ${this.id}: ${this.title}`);
 
@@ -100,7 +100,7 @@ module.exports = (sequelize, DataTypes) => {
     this.totalCompletions = totalCompletions + 1;
     this.lastCompleted = date;
 
-    // Обновляем лучшую серию
+
     if (this.currentStreak > (this.bestStreak || 0)) {
       this.bestStreak = this.currentStreak;
     }
@@ -109,7 +109,7 @@ module.exports = (sequelize, DataTypes) => {
 
     console.log(`   📈 Серия: ${currentStreak} → ${this.currentStreak}`);
 
-    // Обновляем серию пользователя
+
     const { User } = require('./index');
     const user = await User.findByPk(this.userId);
     if (user) {
@@ -124,20 +124,20 @@ module.exports = (sequelize, DataTypes) => {
     return this;
   };
 
-  // Метод для сброса серии (если пропущено выполнение)
+
   Habit.prototype.resetStreak = async function () {
     this.currentStreak = 0;
     await this.save();
     return this;
   };
 
-  // Метод для расчета прогресса
+
   Habit.prototype.getProgress = function () {
     const progress = (this.currentStreak / this.targetValue) * 100;
     return Math.min(progress, 100);
   };
 
-  // Ассоциации
+
   Habit.associate = function (models) {
     Habit.belongsTo(models.User, {
       foreignKey: 'userId',

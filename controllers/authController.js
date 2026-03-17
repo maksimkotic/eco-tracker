@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt");
 const { Op } = require("sequelize");
 
 const authController = {
-  // Показать форму регистрации
+
   showRegisterForm: (req, res) => {
     res.render("auth/register", {
       title: "Регистрация",
@@ -13,7 +13,7 @@ const authController = {
     });
   },
 
-  // Обработка регистрации
+
   register: async (req, res) => {
     try {
       const errors = validationResult(req);
@@ -25,7 +25,7 @@ const authController = {
 
       const { username, email, password } = req.body;
 
-      // Проверяем, существует ли пользователь
+
       const existingUser = await User.findOne({
         where: {
           [Op.or]: [{ email: email }, { username: username }],
@@ -41,13 +41,13 @@ const authController = {
         return res.redirect("/auth/register");
       }
 
-      // Получаем роль "user" по умолчанию
+
       const userRole = await Role.findOne({ where: { name: "user" } });
       if (!userRole) {
         throw new Error("Роль пользователя не найдена в системе");
       }
 
-      // Создаем пользователя
+
       const salt = await bcrypt.genSalt(10);
       const passwordHash = await bcrypt.hash(password, salt);
 
@@ -59,7 +59,7 @@ const authController = {
         lastActive: new Date(),
       });
 
-      // Создаем сессию
+
       req.session.user = {
         id: user.id,
         username: user.username,
@@ -80,7 +80,7 @@ const authController = {
     }
   },
 
-  // Показать форму входа
+
   showLoginForm: (req, res) => {
     res.render("auth/login", {
       title: "Вход в систему",
@@ -89,7 +89,7 @@ const authController = {
     });
   },
 
-  // Обработка входа
+
   login: async (req, res) => {
     try {
       const errors = validationResult(req);
@@ -101,7 +101,7 @@ const authController = {
 
       const { email, password, remember } = req.body;
 
-      // Ищем пользователя
+
       const user = await User.findOne({
         where: { email },
         include: [
@@ -118,7 +118,7 @@ const authController = {
         return res.redirect("/auth/login");
       }
 
-      // Проверяем пароль
+
       const isValidPassword = await bcrypt.compare(password, user.passwordHash);
       if (!isValidPassword) {
         req.flash("error", "Неверный email или пароль");
@@ -126,13 +126,13 @@ const authController = {
         return res.redirect("/auth/login");
       }
 
-      // Проверяем, не заблокирован ли пользователь
+
       if (user.isBanned) {
         req.flash("error", "Ваш аккаунт заблокирован");
         return res.redirect("/auth/login");
       }
 
-      // Создаем сессию
+
       req.session.user = {
         id: user.id,
         username: user.username,
@@ -140,18 +140,18 @@ const authController = {
         role: user.Role.name,
       };
 
-      // Настройка куки для "запомнить меня"
+
       if (remember) {
-        req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 дней
+        req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000;
       }
 
-      // Обновляем время последней активности
+
       user.lastActive = new Date();
       await user.save();
 
       req.flash("success", `Добро пожаловать, ${user.username}!`);
 
-      // Перенаправляем в зависимости от роли
+
       if (user.Role.name === "admin") {
         res.redirect("/admin");
       } else if (user.Role.name === "moderator") {
@@ -166,7 +166,7 @@ const authController = {
     }
   },
 
-  // Выход из системы
+
   logout: (req, res) => {
     req.session.destroy((err) => {
       if (err) {

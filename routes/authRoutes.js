@@ -11,19 +11,19 @@ const registerValidation = [
     .withMessage('Имя пользователя должно быть от 3 до 50 символов')
     .matches(/^[a-zA-Z0-9_]+$/)
     .withMessage('Имя пользователя может содержать только буквы, цифры и подчеркивания'),
-  
+
   body('email')
     .trim()
     .isEmail()
     .withMessage('Введите корректный email')
     .normalizeEmail(),
-  
+
   body('password')
     .isLength({ min: 6 })
     .withMessage('Пароль должен быть не менее 6 символов')
     .matches(/\d/)
     .withMessage('Пароль должен содержать хотя бы одну цифру'),
-  
+
   body('confirmPassword')
     .custom((value, { req }) => {
       if (value !== req.body.password) {
@@ -39,7 +39,7 @@ const loginValidation = [
     .isEmail()
     .withMessage('Введите корректный email')
     .normalizeEmail(),
-  
+
   body('password')
     .notEmpty()
     .withMessage('Введите пароль')

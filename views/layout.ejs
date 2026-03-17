@@ -787,7 +787,7 @@
         .getElementById("autoRefresh")
         .addEventListener("change", function (e) {
           if (e.target.checked) {
-            autoRefreshInterval = setInterval(refreshLogs, 30000); // 30 секунд
+            autoRefreshInterval = setInterval(refreshLogs, 30000);
           } else {
             clearInterval(autoRefreshInterval);
           }

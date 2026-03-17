@@ -25,16 +25,16 @@
                 <div class="card-body">
                     <div class="text-center mb-4">
                         <% if (user.avatar) { %>
-                            <img src="/uploads/avatars/<%= user.avatar %>" 
+                            <img src="/uploads/avatars/<%= user.avatar %>"
                                  class="rounded-circle" width="150" height="150">
                         <% } else { %>
-                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto" 
+                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto"
                                  style="width: 150px; height: 150px;">
                                 <i class="bi bi-person text-white" style="font-size: 4rem;"></i>
                             </div>
                         <% } %>
                     </div>
-                    
+
                     <table class="table">
                         <tr>
                             <th>Имя пользователя:</th>
@@ -47,8 +47,8 @@
                         <tr>
                             <th>Роль:</th>
                             <td>
-                                <span class="badge bg-<%= 
-                                    user.Role.name === 'admin' ? 'danger' : 
+                                <span class="badge bg-<%=
+                                    user.Role.name === 'admin' ? 'danger' :
                                     user.Role.name === 'moderator' ? 'warning' : 'primary'
                                 %>">
                                     <%= user.Role.name %>
@@ -87,7 +87,7 @@
                             </td>
                         </tr>
                     </table>
-                    
+
                     <div class="d-grid gap-2 mt-3">
                         <% if (user.id !== currentUser.id) { %>
                             <% if (user.isBanned) { %>
@@ -97,20 +97,20 @@
                                     </button>
                                 </form>
                             <% } else { %>
-                                <form action="/admin/users/<%= user.id %>/ban" method="POST" 
+                                <form action="/admin/users/<%= user.id %>/ban" method="POST"
                                       onsubmit="return confirm('Заблокировать пользователя?')">
                                     <button type="submit" class="btn btn-danger w-100">
                                         <i class="bi bi-lock"></i> Заблокировать
                                     </button>
                                 </form>
                             <% } %>
-                            
-                            <button type="button" class="btn btn-warning w-100" 
+
+                            <button type="button" class="btn btn-warning w-100"
                                     onclick="resetPassword(<%= user.id %>, '<%= user.username %>')">
                                 <i class="bi bi-key"></i> Сбросить пароль
                             </button>
-                            
-                            <button type="button" class="btn btn-danger w-100" 
+
+                            <button type="button" class="btn btn-danger w-100"
                                     onclick="deleteUser(<%= user.id %>, '<%= user.username %>')">
                                 <i class="bi bi-trash"></i> Удалить аккаунт
                             </button>
@@ -176,7 +176,7 @@
                                         <td><%= habit.id %></td>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <div class="color-indicator me-2" 
+                                                <div class="color-indicator me-2"
                                                      style="width: 10px; height: 10px; background-color: <%= habit.color || '#28a745' %>;"></div>
                                                 <a href="/habits/<%= habit.id %>" class="text-decoration-none">
                                                     <%= habit.title %>
@@ -184,13 +184,13 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="badge bg-<%= 
-                                                habit.category === 'water' ? 'primary' : 
-                                                habit.category === 'energy' ? 'warning' : 
+                                            <span class="badge bg-<%=
+                                                habit.category === 'water' ? 'primary' :
+                                                habit.category === 'energy' ? 'warning' :
                                                 habit.category === 'waste' ? 'danger' : 'success'
                                             %>">
-                                                <%= habit.category === 'water' ? 'Вода' : 
-                                                   habit.category === 'energy' ? 'Энергия' : 
+                                                <%= habit.category === 'water' ? 'Вода' :
+                                                   habit.category === 'energy' ? 'Энергия' :
                                                    habit.category === 'waste' ? 'Отходы' : 'Прочее' %>
                                             </span>
                                         </td>
@@ -246,11 +246,11 @@
                 <div class="card-body">
                     <% if (user.UserAchievements && user.UserAchievements.length > 0) { %>
                         <div class="row">
-                            <% user.UserAchievements.forEach(ua => { 
+                            <% user.UserAchievements.forEach(ua => {
                                 const achievement = ua.Achievement;
                             %>
                             <div class="col-md-6 mb-3">
-                                <div class="card border-<%= 
+                                <div class="card border-<%=
                                     achievement.rarity === 'legendary' ? 'danger' :
                                     achievement.rarity === 'epic' ? 'purple' :
                                     achievement.rarity === 'rare' ? 'primary' : 'success'
@@ -258,7 +258,7 @@
                                     <div class="card-body">
                                         <div class="d-flex align-items-center">
                                             <div class="me-3">
-                                                <i class="bi bi-<%= achievement.icon || 'trophy' %> display-6 text-<%= 
+                                                <i class="bi bi-<%= achievement.icon || 'trophy' %> display-6 text-<%=
                                                     achievement.rarity === 'legendary' ? 'danger' :
                                                     achievement.rarity === 'epic' ? 'purple' :
                                                     achievement.rarity === 'rare' ? 'primary' : 'success'
@@ -291,7 +291,7 @@
                         <div class="text-center py-4">
                             <i class="bi bi-trophy" style="font-size: 3rem; color: #ccc;"></i>
                             <p class="mt-3">У пользователя нет достижений</p>
-                            <button type="button" class="btn btn-warning btn-sm" 
+                            <button type="button" class="btn btn-warning btn-sm"
                                     onclick="assignAchievement(<%= user.id %>, '<%= user.username %>')">
                                 <i class="bi bi-person-plus"></i> Назначить достижение
                             </button>
@@ -317,7 +317,7 @@
                     <div class="mb-3">
                         <label class="form-label">Достижение</label>
                         <select class="form-select" name="achievementId" required>
-                            <!-- Заполнится через JavaScript -->
+
                         </select>
                     </div>
                 </div>

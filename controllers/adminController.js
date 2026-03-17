@@ -5,7 +5,7 @@ const {
   UserAchievement,
   Achievement,
   Checkin,
-  sequelize // Добавьте это
+  sequelize
 } = require("../models");
 const { Op } = require("sequelize");
 const bcrypt = require("bcrypt");
@@ -15,10 +15,10 @@ const wantsJson = (req) =>
   req.xhr || (typeof req.get === 'function' && (req.get('accept') || '').includes('json'));
 
 const adminController = {
-  // Панель администратора
+
   dashboard: async (req, res) => {
     try {
-      // Основная статистика
+
       const stats = {
         totalUsers: await User.count(),
         newUsersToday: await User.count({
@@ -39,7 +39,7 @@ const adminController = {
         usersByRole: {},
       };
 
-      // Статистика по ролям
+
       const roles = await Role.findAll();
       for (const role of roles) {
         stats.usersByRole[role.name] = await User.count({
@@ -47,7 +47,7 @@ const adminController = {
         });
       }
 
-      // Последние пользователи
+
       const recentUsers = await User.findAll({
         include: [
           {
@@ -59,7 +59,7 @@ const adminController = {
         limit: 10,
       });
 
-      // Информация о системе
+
       const systemInfo = {
         startDate: "2024-01-01",
         dbSize: "~5 MB",
@@ -80,7 +80,7 @@ const adminController = {
     }
   },
 
-  // Управление пользователями
+
   usersIndex: async (req, res) => {
     try {
       const page = parseInt(req.query.page) || 1;
@@ -92,7 +92,7 @@ const adminController = {
 
       let whereCondition = {};
 
-      // Поиск
+
       if (search) {
         whereCondition[Op.or] = [
           { username: { [Op.like]: `%${search}%` } },
@@ -100,7 +100,7 @@ const adminController = {
         ];
       }
 
-      // Фильтр по роли
+
       if (roleFilter && roleFilter !== "all") {
         const role = await Role.findOne({ where: { name: roleFilter } });
         if (role) {
@@ -108,7 +108,7 @@ const adminController = {
         }
       }
 
-      // Фильтр по статусу
+
       if (statusFilter === "active") {
         whereCondition.lastActive = {
           [Op.gte]: new Date(new Date() - 7 * 24 * 60 * 60 * 1000),
@@ -153,7 +153,7 @@ const adminController = {
     }
   },
 
-  // Детали пользователя
+
   showUser: async (req, res) => {
     try {
       const user = await User.findByPk(req.params.id, {
@@ -189,7 +189,7 @@ const adminController = {
         return res.redirect("/admin/users");
       }
 
-      // Статистика пользователя
+
       const stats = {
         totalHabits: await Habit.count({ where: { userId: user.id } }),
         activeHabits: await Habit.count({
@@ -198,7 +198,7 @@ const adminController = {
         totalAchievements: await UserAchievement.count({
           where: { userId: user.id },
         }),
-        totalCheckins: 0, // Здесь можно добавить подсчет отметок выполнения
+        totalCheckins: 0,
       };
 
       const roles = await Role.findAll();
@@ -216,7 +216,7 @@ const adminController = {
     }
   },
 
-  // Изменение роли пользователя
+
   updateUserRole: async (req, res) => {
     try {
       const { roleId } = req.body;
@@ -230,7 +230,7 @@ const adminController = {
         return res.redirect("/admin/users");
       }
 
-      // Нельзя изменить роль самого себя
+
       if (user.id === req.currentUser.id) {
         req.flash("error", "Нельзя изменить свою собственную роль");
         return res.redirect("/admin/users");
@@ -238,8 +238,8 @@ const adminController = {
 
       await user.update({ roleId });
 
-      // Обновляем сессию пользователя, если он онлайн
-      // В реальном приложении здесь была бы система уведомлений
+
+
 
       console.log(
         `Администратор ${req.currentUser.username} изменил роль пользователя ${user.username} на ${role.name}`
@@ -257,7 +257,7 @@ const adminController = {
     }
   },
 
-  // Блокировка/разблокировка пользователя
+
   toggleBan: async (req, res) => {
     try {
       const user = await User.findByPk(req.params.id);
@@ -267,7 +267,7 @@ const adminController = {
         return res.redirect("/admin/users");
       }
 
-      // Нельзя заблокировать самого себя
+
       if (user.id === req.currentUser.id) {
         req.flash("error", "Нельзя заблокировать свой собственный аккаунт");
         return res.redirect("/admin/users");
@@ -276,9 +276,9 @@ const adminController = {
       const newStatus = !user.isBanned;
       await user.update({ isBanned: newStatus });
 
-      // Если пользователь заблокирован, завершаем его сессии
+
       if (newStatus) {
-        // В реальном приложении здесь была бы очистка активных сессий
+
       }
 
       console.log(
@@ -301,7 +301,7 @@ const adminController = {
     }
   },
 
-  // Сброс пароля пользователя
+
   resetPassword: async (req, res) => {
     try {
       const user = await User.findByPk(req.params.id);
@@ -311,10 +311,10 @@ const adminController = {
         return res.redirect("/admin/users");
       }
 
-      // Генерируем временный пароль
+
       const tempPassword = Math.random().toString(36).slice(-8);
 
-      // Устанавливаем новый пароль
+
       user.password = tempPassword;
       await user.save();
 
@@ -322,7 +322,7 @@ const adminController = {
         `Администратор ${req.currentUser.username} сбросил пароль пользователя ${user.username}`
       );
 
-      // В реальном приложении здесь была бы отправка email с временным паролем
+
 
       req.flash(
         "success",
@@ -336,7 +336,7 @@ const adminController = {
     }
   },
 
-  // Удаление пользователя
+
   destroyUser: async (req, res) => {
     try {
       const user = await User.findByPk(req.params.id);
@@ -346,7 +346,7 @@ const adminController = {
         return res.redirect("/admin/users");
       }
 
-      // Нельзя удалить самого себя
+
       if (user.id === req.currentUser.id) {
         req.flash("error", "Нельзя удалить свой собственный аккаунт");
         return res.redirect("/admin/users");
@@ -354,16 +354,16 @@ const adminController = {
 
       const username = user.username;
 
-      // Временное отключение проверки внешних ключей
+
       await sequelize.query("PRAGMA foreign_keys = OFF");
 
       try {
-        // 1. Удаляем все checkins пользователя
+
         await Checkin.destroy({
           where: { userId: user.id },
         });
 
-        // 2. Получаем все привычки пользователя и удаляем их checkins
+
         const userHabits = await Habit.findAll({
           where: { userId: user.id },
         });
@@ -374,20 +374,20 @@ const adminController = {
           });
         }
 
-        // 3. Удаляем привычки пользователя
+
         await Habit.destroy({
           where: { userId: user.id },
         });
 
-        // 4. Удаляем достижения пользователя
+
         await UserAchievement.destroy({
           where: { userId: user.id },
         });
 
-        // 5. Удаляем самого пользователя
+
         await user.destroy();
       } finally {
-        // Включаем проверку внешних ключей обратно
+
         await sequelize.query("PRAGMA foreign_keys = ON");
       }
 
@@ -400,17 +400,17 @@ const adminController = {
         `Пользователь ${username} и все его данные успешно удалены`
       );
 
-      // Для AJAX запросов
+
       if (wantsJson(req)) {
         return res.json({ success: true, message: "Пользователь удален" });
       }
 
-      // Для обычных запросов
+
       res.redirect("/admin/users");
     } catch (error) {
       console.error("Ошибка удаления пользователя:", error);
 
-      // Убедимся, что проверка внешних ключей включена
+
       try {
         await sequelize.query("PRAGMA foreign_keys = ON");
       } catch (e) {}
@@ -422,7 +422,7 @@ const adminController = {
           "Ошибка удаления: есть связанные данные. Попробуйте использовать очистку данных перед удалением.";
       }
 
-      // Для AJAX
+
       if (wantsJson(req)) {
         return res.status(500).json({
           success: false,
@@ -430,20 +430,20 @@ const adminController = {
         });
       }
 
-      // Для обычных запросов
+
       req.flash("error", errorMessage);
       res.redirect("/admin/users");
     }
   },
 
-  // Управление ролями
+
   rolesIndex: async (req, res) => {
     try {
       const roles = await Role.findAll({
         order: [["name", "ASC"]],
       });
 
-      // Права доступа для отображения
+
       const permissions = {
         user: [
           "view_profile",
@@ -483,19 +483,19 @@ const adminController = {
     }
   },
 
-  // Создание роли
+
   createRole: async (req, res) => {
     try {
       const { name, description, permissions } = req.body;
 
-      // Проверяем, существует ли роль с таким именем
+
       const existingRole = await Role.findOne({ where: { name } });
       if (existingRole) {
         req.flash("error", "Роль с таким именем уже существует");
         return res.redirect("/admin/roles");
       }
 
-      // Парсим разрешения
+
       const permissionsObj = {};
       if (permissions && Array.isArray(permissions)) {
         permissions.forEach((perm) => {
@@ -522,7 +522,7 @@ const adminController = {
     }
   },
 
-  // Логи системы
+
   showLogs: async (req, res) => {
     try {
       const logs = await logger.getLogs(req.query);
@@ -552,12 +552,12 @@ const adminController = {
     }
   },
 
-  // Создание пользователя (админом)
+
   createUser: async (req, res) => {
     try {
       const { username, email, password, roleId } = req.body;
 
-      // Проверяем существование пользователя
+
       const existingUser = await User.findOne({
         where: { [Op.or]: [{ username }, { email }] },
       });
@@ -570,14 +570,14 @@ const adminController = {
         return res.redirect("/admin/users");
       }
 
-      // Хешируем пароль перед созданием
+
       const passwordHash = await bcrypt.hash(password, 10);
 
-      // Создаем пользователя с хешированным паролем
+
       const user = await User.create({
         username,
         email,
-        passwordHash, // Используем хешированный пароль
+        passwordHash,
         roleId: parseInt(roleId),
         avatar: "default-avatar.png",
       });
@@ -590,20 +590,20 @@ const adminController = {
       res.redirect(`/admin/users/${user.id}`);
     } catch (error) {
       console.error("Ошибка создания пользователя:", error);
-      
-      // Более информативное сообщение об ошибке
+
+
       let errorMessage = "Не удалось создать пользователя";
-      
+
       if (error.name === 'SequelizeValidationError') {
         const messages = error.errors.map(err => err.message);
         errorMessage = `Ошибка валидации: ${messages.join(', ')}`;
       }
-      
+
       req.flash("error", errorMessage);
       res.redirect("/admin/users");
     }
   },
-  // Редактирование пользователя
+
   editUser: async (req, res) => {
     try {
       const user = await User.findByPk(req.params.id, {
@@ -630,7 +630,7 @@ const adminController = {
     }
   },
 
-  // Обновление пользователя
+
   updateUser: async (req, res) => {
     try {
       const { username, email, roleId, ecoPoints, level, isBanned } = req.body;
@@ -643,7 +643,7 @@ const adminController = {
         return res.redirect("/admin/users");
       }
 
-      // Нельзя редактировать самого себя (кроме некоторых полей)
+
       if (user.id === req.currentUser.id) {
         req.flash(
           "error",
@@ -674,7 +674,7 @@ const adminController = {
     }
   },
 
-  // Редактирование роли
+
   editRole: async (req, res) => {
     try {
       const role = await Role.findByPk(req.params.id);
@@ -695,7 +695,7 @@ const adminController = {
     }
   },
 
-  // Обновление роли
+
   updateRole: async (req, res) => {
     try {
       const { name, description, permissions } = req.body;
@@ -708,7 +708,7 @@ const adminController = {
         return res.redirect("/admin/roles");
       }
 
-      // Парсим разрешения
+
       const permissionsObj = {};
       if (permissions && Array.isArray(permissions)) {
         permissions.forEach((perm) => {
@@ -735,7 +735,7 @@ const adminController = {
     }
   },
 
-  // Удаление роли
+
   deleteRole: async (req, res) => {
     try {
       const role = await Role.findByPk(req.params.id);
@@ -745,13 +745,13 @@ const adminController = {
         return res.redirect("/admin/roles");
       }
 
-      // Нельзя удалить стандартные роли
+
       if (["user", "moderator", "admin"].includes(role.name)) {
         req.flash("error", "Нельзя удалить стандартную роль");
         return res.redirect("/admin/roles");
       }
 
-      // Переводим всех пользователей с этой ролью в роль "user"
+
       const userRole = await Role.findOne({ where: { name: "user" } });
       await User.update(
         { roleId: userRole.id },
@@ -776,11 +776,11 @@ const adminController = {
     }
   },
 
-  // API для получения логов (реальная реализация)
+
   getLogsApi: async (req, res) => {
     try {
-      // В реальном приложении здесь была бы загрузка логов из БД или файлов
-      const logs = await getSystemLogs(req.query); // Предполагаемая функция
+
+      const logs = await getSystemLogs(req.query);
 
       res.json({
         success: true,
@@ -796,13 +796,13 @@ const adminController = {
     }
   },
 
-  // Экспорт логов
+
   exportLogs: async (req, res) => {
     try {
-      const logs = await getSystemLogs(req.query); // Предполагаемая функция
+      const logs = await getSystemLogs(req.query);
 
-      // Формируем CSV
-      const csv = convertToCSV(logs); // Предполагаемая функция
+
+      const csv = convertToCSV(logs);
 
       res.header("Content-Type", "text/csv");
       res.attachment(`logs-${new Date().toISOString().split("T")[0]}.csv`);

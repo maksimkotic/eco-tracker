@@ -45,12 +45,12 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Дата с</label>
-                    <input type="date" class="form-control" name="dateFrom" 
+                    <input type="date" class="form-control" name="dateFrom"
                            value="<%= new Date().toISOString().split('T')[0] %>">
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Дата по</label>
-                    <input type="date" class="form-control" name="dateTo" 
+                    <input type="date" class="form-control" name="dateTo"
                            value="<%= new Date().toISOString().split('T')[0] %>">
                 </div>
                 <div class="col-12">
@@ -107,9 +107,9 @@
                         </thead>
                         <tbody>
                             <% logs.forEach(log => { %>
-                            <tr class="<%= 
-                                log.level === 'critical' ? 'table-danger' : 
-                                log.level === 'error' ? 'table-warning' : 
+                            <tr class="<%=
+                                log.level === 'critical' ? 'table-danger' :
+                                log.level === 'error' ? 'table-warning' :
                                 log.level === 'warning' ? 'table-info' : ''
                             %>">
                                 <td>
@@ -122,7 +122,7 @@
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <% if (log.user && log.user.avatar) { %>
-                                            <img src="/uploads/avatars/<%= log.user.avatar %>" 
+                                            <img src="/uploads/avatars/<%= log.user.avatar %>"
                                                  width="24" height="24" class="rounded-circle me-2">
                                         <% } else { %>
                                             <i class="bi bi-person-circle me-2"></i>
@@ -135,8 +135,8 @@
                                 </td>
                                 <td>
                                     <% if (log.user && log.user.role) { %>
-                                    <span class="badge bg-<%= 
-                                        log.user.role === 'admin' ? 'danger' : 
+                                    <span class="badge bg-<%=
+                                        log.user.role === 'admin' ? 'danger' :
                                         log.user.role === 'moderator' ? 'warning' : 'primary'
                                     %>">
                                         <%= log.user.role %>
@@ -146,13 +146,13 @@
                                     <% } %>
                                 </td>
                                 <td>
-                                    <span class="badge bg-<%= 
-                                        log.level === 'critical' ? 'danger' : 
-                                        log.level === 'error' ? 'warning' : 
+                                    <span class="badge bg-<%=
+                                        log.level === 'critical' ? 'danger' :
+                                        log.level === 'error' ? 'warning' :
                                         log.level === 'warning' ? 'info' : 'secondary'
                                     %>">
-                                        <%= log.level === 'critical' ? 'Критично' : 
-                                           log.level === 'error' ? 'Ошибка' : 
+                                        <%= log.level === 'critical' ? 'Критично' :
+                                           log.level === 'error' ? 'Ошибка' :
                                            log.level === 'warning' ? 'Предупреждение' : 'Информация' %>
                                     </span>
                                 </td>
@@ -160,9 +160,9 @@
                                     <code><%= log.action %></code>
                                 </td>
                                 <td>
-                                    <button class="btn btn-sm btn-outline-info" 
+                                    <button class="btn btn-sm btn-outline-info"
                                             type="button"
-                                            data-bs-toggle="collapse" 
+                                            data-bs-toggle="collapse"
                                             data-bs-target="#details<%= log.id || log.timestamp %>">
                                         <i class="bi bi-eye"></i> Показать
                                     </button>

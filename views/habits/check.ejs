@@ -8,30 +8,30 @@
                     </h3>
                 </div>
                 <div class="card-body p-4">
-                    <!-- Информация о привычке -->
+
                     <div class="card border-0 bg-light mb-4">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
                                 <div class="me-3">
-                                    <div class="color-indicator" 
+                                    <div class="color-indicator"
                                          style="width: 40px; height: 40px; background-color:#28a745; border-radius: 10px;"></div>
                                 </div>
                                 <div>
                                     <h5 class="mb-1"><%= habit.title %></h5>
                                     <div class="d-flex flex-wrap gap-1">
-                                        <span class="badge bg-<%= 
-                                            habit.category === 'water' ? 'primary' : 
-                                            habit.category === 'energy' ? 'warning' : 
-                                            habit.category === 'waste' ? 'danger' : 
-                                            habit.category === 'transport' ? 'info' : 'success' 
+                                        <span class="badge bg-<%=
+                                            habit.category === 'water' ? 'primary' :
+                                            habit.category === 'energy' ? 'warning' :
+                                            habit.category === 'waste' ? 'danger' :
+                                            habit.category === 'transport' ? 'info' : 'success'
                                         %>">
-                                            <%= habit.category === 'water' ? '💧 Вода' : 
-                                               habit.category === 'energy' ? '⚡ Энергия' : 
-                                               habit.category === 'waste' ? '🗑️ Отходы' : 
+                                            <%= habit.category === 'water' ? '💧 Вода' :
+                                               habit.category === 'energy' ? '⚡ Энергия' :
+                                               habit.category === 'waste' ? '🗑️ Отходы' :
                                                habit.category === 'transport' ? '🚗 Транспорт' : '🌱 Прочее' %>
                                         </span>
                                         <span class="badge bg-secondary">
-                                            <%= habit.frequency === 'daily' ? 'Ежедневно' : 
+                                            <%= habit.frequency === 'daily' ? 'Ежедневно' :
                                                habit.frequency === 'weekly' ? 'Еженедельно' : 'Ежемесячно' %>
                                         </span>
                                     </div>
@@ -39,8 +39,8 @@
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Текущий прогресс -->
+
+
                     <div class="mb-4">
                         <h6>Текущий прогресс</h6>
                         <div class="d-flex justify-content-between mb-1">
@@ -52,8 +52,8 @@
                             <small><strong><%= Math.min(((habit.currentStreak || 0) / habit.targetValue) * 100, 100).toFixed(1) %>%</strong> от цели</small>
                         </div>
                     </div>
-                    
-                    <!-- Серия подряд -->
+
+
                     <div class="alert alert-info mb-4">
                         <div class="d-flex justify-content-between">
                             <div>
@@ -68,19 +68,19 @@
                             <% } %>
                         </div>
                     </div>
-                    
-                    <!-- Форма отметки -->
+
+
                     <form action="/habits/<%= habit.id %>/check" method="POST">
                         <div class="mb-4">
                             <label for="value" class="form-label">
-                                Сколько <%= habit.unit %> вы <%= 
-                                    habit.category === 'water' ? 'сэкономили' : 
-                                    habit.category === 'energy' ? 'сберегли' : 
-                                    habit.category === 'waste' ? 'переработали' : 'сделали' 
+                                Сколько <%= habit.unit %> вы <%=
+                                    habit.category === 'water' ? 'сэкономили' :
+                                    habit.category === 'energy' ? 'сберегли' :
+                                    habit.category === 'waste' ? 'переработали' : 'сделали'
                                 %> сегодня? *
                             </label>
                             <div class="input-group input-group-lg">
-                                <input type="number" class="form-control" id="value" name="value" 
+                                <input type="number" class="form-control" id="value" name="value"
                                        min="1" max="1000" value="1" required>
                                 <span class="input-group-text"><%= habit.unit %></span>
                             </div>
@@ -88,37 +88,37 @@
                                 Минимум: 1 <%= habit.unit %>, максимум: 1000 <%= habit.unit %>
                             </div>
                         </div>
-                        
-                        <!-- Быстрый выбор -->
+
+
                         <div class="mb-4">
                             <label class="form-label">Быстрый выбор:</label>
                             <div class="d-flex flex-wrap gap-2">
                                 <% const quickValues = [1, 5, 10, 25, 50]; %>
                                 <% quickValues.forEach(val => { %>
-                                    <button type="button" class="btn btn-outline-success quick-value" 
+                                    <button type="button" class="btn btn-outline-success quick-value"
                                             data-value="<%= val %>">
                                         <%= val %> <%= habit.unit %>
                                     </button>
                                 <% }); %>
                             </div>
                         </div>
-                        
-                        <!-- Дата выполнения -->
+
+
                         <div class="mb-4">
                             <label for="date" class="form-label">Дата выполнения</label>
-                            <input type="date" class="form-control" id="date" name="date" 
+                            <input type="date" class="form-control" id="date" name="date"
                                    value="<%= new Date().toISOString().split('T')[0] %>" max="<%= new Date().toISOString().split('T')[0] %>">
                             <div class="form-text">Можно отметить выполнение за прошедшие дни</div>
                         </div>
-                        
-                        <!-- Примечание -->
+
+
                         <div class="mb-4">
                             <label for="notes" class="form-label">Примечание (необязательно)</label>
-                            <textarea class="form-control" id="notes" name="notes" rows="3" 
+                            <textarea class="form-control" id="notes" name="notes" rows="3"
                                       placeholder="Что сегодня было особенным? Какие были трудности?"></textarea>
                         </div>
-                        
-                        <!-- Кнопки -->
+
+
                         <div class="d-grid gap-2 d-md-flex justify-content-md-between">
                             <a href="/habits/<%= habit.id %>" class="btn btn-outline-secondary">
                                 <i class="bi bi-arrow-left"></i> Назад к привычке
@@ -130,8 +130,8 @@
                     </form>
                 </div>
             </div>
-            
-            <!-- Информация о влиянии -->
+
+
             <div class="card shadow mt-4">
                 <div class="card-header bg-info text-white">
                     <h6 class="mb-0"><i class="bi bi-globe"></i> Ваше влияние на экологию</h6>
@@ -140,29 +140,29 @@
                     <% let impact = 0; %>
                     <% let impactUnit = ''; %>
                     <% let impactDescription = ''; %>
-                    
-                    <% switch(habit.category) { 
-                        case 'water': 
-                            impact = 10; 
-                            impactUnit = 'литров воды'; 
-                            impactDescription = 'Экономия воды помогает сохранить пресноводные ресурсы'; 
+
+                    <% switch(habit.category) {
+                        case 'water':
+                            impact = 10;
+                            impactUnit = 'литров воды';
+                            impactDescription = 'Экономия воды помогает сохранить пресноводные ресурсы';
                             break;
-                        case 'energy': 
-                            impact = 0.5; 
-                            impactUnit = 'кг CO₂'; 
-                            impactDescription = 'Снижение выбросов углекислого газа'; 
+                        case 'energy':
+                            impact = 0.5;
+                            impactUnit = 'кг CO₂';
+                            impactDescription = 'Снижение выбросов углекислого газа';
                             break;
-                        case 'waste': 
-                            impact = 0.2; 
-                            impactUnit = 'кг отходов'; 
-                            impactDescription = 'Предотвращение попадания отходов на свалки'; 
+                        case 'waste':
+                            impact = 0.2;
+                            impactUnit = 'кг отходов';
+                            impactDescription = 'Предотвращение попадания отходов на свалки';
                             break;
-                        default: 
-                            impact = 1; 
-                            impactUnit = 'эко-очков'; 
-                            impactDescription = 'Положительное влияние на окружающую среду'; 
+                        default:
+                            impact = 1;
+                            impactUnit = 'эко-очков';
+                            impactDescription = 'Положительное влияние на окружающую среду';
                     } %>
-                    
+
                     <p>Каждое выполнение этой привычки экономит примерно <strong><%= impact %> <%= impactUnit %></strong>.</p>
                     <p class="small text-muted mb-0"><%= impactDescription %></p>
                 </div>
@@ -172,18 +172,18 @@
 </div>
 
 <script>
-// Быстрый выбор значения
+
 document.querySelectorAll('.quick-value').forEach(button => {
     button.addEventListener('click', function() {
         document.getElementById('value').value = this.dataset.value;
     });
 });
 
-// Проверка максимального значения
+
 document.getElementById('value').addEventListener('change', function() {
     const max = parseInt(this.max);
     const value = parseInt(this.value);
-    
+
     if (value > max) {
         this.value = max;
         alert(`Максимальное значение: ${max} ${document.querySelector('.input-group-text').textContent}`);

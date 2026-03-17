@@ -16,7 +16,8 @@ router.get('/:id/edit', habitController.edit);
 router.put('/:id', habitController.update);
 
 router.delete('/:id', habitController.destroy);
-router.post('/:id', habitController.destroy);   
+router.post('/:id', habitController.destroy);
+
 
 router.get('/:id/check', habitController.showCheck);
 router.post('/:id/check', habitController.check);

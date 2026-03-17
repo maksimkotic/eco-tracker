@@ -2,10 +2,10 @@ const { Habit, User, Achievement, UserAchievement, Role, Checkin } = require('..
 const { Op } = require('sequelize');
 
 const moderatorController = {
-  // Панель модератора
+
   dashboard: async (req, res) => {
     try {
-      // Статистика
+
       const stats = {
         totalHabits: await Habit.count(),
         activeHabits: await Habit.count({ where: { isActive: true } }),
@@ -20,7 +20,7 @@ const moderatorController = {
         })
       };
 
-      // Последние привычки
+
       const recentHabits = await Habit.findAll({
         include: [{
           model: User,
@@ -31,9 +31,9 @@ const moderatorController = {
         limit: 10
       });
 
-      // Сегодняшняя статистика действий модератора
+
       const todayStats = {
-        editedHabits: 0, // Здесь можно добавить логирование действий
+        editedHabits: 0,
         createdAchievements: 0,
         assignedAchievements: 0
       };
@@ -51,7 +51,7 @@ const moderatorController = {
     }
   },
 
-  // Управление привычками
+
   habitsIndex: async (req, res) => {
     try {
       const page = parseInt(req.query.page) || 1;
@@ -63,7 +63,7 @@ const moderatorController = {
 
       let whereCondition = {};
 
-      // Поиск
+
       if (search) {
         whereCondition[Op.or] = [
           { title: { [Op.like]: `%${search}%` } },
@@ -71,12 +71,12 @@ const moderatorController = {
         ];
       }
 
-      // Фильтр по категории
+
       if (category && category !== 'all') {
         whereCondition.category = category;
       }
 
-      // Фильтр по статусу
+
       if (status === 'active') {
         whereCondition.isActive = true;
       } else if (status === 'inactive') {
@@ -95,7 +95,7 @@ const moderatorController = {
         offset
       });
 
-      // Категории для фильтра
+
       const categories = await Habit.findAll({
         attributes: ['category'],
         group: ['category']
@@ -117,7 +117,7 @@ const moderatorController = {
     }
   },
 
-  // Редактирование чужой привычки
+
   editHabit: async (req, res) => {
     try {
       const habit = await Habit.findByPk(req.params.id, {
@@ -157,7 +157,7 @@ const moderatorController = {
     }
   },
 
-  // Обновление чужой привычки
+
   updateHabit: async (req, res) => {
     try {
       const { title, description, category, frequency, targetValue, unit, isActive } = req.body;
@@ -179,7 +179,7 @@ const moderatorController = {
         isActive: isActive === 'on'
       });
 
-      // Логируем действие
+
       console.log(`Модератор ${req.currentUser.username} отредактировал привычку ${habitId}`);
 
       req.flash('success', 'Привычка успешно обновлена');
@@ -191,11 +191,11 @@ const moderatorController = {
     }
   },
 
-  // Удаление чужой привычки
+
   destroyHabit: async (req, res) => {
     try {
       const habit = await Habit.findByPk(req.params.id);
-      
+
       if (!habit) {
         req.flash('error', 'Привычка не найдена');
         return res.redirect('/moderator/habits');
@@ -209,7 +209,7 @@ const moderatorController = {
 
       await habit.destroy();
 
-      // Логируем действие
+
       console.log(`Модератор ${req.currentUser.username} удалил привычку ${req.params.id}`);
 
       req.flash('success', `Привычка "${habitTitle}" успешно удалена`);
@@ -221,7 +221,7 @@ const moderatorController = {
     }
   },
 
-  // Управление достижениями
+
   achievementsIndex: async (req, res) => {
     try {
       const achievements = await Achievement.findAll({
@@ -231,12 +231,12 @@ const moderatorController = {
         ]
       });
 
-      // Статистика по каждому достижению
+
       const achievementsWithStats = await Promise.all(achievements.map(async (achievement) => {
         const earnedCount = await UserAchievement.count({
           where: { achievementId: achievement.id }
         });
-        
+
         const totalUsers = await User.count();
         const percentage = totalUsers > 0 ? Math.round((earnedCount / totalUsers) * 100) : 0;
 
@@ -258,7 +258,7 @@ const moderatorController = {
     }
   },
 
-  // Создание достижения
+
   createAchievement: (req, res) => {
     res.render('moderator/achievements/create', {
       title: 'Создание достижения',
@@ -277,25 +277,25 @@ const moderatorController = {
         { value: 'legendary', label: 'Легендарное' }
       ],
       icons: [
-        'trophy', 'star', 'award', 'medal', 'crown', 
+        'trophy', 'star', 'award', 'medal', 'crown',
         'gem', 'shield', 'heart', 'seedling', 'recycle'
       ]
     });
   },
 
-  // Сохранение достижения
+
   storeAchievement: async (req, res) => {
     try {
-      const { 
-        title, 
-        description, 
-        icon, 
-        points, 
-        conditionType, 
-        conditionValue, 
+      const {
+        title,
+        description,
+        icon,
+        points,
+        conditionType,
+        conditionValue,
         conditionExtra,
         rarity,
-        isHidden 
+        isHidden
       } = req.body;
 
       const achievement = await Achievement.create({
@@ -310,7 +310,7 @@ const moderatorController = {
         isHidden: isHidden === 'on'
       });
 
-      // Логируем действие
+
       console.log(`Модератор ${req.currentUser.username} создал достижение "${title}"`);
 
       req.flash('success', 'Достижение успешно создано');
@@ -322,7 +322,7 @@ const moderatorController = {
     }
   },
 
-  // Назначение достижения пользователю
+
   assignAchievement: async (req, res) => {
     try {
       const users = await User.findAll({
@@ -348,12 +348,12 @@ const moderatorController = {
     }
   },
 
-  // Обработка назначения достижения
+
   processAssignment: async (req, res) => {
     try {
       const { userId, achievementId } = req.body;
 
-      // Проверяем существование
+
       const user = await User.findByPk(userId);
       const achievement = await Achievement.findByPk(achievementId);
 
@@ -362,7 +362,7 @@ const moderatorController = {
         return res.redirect('/moderator/achievements/assign');
       }
 
-      // Проверяем, нет ли уже такого достижения
+
       const existing = await UserAchievement.findOne({
         where: { userId, achievementId }
       });
@@ -372,10 +372,10 @@ const moderatorController = {
         return res.redirect('/moderator/achievements/assign');
       }
 
-      // Назначаем достижение
+
       await achievement.grantToUser(userId);
 
-      // Логируем действие
+
       console.log(`Модератор ${req.currentUser.username} назначил достижение "${achievement.title}" пользователю ${user.username}`);
 
       req.flash('success', `Достижение "${achievement.title}" успешно назначено пользователю ${user.username}`);

@@ -34,7 +34,7 @@ class Logger {
         };
 
         const logFile = path.join(this.logDir, `system-${format(timestamp, 'yyyy-MM-dd')}.json`);
-        
+
         try {
             let logs = [];
             try {
@@ -54,7 +54,7 @@ class Logger {
             error: '\x1b[31m',
             critical: '\x1b[41m\x1b[37m'
         };
-        
+
         const resetColor = '\x1b[0m';
         console.log(
             `${levelColors[level]}[${format(timestamp, 'HH:mm:ss')}] ${action}${resetColor}`,
@@ -73,7 +73,7 @@ class Logger {
                 const date = new Date();
                 date.setDate(date.getDate() - i);
                 const logFile = path.join(this.logDir, `system-${format(date, 'yyyy-MM-dd')}.json`);
-                
+
                 try {
                     const data = await fs.readFile(logFile, 'utf8');
                     const logs = JSON.parse(data);
@@ -99,19 +99,19 @@ class Logger {
             }
 
             if (type && type !== 'all') {
-                filteredLogs = filteredLogs.filter(log => 
+                filteredLogs = filteredLogs.filter(log =>
                     log.action.toLowerCase().includes(type.toLowerCase())
                 );
             }
 
             if (showAdminOnly) {
-                filteredLogs = filteredLogs.filter(log => 
+                filteredLogs = filteredLogs.filter(log =>
                     log.user && log.user.role === 'admin'
                 );
             }
 
             if (showModeratorOnly) {
-                filteredLogs = filteredLogs.filter(log => 
+                filteredLogs = filteredLogs.filter(log =>
                     log.user && log.user.role === 'moderator'
                 );
             }

@@ -154,9 +154,9 @@
                                         <div class="card-body">
                                             <div class="d-flex justify-content-between align-items-center mb-2">
                                                 <div>
-                                                    <span class="badge bg-<%= 
-                                                    roleName === 'admin' ? 'danger' : 
-                                                    roleName === 'moderator' ? 'warning' : 'primary' 
+                                                    <span class="badge bg-<%=
+                                                    roleName === 'admin' ? 'danger' :
+                                                    roleName === 'moderator' ? 'warning' : 'primary'
                                                 %>">
                                                         <%= roleName==='admin' ? 'Админы' : roleName==='moderator'
                                                             ? 'Модераторы' : roleName==='user' ? 'Пользователи'
@@ -168,9 +168,9 @@
                                                 </div>
                                             </div>
                                             <div class="progress" style="height: 10px;">
-                                                <div class="progress-bar bg-<%= 
-                                                roleName === 'admin' ? 'danger' : 
-                                                roleName === 'moderator' ? 'warning' : 'primary' 
+                                                <div class="progress-bar bg-<%=
+                                                roleName === 'admin' ? 'danger' :
+                                                roleName === 'moderator' ? 'warning' : 'primary'
                                             %>" style="width: <%= percentage %>%"></div>
                                             </div>
                                             <div class="text-end mt-1">
@@ -192,7 +192,7 @@
                 </div>
             </div>
 
-            <!-- Недавние действия системы -->
+
             <div class="card shadow">
                 <div class="card-header">
                     <h5 class="mb-0"><i class="bi bi-clock-history"></i> Последние системные события</h5>
@@ -211,11 +211,11 @@
                                 <div class="list-group-item">
                                     <div class="d-flex w-100 justify-content-between">
                                         <div>
-                                            <i class="bi bi-<%= 
-                                        event.type.includes('user') ? 'person' : 
-                                        event.type.includes('habit') ? 'list-check' : 
-                                        event.type.includes('achievement') ? 'trophy' : 
-                                        event.type.includes('moderator') ? 'shield-check' : 'shield' 
+                                            <i class="bi bi-<%=
+                                        event.type.includes('user') ? 'person' :
+                                        event.type.includes('habit') ? 'list-check' :
+                                        event.type.includes('achievement') ? 'trophy' :
+                                        event.type.includes('moderator') ? 'shield-check' : 'shield'
                                     %> me-2"></i>
                                             <%= event.text %>
                                         </div>
@@ -235,7 +235,7 @@
             </div>
         </div>
 
-        <!-- Последние пользователи -->
+
         <div class="col-md-6">
             <div class="card shadow mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -284,9 +284,9 @@
                                                 </div>
                                             </td>
                                             <td>
-                                                <span class="badge bg-<%= 
-                                                user.Role.name === 'admin' ? 'danger' : 
-                                                user.Role.name === 'moderator' ? 'warning' : 'primary' 
+                                                <span class="badge bg-<%=
+                                                user.Role.name === 'admin' ? 'danger' :
+                                                user.Role.name === 'moderator' ? 'warning' : 'primary'
                                             %>">
                                                     <%= user.Role.name==='admin' ? 'Админ' :
                                                         user.Role.name==='moderator' ? 'Модератор' :
@@ -321,7 +321,7 @@
                                                         <% } %>
                                                 </div>
 
-                                                <!-- Модальное окно смены роли -->
+
                                                 <div class="modal fade" id="changeRoleModal<%= user.id %>"
                                                     tabindex="-1">
                                                     <div class="modal-dialog">
@@ -338,9 +338,9 @@
                                                                             <%= user.username %>
                                                                         </strong></p>
                                                                     <p>Текущая роль:
-                                                                        <span class="badge bg-<%= 
-                                                                        user.Role.name === 'admin' ? 'danger' : 
-                                                                        user.Role.name === 'moderator' ? 'warning' : 'primary' 
+                                                                        <span class="badge bg-<%=
+                                                                        user.Role.name === 'admin' ? 'danger' :
+                                                                        user.Role.name === 'moderator' ? 'warning' : 'primary'
                                                                     %>">
                                                                             <%= user.Role.name %>
                                                                         </span>
@@ -401,7 +401,7 @@
                 </div>
             </div>
 
-            <!-- Информация о системе -->
+
             <div class="card shadow">
                 <div class="card-header bg-dark text-white">
                     <h6 class="mb-0"><i class="bi bi-info-circle"></i> Информация о системе</h6>
