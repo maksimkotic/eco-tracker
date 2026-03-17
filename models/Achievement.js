@@ -1,3 +1,5 @@
+const { Op } = require('sequelize');
+
 module.exports = (sequelize, DataTypes) => {
   const Achievement = sequelize.define('Achievement', {
     id: {
@@ -116,7 +118,7 @@ module.exports = (sequelize, DataTypes) => {
         const habit = await Habit.findOne({
           where: {
             userId,
-            title: { [sequelize.Op.like]: `%${this.conditionExtraParsed?.habitName || ''}%` }
+            title: { [Op.iLike]: `%${this.conditionExtraParsed?.habitName || ''}%` }
           }
         });
         earned = habit && habit.currentStreak >= this.conditionValue;
