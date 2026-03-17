@@ -11,7 +11,7 @@ const wantsJson = (req) =>
   req.xhr || (typeof req.get === 'function' && (req.get('accept') || '').includes('json'));
 
 const habitController = {
-  // Показать все привычки пользователя
+
   index: async (req, res) => {
     try {
       const page = parseInt(req.query.page) || 1;
@@ -23,12 +23,12 @@ const habitController = {
 
       let whereCondition = { userId: req.currentUser.id };
 
-      // Фильтр по категории
+
       if (category && category !== "all") {
         whereCondition.category = category;
       }
 
-      // Фильтр по статусу
+
       if (status === "active") {
         whereCondition.isActive = true;
       } else if (status === "inactive") {
@@ -39,7 +39,7 @@ const habitController = {
         };
       }
 
-      // Поиск по названию
+
       if (search) {
         whereCondition.title = { [Op.like]: `%${search}%` };
       }
@@ -51,7 +51,7 @@ const habitController = {
         offset,
       });
 
-      // Статистика для фильтров
+
       const totalActive = await Habit.count({
         where: { userId: req.currentUser.id, isActive: true },
       });
@@ -84,7 +84,7 @@ const habitController = {
     }
   },
 
-  // Показать форму создания привычки
+
   create: (req, res) => {
     res.render("habits/new", {
       title: "Создание новой привычки",
@@ -114,7 +114,7 @@ const habitController = {
     });
   },
 
-  // Сохранение новой привычки
+
   store: async (req, res) => {
     try {
       const {
@@ -139,7 +139,7 @@ const habitController = {
         isActive: true,
       });
 
-      // Проверяем достижения
+
       await checkAchievements(req.currentUser.id);
 
       req.flash("success", `Привычка "${habit.title}" успешно создана!`);
@@ -151,7 +151,7 @@ const habitController = {
     }
   },
 
-  // Показать детали привычки
+
   show: async (req, res) => {
     try {
       const habit = await Habit.findOne({
@@ -173,7 +173,7 @@ const habitController = {
         return res.redirect("/habits");
       }
 
-      // Получаем историю выполнений
+
       const checkins = await Checkin.findAll({
         where: { habitId: habit.id },
         order: [["date", "DESC"]],
@@ -196,7 +196,7 @@ const habitController = {
     }
   },
 
-  // Показать форму редактирования привычки
+
   edit: async (req, res) => {
     try {
       const habit = await Habit.findOne({
@@ -245,7 +245,7 @@ const habitController = {
     }
   },
 
-  // Обновление привычки
+
   update: async (req, res) => {
     try {
       const {
@@ -291,7 +291,7 @@ const habitController = {
     }
   },
 
-  // Удаление привычки
+
   destroy: async (req, res) => {
     try {
       const habit = await Habit.findOne({
@@ -306,68 +306,68 @@ const habitController = {
         return res.redirect('/habits');
       }
 
-      // УДАЛЯЕМ ВСЕ СВЯЗАННЫЕ CHECKINS ВРУЧНУЮ
+
       await Checkin.destroy({
         where: { habitId: habit.id }
       });
-      
+
       console.log('Удалены связанные checkins для привычки:', habit.id);
 
-      // Теперь удаляем привычку
+
       await habit.destroy();
-      
+
       console.log('Привычка удалена:', habit.id);
-      
+
       req.flash('success', `Привычка "${habit.title}" успешно удалена`);
-      
-      // Для AJAX запросов
+
+
       if (wantsJson(req)) {
         return res.json({ success: true, message: 'Привычка удалена' });
       }
-      
-      // Для обычных запросов
+
+
       res.redirect('/habits');
     } catch (error) {
       console.error('Ошибка удаления привычки:', error);
       console.error('Полная ошибка:', error.stack);
-      
-      // Попробуем альтернативный способ - удалить через SQL
+
+
       if (error.name === 'SequelizeForeignKeyConstraintError') {
         try {
-          // Удаляем через raw SQL
+
           await sequelize.query(`
             PRAGMA foreign_keys = OFF;
             DELETE FROM habits WHERE id = :habitId AND userId = :userId;
             PRAGMA foreign_keys = ON;
           `, {
-            replacements: { 
-              habitId: req.params.id, 
-              userId: req.currentUser.id 
+            replacements: {
+              habitId: req.params.id,
+              userId: req.currentUser.id
             }
           });
-          
+
           req.flash('success', `Привычка удалена`);
           return res.redirect('/habits');
         } catch (sqlError) {
           console.error('SQL ошибка удаления:', sqlError);
         }
       }
-      
-      // Для AJAX
+
+
       if (wantsJson(req)) {
-        return res.status(500).json({ 
-          success: false, 
-          error: 'Не удалось удалить привычку' 
+        return res.status(500).json({
+          success: false,
+          error: 'Не удалось удалить привычку'
         });
       }
-      
-      // Для обычных
+
+
       req.flash('error', 'Не удалось удалить привычку. У привычки есть связанные записи.');
       res.redirect('/habits');
     }
   },
 
-  // Показать форму отметки выполнения
+
   showCheck: async (req, res) => {
     try {
       const habit = await Habit.findOne({
@@ -393,7 +393,7 @@ const habitController = {
     }
   },
 
-  // Обработка отметки выполнения
+
   check: async (req, res) => {
     try {
       const { value, date, notes } = req.body;
@@ -411,7 +411,7 @@ const habitController = {
         return res.redirect("/habits");
       }
 
-      // Создаем запись о выполнении
+
       const checkin = await Checkin.create({
         habitId: habit.id,
         userId: req.currentUser.id,
@@ -420,13 +420,13 @@ const habitController = {
         notes: notes || "",
       });
 
-      // Отмечаем выполнение
+
       await habit.markCompleted(
         parseFloat(value),
         date ? new Date(date) : new Date()
       );
 
-      // Начисляем эко-очки в зависимости от категории
+
       let pointsEarned = 0;
       switch (habit.category) {
         case "water":
@@ -448,13 +448,13 @@ const habitController = {
           pointsEarned = 3;
       }
 
-      // Умножаем на значение выполнения
+
       pointsEarned *= parseFloat(value);
 
-      // Добавляем очки пользователю
+
       await req.currentUser.addEcoPoints(pointsEarned);
 
-      // Проверяем достижения
+
       await checkAchievements(req.currentUser.id);
 
       req.flash("success", `Выполнение отмечено! +${pointsEarned} эко-очков`);
@@ -466,7 +466,7 @@ const habitController = {
     }
   },
 
-  // Переключение активности привычки
+
   toggleActive: async (req, res) => {
     try {
       const habit = await Habit.findOne({
@@ -493,7 +493,7 @@ const habitController = {
     }
   },
 
-  // Сброс статистики привычки
+
 resetStats: async (req, res) => {
   try {
     const habit = await Habit.findOne({
@@ -523,89 +523,89 @@ resetStats: async (req, res) => {
 };
 
 
-// Вспомогательная функция для проверки достижений
+
 async function checkAchievements(userId) {
   try {
     console.log(`🔍 Проверяем достижения для пользователя ${userId}...`);
-    
+
     const achievements = await Achievement.findAll();
     const user = await User.findByPk(userId);
-    
+
     if (!user) {
       console.error('Пользователь не найден для проверки достижений');
       return;
     }
-    
+
     console.log(`👤 Пользователь: ${user.username}, Очки: ${user.ecoPoints}, Серия: ${user.currentStreak}`);
-    
-    // Получаем уже полученные достижения
+
+
     const earnedAchievements = await UserAchievement.findAll({
       where: { userId },
       attributes: ['achievementId']
     });
     const earnedIds = earnedAchievements.map(a => a.achievementId);
-    
+
     for (const achievement of achievements) {
       try {
-        // Пропускаем уже полученные
+
         if (earnedIds.includes(achievement.id)) {
           continue;
         }
-        
+
         let earned = false;
-        
+
         console.log(`📊 Проверяем достижение: ${achievement.title} (${achievement.conditionType})`);
-        
+
         switch (achievement.conditionType) {
           case 'streak':
             earned = user.currentStreak >= achievement.conditionValue;
             console.log(`   Серия: ${user.currentStreak} >= ${achievement.conditionValue} = ${earned}`);
             break;
-            
+
           case 'total_habits':
             const habitCount = await Habit.count({ where: { userId } });
             earned = habitCount >= achievement.conditionValue;
             console.log(`   Привычек: ${habitCount} >= ${achievement.conditionValue} = ${earned}`);
             break;
-            
+
           case 'eco_points':
             earned = user.ecoPoints >= achievement.conditionValue;
             console.log(`   Очков: ${user.ecoPoints} >= ${achievement.conditionValue} = ${earned}`);
             break;
-            
+
           case 'days_active':
-            // Используем currentStreak как дни активности
+
             earned = user.currentStreak >= achievement.conditionValue;
             console.log(`   Активных дней: ${user.currentStreak} >= ${achievement.conditionValue} = ${earned}`);
             break;
-            
+
           case 'specific_habit':
           case 'category_master':
-            // Пропускаем сложные достижения для начала
+
             console.log(`   Пропускаем сложное достижение: ${achievement.conditionType}`);
             continue;
         }
-        
+
         if (earned) {
           console.log(`🎉 Пользователь ${user.username} заработал достижение: ${achievement.title} (+${achievement.points} очков)`);
-          
-          // Выдаем достижение
+
+
           await UserAchievement.create({
             userId,
             achievementId: achievement.id,
             earnedAt: new Date()
           });
-          
-          // Начисляем очки
+
+
           await user.addEcoPoints(achievement.points);
-          
+
           console.log(`   ✅ Достижение выдано, очки начислены`);
         }
       } catch (achievementError) {
         console.error(`❌ Ошибка проверки достижения ${achievement.id}:`, achievementError);
       }
     }
-    
+
     console.log('✅ Проверка достижений завершена');
   } catch (error) {
     console.error('❌ Ошибка проверки достижений:', error);

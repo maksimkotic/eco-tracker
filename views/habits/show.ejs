@@ -1,7 +1,7 @@
 <div class="container py-4">
     <div class="row">
         <div class="col-md-8">
-            <!-- Карточка привычки -->
+
             <div class="card shadow mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center"
                     style="border-left: 8px solid #28a745;">
@@ -10,12 +10,12 @@
                             <%= habit.title %>
                         </h3>
                         <div>
-                            <span class="badge bg-<%= 
-                                habit.category === 'water' ? 'primary' : 
-                                habit.category === 'energy' ? 'warning' : 
-                                habit.category === 'waste' ? 'danger' : 
-                                habit.category === 'transport' ? 'info' : 
-                                habit.category === 'food' ? 'success' : 'secondary' 
+                            <span class="badge bg-<%=
+                                habit.category === 'water' ? 'primary' :
+                                habit.category === 'energy' ? 'warning' :
+                                habit.category === 'waste' ? 'danger' :
+                                habit.category === 'transport' ? 'info' :
+                                habit.category === 'food' ? 'success' : 'secondary'
                             %> me-2">
                                 <%= habit.category==='water' ? '💧 Экономия воды' : habit.category==='energy'
                                     ? '⚡ Экономия энергии' : habit.category==='waste' ? '🗑️ Сортировка отходов' :
@@ -58,7 +58,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <!-- Описание -->
+
                     <div class="mb-4">
                         <h5><i class="bi bi-card-text"></i> Описание</h5>
                         <p class="card-text">
@@ -66,7 +66,7 @@
                         </p>
                     </div>
 
-                    <!-- Статистика -->
+
                     <div class="row mb-4">
                         <div class="col-md-3 mb-3">
                             <div class="card border-0 bg-light">
@@ -111,7 +111,7 @@
                         </div>
                     </div>
 
-                    <!-- Прогресс бар -->
+
                     <div class="mb-4">
                         <h5><i class="bi bi-graph-up"></i> Прогресс</h5>
                         <div class="d-flex justify-content-between mb-1">
@@ -130,7 +130,7 @@
                         </div>
                     </div>
 
-                    <!-- Быстрая отметка выполнения -->
+
                     <div class="mb-4">
                         <h5><i class="bi bi-check-circle"></i> Отметить выполнение</h5>
                         <form action="/habits/<%= habit.id %>/check" method="POST" class="row g-2">
@@ -156,7 +156,7 @@
                 </div>
             </div>
 
-            <!-- История выполнений (если есть) -->
+
             <% if (checkins && checkins.length> 0) { %>
                 <div class="card shadow">
                     <div class="card-header">
@@ -184,7 +184,7 @@
                                             </td>
                                             <td>
                                                 <div class="progress" style="height: 6px;">
-                                                    <div class="progress-bar bg-success" 
+                                                    <div class="progress-bar bg-success"
                                                         style="width: <%= (check.value / habit.targetValue) * 100 %>%">
                                                     </div>
                                                 </div>
@@ -199,9 +199,9 @@
                 <% } %>
         </div>
 
-        <!-- Правая колонка: Дополнительная информация -->
+
         <div class="col-md-4">
-            <!-- Экологический вклад -->
+
             <div class="card shadow mb-4">
                 <div class="card-header bg-success text-white">
                     <h6 class="mb-0"><i class="bi bi-globe"></i> Экологический вклад</h6>
@@ -228,7 +228,7 @@
                 </div>
             </div>
 
-            <!-- Советы -->
+
             <div class="card shadow mb-4">
                 <div class="card-header bg-info text-white">
                     <h6 class="mb-0"><i class="bi bi-lightbulb"></i> Советы по улучшению</h6>
@@ -258,7 +258,7 @@
                 </div>
             </div>
 
-            <!-- Кнопки действий -->
+
             <div class="d-grid gap-2">
                 <a href="/habits/<%= habit.id %>/check" class="btn btn-success btn-lg">
                     <i class="bi bi-check-lg"></i> Отметить выполнение

@@ -7,15 +7,15 @@
                 </div>
                 <div class="card-body p-4">
                     <form action="/habits" method="POST" id="habitForm">
-                        <!-- Название -->
+
                         <div class="mb-3">
                             <label for="title" class="form-label">Название привычки *</label>
-                            <input type="text" class="form-control" id="title" name="title" 
+                            <input type="text" class="form-control" id="title" name="title"
                                    placeholder="Например: Экономия воды при чистке зубов" required>
                             <div class="form-text">Короткое и понятное название</div>
                         </div>
-                        
-                        <!-- Категория -->
+
+
                         <div class="mb-3">
                             <label for="category" class="form-label">Категория *</label>
                             <select class="form-select" id="category" name="category" required>
@@ -28,16 +28,16 @@
                                 <option value="other">🌱 Прочее</option>
                             </select>
                         </div>
-                        
-                        <!-- Описание -->
+
+
                         <div class="mb-3">
                             <label for="description" class="form-label">Описание</label>
-                            <textarea class="form-control" id="description" name="description" 
+                            <textarea class="form-control" id="description" name="description"
                                       rows="3" placeholder="Подробнее о вашей привычке..."></textarea>
                         </div>
-                        
+
                         <div class="row">
-                            <!-- Частота -->
+
                             <div class="col-md-6 mb-3">
                                 <label for="frequency" class="form-label">Частота выполнения *</label>
                                 <select class="form-select" id="frequency" name="frequency" required>
@@ -46,12 +46,12 @@
                                     <option value="monthly">📊 Ежемесячно</option>
                                 </select>
                             </div>
-                            
-                            <!-- Цель -->
+
+
                             <div class="col-md-6 mb-3">
                                 <label for="targetValue" class="form-label">Цель *</label>
                                 <div class="input-group">
-                                    <input type="number" class="form-control" id="targetValue" 
+                                    <input type="number" class="form-control" id="targetValue"
                                            name="targetValue" min="1" max="1000" value="1" required>
                                     <select class="form-select" id="unit" name="unit" style="max-width: 120px;">
                                         <option value="times">раз</option>
@@ -63,8 +63,8 @@
                                 </div>
                             </div>
                         </div>
-                        
-                        <!-- Цвет -->
+
+
                         <div class="mb-4">
                             <label class="form-label">Цвет для визуализации</label>
                             <div class="d-flex flex-wrap gap-2" id="colorPicker">
@@ -77,8 +77,8 @@
                             </div>
                             <input type="hidden" id="color" name="color" value="#28a745">
                         </div>
-                        
-                        <!-- Примеры привычек -->
+
+
                         <div class="mb-4">
                             <h6><i class="bi bi-lightbulb"></i> Примеры привычек</h6>
                             <div class="row g-2">
@@ -105,8 +105,8 @@
                                 </div>
                             </div>
                         </div>
-                        
-                        <!-- Кнопки -->
+
+
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                             <a href="/habits" class="btn btn-outline-secondary me-2">
                                 <i class="bi bi-arrow-left"></i> Назад

@@ -9,7 +9,7 @@
         </button>
     </div>
 
-    <!-- Информация о ролях -->
+
     <div class="row mb-4">
         <div class="col-md-4">
             <div class="card border-primary border-2">
@@ -55,7 +55,7 @@
         </div>
     </div>
 
-    <!-- Таблица ролей -->
+
     <div class="card shadow">
         <div class="card-body">
             <% if (roles.length > 0) { %>
@@ -72,16 +72,16 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <% roles.forEach(role => { 
-                                // Подсчет пользователей с этой ролью
-                                // В реальном приложении нужно получать из БД
-                                const userCount = 0; // Замените на реальный подсчет
+                            <% roles.forEach(role => {
+
+
+                                const userCount = 0;
                             %>
                             <tr>
                                 <td><%= role.id %></td>
                                 <td>
-                                    <span class="badge bg-<%= 
-                                        role.name === 'admin' ? 'danger' : 
+                                    <span class="badge bg-<%=
+                                        role.name === 'admin' ? 'danger' :
                                         role.name === 'moderator' ? 'warning' : 'primary'
                                     %>">
                                         <%= role.name %>
@@ -96,20 +96,20 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary" 
-                                                data-bs-toggle="modal" 
+                                        <button class="btn btn-outline-primary"
+                                                data-bs-toggle="modal"
                                                 data-bs-target="#editRoleModal<%= role.id %>">
                                             <i class="bi bi-pencil"></i> Редактировать
                                         </button>
                                         <% if (!['user', 'moderator', 'admin'].includes(role.name)) { %>
-                                        <button class="btn btn-outline-danger" 
+                                        <button class="btn btn-outline-danger"
                                                 onclick="deleteRole(<%= role.id %>, '<%= role.name %>')">
                                             <i class="bi bi-trash"></i> Удалить
                                         </button>
                                         <% } %>
                                     </div>
 
-                                    <!-- Модальное окно редактирования роли -->
+
                                     <div class="modal fade" id="editRoleModal<%= role.id %>" tabindex="-1">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
@@ -121,19 +121,19 @@
                                                     <div class="modal-body">
                                                         <div class="mb-3">
                                                             <label class="form-label">Название роли</label>
-                                                            <input type="text" class="form-control" name="name" 
-                                                                   value="<%= role.name %>" 
-                                                                   <%= ['user', 'moderator', 'admin'].includes(role.name) ? 'readonly' : '' %> 
+                                                            <input type="text" class="form-control" name="name"
+                                                                   value="<%= role.name %>"
+                                                                   <%= ['user', 'moderator', 'admin'].includes(role.name) ? 'readonly' : '' %>
                                                                    required>
                                                         </div>
                                                         <div class="mb-3">
                                                             <label class="form-label">Описание</label>
-                                                            <input type="text" class="form-control" name="description" 
+                                                            <input type="text" class="form-control" name="description"
                                                                    value="<%= role.description || '' %>">
                                                         </div>
-                                                        
+
                                                         <h6 class="mt-3">Права доступа:</h6>
-                                                        <% 
+                                                        <%
                                                         const allPermissions = [
                                                             { value: 'view_profile', label: 'Просмотр профиля' },
                                                             { value: 'edit_own_profile', label: 'Редактирование своего профиля' },
@@ -157,13 +157,13 @@
                                                             { value: 'manage_settings', label: 'Управление настройками' }
                                                         ];
                                                         %>
-                                                        
+
                                                         <div style="max-height: 300px; overflow-y: auto;" class="border p-3">
-                                                            <% allPermissions.forEach(perm => { 
+                                                            <% allPermissions.forEach(perm => {
                                                                 const hasPermission = role.permissions && role.permissions[perm.value];
                                                             %>
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" 
+                                                                <input class="form-check-input" type="checkbox"
                                                                        name="permissions[]" value="<%= perm.value %>"
                                                                        id="perm<%= role.id %><%= perm.value %>"
                                                                        <%= hasPermission ? 'checked' : '' %>
@@ -200,7 +200,7 @@
     </div>
 </div>
 
-<!-- Модальное окно создания роли -->
+
 <div class="modal fade" id="createRoleModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -212,15 +212,15 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Название роли</label>
-                        <input type="text" class="form-control" name="name" required 
+                        <input type="text" class="form-control" name="name" required
                                placeholder="Например: content_manager">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Описание</label>
-                        <input type="text" class="form-control" name="description" 
+                        <input type="text" class="form-control" name="description"
                                placeholder="Краткое описание роли">
                     </div>
-                    
+
                     <h6 class="mt-3">Права доступа:</h6>
                     <div style="max-height: 300px; overflow-y: auto;" class="border p-3">
                         <% allPermissions = [
@@ -245,10 +245,10 @@
                             { value: 'view_system_logs', label: 'Просмотр системных логов' },
                             { value: 'manage_settings', label: 'Управление настройками' }
                         ]; %>
-                        
+
                         <% allPermissions.forEach(perm => { %>
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" 
+                            <input class="form-check-input" type="checkbox"
                                    name="permissions[]" value="<%= perm.value %>"
                                    id="createPerm<%= perm.value %>">
                             <label class="form-check-label small" for="createPerm<%= perm.value %>">

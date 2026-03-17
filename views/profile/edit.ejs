@@ -8,12 +8,12 @@
         <div class="card-body p-4">
           <form action="/profile" method="POST">
             <input type="hidden" name="_method" value="PUT">
-            
-            <!-- Аватар -->
+
+
             <div class="text-center mb-4">
               <% if (user.avatar && user.avatar !== 'default-avatar.png') { %>
-                <img src="/uploads/avatars/<%= user.avatar %>" 
-                     class="rounded-circle mb-3" 
+                <img src="/uploads/avatars/<%= user.avatar %>"
+                     class="rounded-circle mb-3"
                      width="100" height="100"
                      alt="Аватар">
               <% } else { %>
@@ -24,8 +24,8 @@
                   </span>
                 </div>
               <% } %>
-              
-              <!-- Загрузка аватара -->
+
+
               <form action="/profile/avatar" method="POST" enctype="multipart/form-data" class="mb-3">
                 <label for="avatar" class="form-label">Сменить аватар</label>
                 <div class="input-group">
@@ -35,21 +35,21 @@
                 <div class="form-text">Максимальный размер: 5MB. Разрешены: JPG, PNG, GIF</div>
               </form>
             </div>
-            
-            <!-- Основная информация -->
+
+
             <div class="mb-3">
               <label for="username" class="form-label">Имя пользователя *</label>
-              <input type="text" class="form-control" id="username" name="username" 
+              <input type="text" class="form-control" id="username" name="username"
                      value="<%= user.username %>" required>
             </div>
-            
+
             <div class="mb-3">
               <label for="email" class="form-label">Email адрес *</label>
-              <input type="email" class="form-control" id="email" name="email" 
+              <input type="email" class="form-control" id="email" name="email"
                      value="<%= user.email %>" required>
             </div>
-            
-            <!-- Смена пароля -->
+
+
             <div class="card border-warning mb-4">
               <div class="card-header bg-warning">
                 <h6 class="mb-0">Смена пароля</h6>
@@ -58,26 +58,26 @@
                 <p class="text-muted small mb-3">
                   Оставьте эти поля пустыми, если не хотите менять пароль
                 </p>
-                
+
                 <div class="mb-3">
                   <label for="currentPassword" class="form-label">Текущий пароль</label>
                   <input type="password" class="form-control" id="currentPassword" name="currentPassword">
                 </div>
-                
+
                 <div class="mb-3">
                   <label for="newPassword" class="form-label">Новый пароль</label>
                   <input type="password" class="form-control" id="newPassword" name="newPassword">
                   <div class="form-text">Минимум 6 символов, должна быть хотя бы одна цифра</div>
                 </div>
-                
+
                 <div class="mb-3">
                   <label for="confirmPassword" class="form-label">Подтверждение нового пароля</label>
                   <input type="password" class="form-control" id="confirmPassword" name="confirmPassword">
                 </div>
               </div>
             </div>
-            
-            <!-- Кнопки -->
+
+
             <div class="d-grid gap-2 d-md-flex justify-content-md-between">
               <a href="/profile" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left"></i> Назад к профилю
@@ -89,15 +89,15 @@
               </div>
             </div>
           </form>
-          
-          <!-- Опасная зона -->
+
+
           <div class="card border-danger mt-4">
             <div class="card-header bg-danger text-white">
               <h6 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Опасная зона</h6>
             </div>
             <div class="card-body">
               <p class="card-text">
-                Удаление аккаунта приведет к полной потере всех данных: привычек, 
+                Удаление аккаунта приведет к полной потере всех данных: привычек,
                 достижений, статистики. Это действие нельзя отменить.
               </p>
               <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
@@ -111,7 +111,7 @@
   </div>
 </div>
 
-<!-- Модальное окно подтверждения удаления -->
+
 <div class="modal fade" id="deleteAccountModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -123,14 +123,14 @@
         <p>Вы уверены, что хотите удалить свой аккаунт?</p>
         <p class="text-danger"><strong>Это действие нельзя отменить!</strong></p>
         <p>Все ваши данные будут безвозвратно удалены.</p>
-        
+
         <form action="/profile" method="POST" id="deleteAccountForm">
           <input type="hidden" name="_method" value="DELETE">
           <div class="mb-3">
             <label for="confirmPasswordDelete" class="form-label">
               Для подтверждения введите свой пароль:
             </label>
-            <input type="password" class="form-control" id="confirmPasswordDelete" 
+            <input type="password" class="form-control" id="confirmPasswordDelete"
                    name="password" required>
           </div>
         </form>

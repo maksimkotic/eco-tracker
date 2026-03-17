@@ -27,18 +27,18 @@ const loadUser = async (req, res, next) => {
         }],
         attributes: { exclude: ['passwordHash'] }
       });
-      
+
       if (user) {
         if (user.isBanned) {
           req.session.destroy();
           req.flash('error', 'Ваш аккаунт заблокирован');
           return res.redirect('/auth/login');
         }
-        
+
         req.currentUser = user;
         res.locals.currentUser = user;
-        
-        if (Date.now() - new Date(user.lastActive).getTime() > 5 * 60 * 1000) { 
+
+        if (Date.now() - new Date(user.lastActive).getTime() > 5 * 60 * 1000) {
           user.lastActive = new Date();
           await user.save();
         }
@@ -55,7 +55,7 @@ const loadUser = async (req, res, next) => {
 const csrfProtection = (req, res, next) => {
   if (req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE') {
     const csrfToken = req.body._csrf || req.query._csrf;
-    
+
     if (!csrfToken || csrfToken !== req.session.csrfToken) {
       return res.status(403).render('errors/403', {
         title: 'Доступ запрещен',
@@ -63,10 +63,10 @@ const csrfProtection = (req, res, next) => {
       });
     }
   }
-  
+
   req.session.csrfToken = require('crypto').randomBytes(32).toString('hex');
   res.locals.csrfToken = req.session.csrfToken;
-  
+
   next();
 };
 

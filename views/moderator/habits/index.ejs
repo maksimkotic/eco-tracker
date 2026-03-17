@@ -1,4 +1,4 @@
-<!-- views/moderator/habits/index.ejs -->
+
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -15,12 +15,12 @@
         </div>
     </div>
 
-    <!-- Фильтры -->
+
     <div class="card shadow mb-4">
         <div class="card-body">
             <form method="GET" class="row g-3">
                 <div class="col-md-4">
-                    <input type="text" class="form-control" name="search" 
+                    <input type="text" class="form-control" name="search"
                            placeholder="Поиск по названию или описанию..."
                            value="<%= filters.search || '' %>">
                 </div>
@@ -51,7 +51,7 @@
         </div>
     </div>
 
-    <!-- Таблица привычек -->
+
     <div class="card shadow">
         <div class="card-body">
             <% if (habits.length > 0) { %>
@@ -70,14 +70,14 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <% habits.forEach(habit => { 
+                            <% habits.forEach(habit => {
                                 const progress = Math.min((habit.currentStreak / habit.targetValue) * 100, 100);
                             %>
                             <tr>
                                 <td><%= habit.id %></td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <div class="color-indicator me-2" 
+                                        <div class="color-indicator me-2"
                                              style="width: 10px; height: 10px; background-color: <%= habit.color || '#28a745' %>;"></div>
                                         <a href="/habits/<%= habit.id %>" class="text-decoration-none">
                                             <%= habit.title %>
@@ -92,7 +92,7 @@
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <% if (habit.User && habit.User.avatar) { %>
-                                        <img src="/uploads/avatars/<%= habit.User.avatar %>" 
+                                        <img src="/uploads/avatars/<%= habit.User.avatar %>"
                                              width="32" height="32" class="rounded-circle me-2">
                                         <% } else { %>
                                         <i class="bi bi-person-circle me-2"></i>
@@ -104,15 +104,15 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge bg-<%= 
-                                        habit.category === 'water' ? 'primary' : 
-                                        habit.category === 'energy' ? 'warning' : 
+                                    <span class="badge bg-<%=
+                                        habit.category === 'water' ? 'primary' :
+                                        habit.category === 'energy' ? 'warning' :
                                         habit.category === 'waste' ? 'danger' : 'success'
                                     %>">
-                                        <%= habit.category === 'water' ? '💧 Вода' : 
-                                           habit.category === 'energy' ? '⚡ Энергия' : 
-                                           habit.category === 'waste' ? '🗑️ Отходы' : 
-                                           habit.category === 'transport' ? '🚗 Транспорт' : 
+                                        <%= habit.category === 'water' ? '💧 Вода' :
+                                           habit.category === 'energy' ? '⚡ Энергия' :
+                                           habit.category === 'waste' ? '🗑️ Отходы' :
+                                           habit.category === 'transport' ? '🚗 Транспорт' :
                                            habit.category === 'food' ? '🍎 Питание' : '🌱 Прочее' %>
                                     </span>
                                 </td>
@@ -157,7 +157,7 @@
                     </table>
                 </div>
 
-                <!-- Пагинация -->
+
                 <% if (totalPages > 1) { %>
                 <nav aria-label="Пагинация">
                     <ul class="pagination justify-content-center">
@@ -166,7 +166,7 @@
                                 <i class="bi bi-chevron-left"></i>
                             </a>
                         </li>
-                        
+
                         <% for (let i = 1; i <= totalPages; i++) { %>
                             <% if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) { %>
                             <li class="page-item <%= currentPage === i ? 'active' : '' %>">
@@ -180,7 +180,7 @@
                             </li>
                             <% } %>
                         <% } %>
-                        
+
                         <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
                             <a class="page-link" href="?page=<%= currentPage + 1 %>&search=<%= filters.search || '' %>&category=<%= filters.category || '' %>&status=<%= filters.status || '' %>">
                                 <i class="bi bi-chevron-right"></i>

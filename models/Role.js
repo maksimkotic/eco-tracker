@@ -38,7 +38,7 @@ module.exports = (sequelize, DataTypes) => {
     timestamps: true
   });
 
-  // Статические методы для получения стандартных ролей
+
   Role.getUserRole = async function() {
     return await this.findOne({ where: { name: 'user' } });
   };
@@ -51,7 +51,7 @@ module.exports = (sequelize, DataTypes) => {
     return await this.findOne({ where: { name: 'admin' } });
   };
 
-  // Метод проверки прав
+
   Role.prototype.hasPermission = function(permission) {
     return this.permissions[permission] === true;
   };

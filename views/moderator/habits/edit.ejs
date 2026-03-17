@@ -1,4 +1,4 @@
-<!-- views/moderator/habits/edit.ejs -->
+
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -28,7 +28,7 @@
                         <div class="row">
                             <div class="col-md-8 mb-3">
                                 <label class="form-label">Название привычки</label>
-                                <input type="text" class="form-control" name="title" 
+                                <input type="text" class="form-control" name="title"
                                        value="<%= habit.title %>" required>
                             </div>
                             <div class="col-md-4 mb-3">
@@ -60,12 +60,12 @@
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Целевое значение</label>
-                                <input type="number" class="form-control" name="targetValue" 
+                                <input type="number" class="form-control" name="targetValue"
                                        value="<%= habit.targetValue %>" step="0.1" min="0.1" required>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Единица измерения</label>
-                                <input type="text" class="form-control" name="unit" 
+                                <input type="text" class="form-control" name="unit"
                                        value="<%= habit.unit %>" placeholder="раз, литров, минут...">
                             </div>
                         </div>
@@ -73,13 +73,13 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Цвет</label>
-                                <input type="color" class="form-control form-control-color" name="color" 
+                                <input type="color" class="form-control form-control-color" name="color"
                                        value="<%= habit.color || '#28a745' %>" title="Выберите цвет">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Статус</label>
                                 <div class="form-check form-switch mt-2">
-                                    <input class="form-check-input" type="checkbox" name="isActive" 
+                                    <input class="form-check-input" type="checkbox" name="isActive"
                                            id="isActive" <%= habit.isActive ? 'checked' : '' %>>
                                     <label class="form-check-label" for="isActive">
                                         Активная привычка
@@ -89,7 +89,7 @@
                         </div>
 
                         <div class="alert alert-info">
-                            <i class="bi bi-info-circle"></i> 
+                            <i class="bi bi-info-circle"></i>
                             <strong>Внимание:</strong> Вы редактируете чужую привычку. Изменения повлияют на статистику пользователя.
                         </div>
 
@@ -105,7 +105,7 @@
                 </div>
             </div>
 
-            <!-- Статистика привычки -->
+
             <div class="card shadow mt-4">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Статистика привычки</h5>
@@ -135,7 +135,7 @@
                 </div>
             </div>
 
-            <!-- Информация о пользователе -->
+
             <% if (habit.User) { %>
             <div class="card shadow mt-4">
                 <div class="card-header bg-primary text-white">
@@ -144,10 +144,10 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <% if (habit.User.avatar) { %>
-                            <img src="/uploads/avatars/<%= habit.User.avatar %>" 
+                            <img src="/uploads/avatars/<%= habit.User.avatar %>"
                                  class="rounded-circle me-3" width="64" height="64">
                         <% } else { %>
-                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-3" 
+                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-3"
                                  style="width: 64px; height: 64px;">
                                 <i class="bi bi-person text-white" style="font-size: 2rem;"></i>
                             </div>

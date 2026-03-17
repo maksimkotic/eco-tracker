@@ -1,4 +1,4 @@
-<!-- views/admin/users/index.ejs -->
+
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -15,12 +15,12 @@
         </div>
     </div>
 
-    <!-- Фильтры -->
+
     <div class="card shadow mb-4">
         <div class="card-body">
             <form method="GET" class="row g-3">
                 <div class="col-md-4">
-                    <input type="text" class="form-control" name="search" placeholder="Поиск по имени или email..." 
+                    <input type="text" class="form-control" name="search" placeholder="Поиск по имени или email..."
                            value="<%= filters.search || '' %>">
                 </div>
                 <div class="col-md-3">
@@ -50,7 +50,7 @@
         </div>
     </div>
 
-    <!-- Таблица пользователей -->
+
     <div class="card shadow">
         <div class="card-body">
             <% if (users.length > 0) { %>
@@ -76,10 +76,10 @@
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <% if (user.avatar) { %>
-                                            <img src="/uploads/avatars/<%= user.avatar %>" 
+                                            <img src="/uploads/avatars/<%= user.avatar %>"
                                                  width="40" height="40" class="rounded-circle me-3">
                                         <% } else { %>
-                                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-3" 
+                                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-3"
                                                  style="width: 40px; height: 40px;">
                                                 <i class="bi bi-person text-white"></i>
                                             </div>
@@ -92,12 +92,12 @@
                                 </td>
                                 <td><%= user.email %></td>
                                 <td>
-                                    <span class="badge bg-<%= 
-                                        user.Role.name === 'admin' ? 'danger' : 
+                                    <span class="badge bg-<%=
+                                        user.Role.name === 'admin' ? 'danger' :
                                         user.Role.name === 'moderator' ? 'warning' : 'primary'
                                     %>">
-                                        <%= user.Role.name === 'admin' ? 'Админ' : 
-                                           user.Role.name === 'moderator' ? 'Модератор' : 
+                                        <%= user.Role.name === 'admin' ? 'Админ' :
+                                           user.Role.name === 'moderator' ? 'Модератор' :
                                            user.Role.name === 'user' ? 'Пользователь' : 'Другая' %>
                                     </span>
                                 </td>
@@ -126,38 +126,38 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <a href="/admin/users/<%= user.id %>" class="btn btn-outline-primary" 
+                                        <a href="/admin/users/<%= user.id %>" class="btn btn-outline-primary"
                                            title="Просмотреть">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        <button type="button" class="btn btn-outline-warning" 
+                                        <button type="button" class="btn btn-outline-warning"
                                                 title="Изменить роль"
-                                                data-bs-toggle="modal" 
+                                                data-bs-toggle="modal"
                                                 data-bs-target="#changeRoleModal<%= user.id %>">
                                             <i class="bi bi-shield"></i>
                                         </button>
                                         <% if (user.id !== currentUser.id) { %>
                                             <% if (user.isBanned) { %>
-                                                <form action="/admin/users/<%= user.id %>/ban" method="POST" 
+                                                <form action="/admin/users/<%= user.id %>/ban" method="POST"
                                                       class="d-inline" onsubmit="return confirm('Разблокировать пользователя?')">
                                                     <button type="submit" class="btn btn-outline-success" title="Разблокировать">
                                                         <i class="bi bi-unlock"></i>
                                                     </button>
                                                 </form>
                                             <% } else { %>
-                                                <form action="/admin/users/<%= user.id %>/ban" method="POST" 
+                                                <form action="/admin/users/<%= user.id %>/ban" method="POST"
                                                       class="d-inline" onsubmit="return confirm('Заблокировать пользователя?')">
                                                     <button type="submit" class="btn btn-outline-danger" title="Заблокировать">
                                                         <i class="bi bi-lock"></i>
                                                     </button>
                                                 </form>
                                             <% } %>
-                                            <button type="button" class="btn btn-outline-secondary" 
+                                            <button type="button" class="btn btn-outline-secondary"
                                                     title="Сбросить пароль"
                                                     onclick="resetPassword(<%= user.id %>, '<%= user.username %>')">
                                                 <i class="bi bi-key"></i>
                                             </button>
-                                            <button type="button" class="btn btn-outline-danger" 
+                                            <button type="button" class="btn btn-outline-danger"
                                                     title="Удалить"
                                                     onclick="deleteUser(<%= user.id %>, '<%= user.username %>')">
                                                 <i class="bi bi-trash"></i>
@@ -167,7 +167,7 @@
                                         <% } %>
                                     </div>
 
-                                    <!-- Модальное окно смены роли -->
+
                                     <div class="modal fade" id="changeRoleModal<%= user.id %>" tabindex="-1">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
@@ -178,9 +178,9 @@
                                                 <form action="/admin/users/<%= user.id %>/role" method="POST">
                                                     <div class="modal-body">
                                                         <p>Пользователь: <strong><%= user.username %></strong></p>
-                                                        <p>Текущая роль: 
-                                                            <span class="badge bg-<%= 
-                                                                user.Role.name === 'admin' ? 'danger' : 
+                                                        <p>Текущая роль:
+                                                            <span class="badge bg-<%=
+                                                                user.Role.name === 'admin' ? 'danger' :
                                                                 user.Role.name === 'moderator' ? 'warning' : 'primary'
                                                             %>">
                                                                 <%= user.Role.name %>
@@ -190,7 +190,7 @@
                                                             <label class="form-label">Новая роль</label>
                                                             <select class="form-select" name="roleId" required>
                                                                 <% roles.forEach(role => { %>
-                                                                <option value="<%= role.id %>" 
+                                                                <option value="<%= role.id %>"
                                                                         <%= user.roleId === role.id ? 'selected' : '' %>>
                                                                     <%= role.name %> - <%= role.description %>
                                                                 </option>
@@ -213,7 +213,7 @@
                     </table>
                 </div>
 
-                <!-- Пагинация -->
+
                 <% if (totalPages > 1) { %>
                 <nav aria-label="Пагинация">
                     <ul class="pagination justify-content-center">
@@ -222,7 +222,7 @@
                                 <i class="bi bi-chevron-left"></i>
                             </a>
                         </li>
-                        
+
                         <% for (let i = 1; i <= totalPages; i++) { %>
                             <% if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) { %>
                             <li class="page-item <%= currentPage === i ? 'active' : '' %>">
@@ -236,7 +236,7 @@
                             </li>
                             <% } %>
                         <% } %>
-                        
+
                         <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
                             <a class="page-link" href="?page=<%= currentPage + 1 %>&search=<%= filters.search || '' %>&role=<%= filters.role || '' %>&status=<%= filters.status || '' %>">
                                 <i class="bi bi-chevron-right"></i>
@@ -256,7 +256,7 @@
     </div>
 </div>
 
-<!-- Модальное окно создания пользователя -->
+
 <div class="modal fade" id="createUserModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">

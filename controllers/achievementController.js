@@ -12,7 +12,7 @@ const achievementController = {
           as: 'Users',
           where: { id: user.id },
           required: false,
-          through: { 
+          through: {
             attributes: ['earnedAt'],
             where: { userId: user.id }
           }
@@ -25,7 +25,7 @@ const achievementController = {
       });
 
       const earnedAchievements = achievements.filter(a => a.Users && a.Users.length > 0);
-      const availableAchievements = achievements.filter(a => 
+      const availableAchievements = achievements.filter(a =>
         !a.Users || a.Users.length === 0
       ).filter(a => !a.isHidden);
       const lockedAchievements = achievements.filter(a => a.isHidden);
@@ -62,7 +62,7 @@ const achievementController = {
           as: 'Users',
           where: { id: req.currentUser.id },
           required: false,
-          through: { 
+          through: {
             attributes: ['earnedAt'],
             where: { userId: req.currentUser.id }
           }
@@ -154,7 +154,7 @@ const achievementController = {
   getProgress: async (req, res) => {
     try {
       const user = req.currentUser;
-      
+
       const achievements = await Achievement.findAll({
         where: { isHidden: false },
         attributes: ['id', 'title', 'conditionType', 'conditionValue']

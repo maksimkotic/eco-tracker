@@ -1,4 +1,4 @@
-<!-- views/habits/index.ejs -->
+
 <div class="container py-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h1><i class="bi bi-list-check"></i> Мои привычки</h1>
@@ -7,7 +7,7 @@
     </a>
   </div>
 
-  <!-- Фильтры -->
+
   <div class="card shadow mb-4">
     <div class="card-body">
       <div class="row g-3">
@@ -42,7 +42,7 @@
     </div>
   </div>
 
-  <!-- Список привычек -->
+
   <% if (habits && habits.length > 0) { %>
   <div class="row" id="habitsList">
     <% habits.forEach(habit => { %>
@@ -79,7 +79,7 @@
         <div class="card-body">
           <p class="card-text"><%= habit.description || 'Нет описания' %></p>
 
-          <!-- Прогресс -->
+
           <div class="mb-3">
             <div class="d-flex justify-content-between mb-1">
               <small>Прогресс</small>
@@ -98,7 +98,7 @@
             </div>
           </div>
 
-          <!-- Детали -->
+
           <div class="row text-center mb-3">
             <div class="col-4">
               <div class="text-muted small">Цель</div>

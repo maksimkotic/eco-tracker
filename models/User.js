@@ -92,17 +92,17 @@ module.exports = (sequelize, DataTypes) => {
   User.associate = function (models) {
     User.hasMany(models.Habit, {
       foreignKey: "userId",
-      onDelete: "CASCADE", 
+      onDelete: "CASCADE",
     });
 
     User.hasMany(models.UserAchievement, {
       foreignKey: "userId",
-      onDelete: "CASCADE", 
+      onDelete: "CASCADE",
     });
 
     User.hasMany(models.Checkin, {
       foreignKey: "userId",
-      onDelete: "CASCADE", 
+      onDelete: "CASCADE",
     });
 
     User.belongsTo(models.Role, {
@@ -111,22 +111,22 @@ module.exports = (sequelize, DataTypes) => {
     });
   };
 
-  // Метод для сравнения пароля
+
   User.prototype.comparePassword = async function (password) {
     return await bcrypt.compare(password, this.passwordHash);
   };
 
-  // Метод для получения безопасных данных пользователя
+
   User.prototype.getSafeData = function () {
     const { passwordHash, ...safeData } = this.toJSON();
     return safeData;
   };
 
-  // Метод для добавления эко-очков
+
   User.prototype.addEcoPoints = async function (points) {
     this.ecoPoints += points;
 
-    // Обновляем уровень 
+
     const newLevel = Math.floor(this.ecoPoints / 100) + 1;
     if (newLevel > this.level) {
       this.level = newLevel;

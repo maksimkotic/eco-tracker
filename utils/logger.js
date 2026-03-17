@@ -33,32 +33,32 @@ class Logger {
             ip: details.ip || 'unknown'
         };
 
-        // Запись в файл (JSON)
+
         const logFile = path.join(this.logDir, `system-${format(timestamp, 'yyyy-MM-dd')}.json`);
-        
+
         try {
             let logs = [];
             try {
                 const data = await fs.readFile(logFile, 'utf8');
                 logs = JSON.parse(data);
             } catch (e) {
-                // Файл не существует или пустой
+
             }
-            
+
             logs.push(logEntry);
             await fs.writeFile(logFile, JSON.stringify(logs, null, 2), 'utf8');
         } catch (error) {
             console.error('Ошибка записи лога:', error);
         }
 
-        // Вывод в консоль
+
         const levelColors = {
-            info: '\x1b[36m', // Cyan
-            warning: '\x1b[33m', // Yellow
-            error: '\x1b[31m', // Red
-            critical: '\x1b[41m\x1b[37m' // Red background, white text
+            info: '\x1b[36m',
+            warning: '\x1b[33m',
+            error: '\x1b[31m',
+            critical: '\x1b[41m\x1b[37m'
         };
-        
+
         const resetColor = '\x1b[0m';
         console.log(
             `${levelColors[level]}[${format(timestamp, 'HH:mm:ss')}] ${action}${resetColor}`,
@@ -73,22 +73,22 @@ class Logger {
             const { dateFrom, dateTo, type, level, showAdminOnly, showModeratorOnly } = filters;
             let allLogs = [];
 
-            // Читаем логи за последние 7 дней
+
             for (let i = 0; i < 7; i++) {
                 const date = new Date();
                 date.setDate(date.getDate() - i);
                 const logFile = path.join(this.logDir, `system-${format(date, 'yyyy-MM-dd')}.json`);
-                
+
                 try {
                     const data = await fs.readFile(logFile, 'utf8');
                     const logs = JSON.parse(data);
                     allLogs = [...allLogs, ...logs];
                 } catch (e) {
-                    // Файл не существует
+
                 }
             }
 
-            // Применяем фильтры
+
             let filteredLogs = allLogs;
 
             if (dateFrom) {
@@ -107,27 +107,27 @@ class Logger {
             }
 
             if (type && type !== 'all') {
-                filteredLogs = filteredLogs.filter(log => 
+                filteredLogs = filteredLogs.filter(log =>
                     log.action.toLowerCase().includes(type.toLowerCase())
                 );
             }
 
             if (showAdminOnly) {
-                filteredLogs = filteredLogs.filter(log => 
+                filteredLogs = filteredLogs.filter(log =>
                     log.user && log.user.role === 'admin'
                 );
             }
 
             if (showModeratorOnly) {
-                filteredLogs = filteredLogs.filter(log => 
+                filteredLogs = filteredLogs.filter(log =>
                     log.user && log.user.role === 'moderator'
                 );
             }
 
-            // Сортировка по времени (новые сверху)
-            return filteredLogs.sort((a, b) => 
+
+            return filteredLogs.sort((a, b) =>
                 new Date(b.timestamp) - new Date(a.timestamp)
-            ).slice(0, 100); // Ограничиваем количество
+            ).slice(0, 100);
         } catch (error) {
             console.error('Ошибка чтения логов:', error);
             return [];

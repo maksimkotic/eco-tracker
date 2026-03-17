@@ -3,7 +3,7 @@
         <i class="bi bi-trophy"></i> Мои достижения
     </h1>
 
-    <!-- Статистика достижений -->
+
     <div class="row mb-4">
         <div class="col-md-3 mb-3">
             <div class="card border-0 bg-primary bg-opacity-10">
@@ -47,7 +47,7 @@
         </div>
     </div>
 
-    <!-- Прогресс бар -->
+
     <div class="card shadow mb-4">
         <div class="card-body">
             <div class="d-flex justify-content-between mb-1">
@@ -65,7 +65,7 @@
         </div>
     </div>
 
-    <!-- Вкладки -->
+
     <ul class="nav nav-tabs mb-4" id="achievementsTab" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="earned-tab" data-bs-toggle="tab" data-bs-target="#earned" type="button">
@@ -84,19 +84,19 @@
         </li>
     </ul>
 
-    <!-- Содержимое вкладок -->
+
     <div class="tab-content" id="achievementsTabContent">
-        <!-- Заработанные достижения -->
+
         <div class="tab-pane fade show active" id="earned" role="tabpanel">
             <% if (earnedAchievements && earnedAchievements.length> 0) { %>
                 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                     <% earnedAchievements.forEach(achievement=> {
                         if (!achievement) return;
 
-                        // Определяем редкость с проверкой
+
                         const rarity = achievement.rarity || 'common';
 
-                        // Получаем информацию о получении
+
                         let earnedAt = null;
                         if (achievement.Users && achievement.Users.length > 0 &&
                         achievement.Users[0].UserAchievement) {
@@ -104,15 +104,15 @@
                         }
                         %>
                         <div class="col">
-                            <div class="card h-100 shadow border-<%= 
-                    rarity === 'legendary' ? 'danger border-2' : 
-                    rarity === 'epic' ? 'warning border-2' : 
-                    rarity === 'rare' ? 'primary' : 'secondary' 
+                            <div class="card h-100 shadow border-<%=
+                    rarity === 'legendary' ? 'danger border-2' :
+                    rarity === 'epic' ? 'warning border-2' :
+                    rarity === 'rare' ? 'primary' : 'secondary'
                 %>">
-                                <div class="card-header bg-<%= 
-                        rarity === 'legendary' ? 'danger' : 
-                        rarity === 'epic' ? 'warning' : 
-                        rarity === 'rare' ? 'primary' : 'secondary' 
+                                <div class="card-header bg-<%=
+                        rarity === 'legendary' ? 'danger' :
+                        rarity === 'epic' ? 'warning' :
+                        rarity === 'rare' ? 'primary' : 'secondary'
                     %> text-white text-center">
                                     <i class="bi bi-<%= achievement.icon || 'trophy' %>" style="font-size: 2.5rem;"></i>
                                 </div>
@@ -125,10 +125,10 @@
                                     </p>
 
                                     <div class="d-flex justify-content-center mb-3">
-                                        <span class="badge bg-<%= 
-                                rarity === 'legendary' ? 'danger' : 
-                                rarity === 'epic' ? 'warning' : 
-                                rarity === 'rare' ? 'primary' : 'secondary' 
+                                        <span class="badge bg-<%=
+                                rarity === 'legendary' ? 'danger' :
+                                rarity === 'epic' ? 'warning' :
+                                rarity === 'rare' ? 'primary' : 'secondary'
                             %> me-2">
                                             <%= rarity==='legendary' ? 'Легендарное' : rarity==='epic' ? 'Эпическое' :
                                                 rarity==='rare' ? 'Редкое' : 'Обычное' %>
@@ -167,7 +167,7 @@
                     <% } %>
         </div>
 
-        <!-- Доступные достижения -->
+
         <div class="tab-pane fade" id="available" role="tabpanel">
             <% if (availableAchievements && availableAchievements.length> 0) { %>
                 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
@@ -177,10 +177,10 @@
                         %>
                         <div class="col">
                             <div class="card h-100 shadow">
-                                <div class="card-header text-white text-center" style="background-color: <%= 
-                                    rarity === 'legendary' ? '#dc3545' : 
-                                    rarity === 'epic' ? '#fd7e14' : 
-                                    rarity === 'rare' ? '#0d6efd' : '#6c757d' 
+                                <div class="card-header text-white text-center" style="background-color: <%=
+                                    rarity === 'legendary' ? '#dc3545' :
+                                    rarity === 'epic' ? '#fd7e14' :
+                                    rarity === 'rare' ? '#0d6efd' : '#6c757d'
                                  %>; opacity: 0.7;">
                                     <i class="bi bi-<%= achievement.icon || 'trophy' %>" style="font-size: 2.5rem;"></i>
                                 </div>
@@ -193,10 +193,10 @@
                                     </p>
 
                                     <div class="mb-3">
-                                        <span class="badge bg-<%= 
-                                        rarity === 'legendary' ? 'danger' : 
-                                        rarity === 'epic' ? 'warning' : 
-                                        rarity === 'rare' ? 'primary' : 'secondary' 
+                                        <span class="badge bg-<%=
+                                        rarity === 'legendary' ? 'danger' :
+                                        rarity === 'epic' ? 'warning' :
+                                        rarity === 'rare' ? 'primary' : 'secondary'
                                     %>">
                                             <%= rarity==='legendary' ? 'Легендарное' : rarity==='epic' ? 'Эпическое' :
                                                 rarity==='rare' ? 'Редкое' : 'Обычное' %>
@@ -225,7 +225,7 @@
                     <% } %>
         </div>
 
-        <!-- Заблокированные достижения -->
+
         <div class="tab-pane fade" id="locked" role="tabpanel">
             <% if (lockedAchievements && lockedAchievements.length> 0) { %>
                 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
@@ -273,7 +273,7 @@
         </div>
     </div>
 
-    <!-- Пояснения по редкости -->
+
     <div class="card shadow mt-4">
         <div class="card-header">
             <h6 class="mb-0"><i class="bi bi-info-circle"></i> О редкости достижений</h6>
