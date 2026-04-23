@@ -27,6 +27,13 @@ module.exports = (sequelize, DataTypes) => {
           notEmpty: true,
         },
       },
+      password: {
+        type: DataTypes.VIRTUAL,
+        allowNull: true,
+        validate: {
+          len: [6, 255],
+        },
+      },
       passwordHash: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -81,7 +88,7 @@ module.exports = (sequelize, DataTypes) => {
           }
         },
         beforeUpdate: async (user) => {
-          if (user.changed("password")) {
+          if (user.changed("password") && user.password) {
             user.passwordHash = await bcrypt.hash(user.password, 10);
           }
         },
