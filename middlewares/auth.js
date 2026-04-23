@@ -54,7 +54,7 @@ const loadUser = async (req, res, next) => {
 
 const csrfProtection = (req, res, next) => {
   if (req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE') {
-    const csrfToken = req.body._csrf || req.query._csrf;
+    const csrfToken = req.body._csrf || req.query._csrf || req.get('x-csrf-token');
 
     if (!csrfToken || csrfToken !== req.session.csrfToken) {
       return res.status(403).render('errors/403', {
