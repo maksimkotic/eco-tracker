@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="<%= csrfToken || "" %>" />
     <title><%= title %> | Эко-Трекер</title>
 
     <link
@@ -393,6 +394,40 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+      const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
+      const csrfToken = csrfTokenMeta ? csrfTokenMeta.getAttribute('content') : '';
+
+      function injectCsrfIntoForms() {
+        if (!csrfToken) return;
+
+        document.querySelectorAll('form').forEach((form) => {
+          const method = (form.getAttribute('method') || 'GET').toUpperCase();
+          if (method === 'GET') return;
+
+          if (!form.querySelector('input[name="_csrf"]')) {
+            const tokenInput = document.createElement('input');
+            tokenInput.type = 'hidden';
+            tokenInput.name = '_csrf';
+            tokenInput.value = csrfToken;
+            form.appendChild(tokenInput);
+          }
+        });
+      }
+
+      const originalFetch = window.fetch.bind(window);
+      window.fetch = (input, init = {}) => {
+        if (csrfToken) {
+          const headers = new Headers(init.headers || {});
+          headers.set('x-csrf-token', csrfToken);
+          init.headers = headers;
+        }
+
+        return originalFetch(input, init);
+      };
+
+      document.addEventListener('DOMContentLoaded', injectCsrfIntoForms);
+    </script>
+    <script>
       window.confirmDelete = function (habitId, habitTitle) {
         console.log(
           "confirmDelete вызвана! habitId:",
@@ -422,6 +457,15 @@
           methodInput.value = "DELETE";
 
           form.appendChild(methodInput);
+
+          if (csrfToken) {
+            const csrfInput = document.createElement("input");
+            csrfInput.type = "hidden";
+            csrfInput.name = "_csrf";
+            csrfInput.value = csrfToken;
+            form.appendChild(csrfInput);
+          }
+
           document.body.appendChild(form);
 
           console.log("Отправляем форму удаления...");
