@@ -33,6 +33,14 @@ async function initializeDatabase(options = {}) {
     });
     console.log('✅ Роли подготовлены');
 
+    const isProduction = process.env.NODE_ENV === 'production';
+    const allowDemoSeed = process.env.ALLOW_DEMO_SEED === 'true';
+
+    if (isProduction && !allowDemoSeed) {
+      console.log('ℹ️ Прод-режим: demo-пользователи и тестовые данные отключены. Установите ALLOW_DEMO_SEED=true для явного включения.');
+      return;
+    }
+
     console.log('👤 Создание тестовых пользователей...');
 
     const adminHash = await bcrypt.hash('admin123', 10);

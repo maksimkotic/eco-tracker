@@ -1,11 +1,16 @@
 const { Sequelize, DataTypes } = require('sequelize');
 
 const DB_NAME = process.env.DB_NAME || 'eco_tracker';
-const DB_USER = process.env.DB_USER || 'maksimkotic';
-const DB_PASSWORD = process.env.DB_PASSWORD || '0909';
+const DB_USER = process.env.DB_USER;
+const DB_PASSWORD = process.env.DB_PASSWORD;
 const DB_HOST = process.env.DB_HOST || 'localhost';
 const DB_PORT = Number(process.env.DB_PORT || 5432);
 const DB_LOGGING = process.env.DB_LOGGING === 'true';
+
+
+if (!DB_USER || !DB_PASSWORD) {
+  throw new Error('DB_USER и DB_PASSWORD должны быть заданы в переменных окружения');
+}
 
 const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
   host: DB_HOST,

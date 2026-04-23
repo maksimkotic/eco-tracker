@@ -125,7 +125,7 @@ module.exports = (sequelize, DataTypes) => {
 
 
   User.prototype.getSafeData = function () {
-    const { passwordHash, ...safeData } = this.toJSON();
+    const { password, passwordHash, ...safeData } = this.toJSON();
     return safeData;
   };
 
