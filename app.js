@@ -10,7 +10,7 @@ require('dotenv').config();
 
 const { sequelize } = require('./models');
 const initializeDatabase = require('./database/init');
-const { loadUser } = require('./middlewares/auth');
+const { loadUser, csrfProtection } = require('./middlewares/auth');
 
 
 const indexRoutes = require('./routes/index');
@@ -84,6 +84,7 @@ function configureApp() {
 
   app.use(templateLocals);
   app.use(loadUser);
+  app.use(csrfProtection);
 
   app.use('/', indexRoutes);
   app.use('/auth', authRoutes);
