@@ -6,6 +6,7 @@ const {
   Checkin,
 } = require("../models");
 const { Op } = require("sequelize");
+const { CATEGORY_LABELS, generateHabitSuggestions } = require("../services/aiHabitService");
 
 const wantsJson = (req) =>
   req.xhr || (typeof req.get === 'function' && (req.get('accept') || '').includes('json'));
@@ -85,6 +86,63 @@ const habitController = {
   },
 
 
+  aiAssistant: async (req, res) => {
+    try {
+      const habits = await Habit.findAll({
+        where: { userId: req.currentUser.id },
+        attributes: ["title", "category"],
+        order: [["createdAt", "DESC"]],
+        limit: 10,
+      });
+
+      res.render("habits/ai", {
+        title: "ИИ-помощник привычек",
+        categories: CATEGORY_LABELS,
+        selectedCategory: req.body?.category || "other",
+        goal: req.body?.goal || "",
+        habits,
+        result: null,
+      });
+    } catch (error) {
+      console.error("Ошибка загрузки ИИ-помощника:", error);
+      req.flash("error", "Не удалось открыть ИИ-помощник");
+      res.redirect("/habits");
+    }
+  },
+
+
+  generateAiSuggestions: async (req, res) => {
+    try {
+      const { category = "other", goal = "" } = req.body;
+      const habits = await Habit.findAll({
+        where: { userId: req.currentUser.id },
+        attributes: ["title", "category"],
+        order: [["createdAt", "DESC"]],
+        limit: 10,
+      });
+
+      const result = await generateHabitSuggestions({
+        category,
+        goal,
+        currentHabits: habits.map((habit) => habit.title),
+      });
+
+      res.render("habits/ai", {
+        title: "ИИ-помощник привычек",
+        categories: CATEGORY_LABELS,
+        selectedCategory: category,
+        goal,
+        habits,
+        result,
+      });
+    } catch (error) {
+      console.error("Ошибка генерации ИИ-рекомендаций:", error);
+      req.flash("error", "Не удалось сгенерировать рекомендации");
+      res.redirect("/habits/ai");
+    }
+  },
+
+
   create: (req, res) => {
     res.render("habits/new", {
       title: "Создание новой привычки",
@@ -111,6 +169,10 @@ const habitController = {
         "#20c997",
         "#ffc107",
       ],
+      suggestedHabit: {
+        title: req.query.title || "",
+        category: req.query.category || "",
+      },
     });
   },
 
