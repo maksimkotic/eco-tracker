@@ -10,6 +10,9 @@ router.get('/', habitController.index);
 router.get('/new', habitController.create);
 router.post('/', habitController.store);
 
+router.get('/ai', habitController.aiAssistant);
+router.post('/ai', habitController.generateAiSuggestions);
+
 router.get('/:id', habitController.show);
 
 router.get('/:id/edit', habitController.edit);
