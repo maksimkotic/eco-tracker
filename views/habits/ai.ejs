@@ -13,7 +13,7 @@
     <div class="col-lg-5">
       <div class="card shadow h-100">
         <div class="card-header bg-success text-white">
-          <h5 class="mb-0"><i class="bi bi-magic"></i> Запрос к ИИ</h5>
+          <h5 class="mb-0"><i class="bi bi-magic"></i> Запрос к OpenRouter</h5>
         </div>
         <div class="card-body">
           <form action="/habits/ai" method="POST">
@@ -54,10 +54,10 @@
 
     <div class="col-lg-7">
       <% if (result) { %>
-        <div class="alert <%= result.provider === 'openai' ? 'alert-success' : 'alert-warning' %>">
+        <div class="alert <%= result.provider === 'openrouter' ? 'alert-success' : 'alert-warning' %>">
           <i class="bi bi-info-circle"></i>
           <%= result.note %>
-          <div class="small mt-1">Провайдер: <strong><%= result.provider %></strong>, модель: <strong><%= result.model %></strong></div>
+          <div class="small mt-1">Режим: <strong><%= result.provider %></strong>, модель: <strong><%= result.model %></strong></div>
         </div>
 
         <div class="row g-3">

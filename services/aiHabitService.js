@@ -1,4 +1,4 @@
-const OPENAI_RESPONSES_URL = 'https://api.openai.com/v1/responses';
+const OPENROUTER_CHAT_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 const CATEGORY_LABELS = {
   water: 'Экономия воды',
@@ -48,7 +48,7 @@ function getFallbackSuggestions(category, goal) {
 
   return categorySuggestions.map((title, index) => ({
     title,
-    description: `ИИ-режим недоступен, поэтому показана локальная рекомендация${goalText}. Начните с малого и отмечайте выполнение регулярно.`,
+    description: `OpenRouter недоступен, поэтому показана локальная рекомендация${goalText}. Начните с малого и отмечайте выполнение регулярно.`,
     frequency: index === 2 ? 'weekly' : 'daily',
     targetValue: 1,
     unit: 'times'
@@ -68,77 +68,104 @@ function normalizeSuggestions(rawSuggestions, category) {
   })).filter((item) => item.title);
 }
 
-function extractOutputText(responseBody) {
-  if (responseBody.output_text) return responseBody.output_text;
+function getOpenRouterHeaders(apiKey) {
+  const headers = {
+    Authorization: `Bearer ${apiKey}`,
+    'Content-Type': 'application/json',
+    'X-OpenRouter-Title': process.env.OPENROUTER_APP_TITLE || 'Eco Tracker'
+  };
 
-  const textParts = [];
-  for (const outputItem of responseBody.output || []) {
-    for (const contentItem of outputItem.content || []) {
-      if (contentItem.text) textParts.push(contentItem.text);
-    }
+  if (process.env.OPENROUTER_SITE_URL) {
+    headers['HTTP-Referer'] = process.env.OPENROUTER_SITE_URL;
   }
 
-  return textParts.join('\n');
+  return headers;
 }
 
-async function requestOpenAiSuggestions({ category, goal, currentHabits }) {
-  const apiKey = process.env.OPENAI_API_KEY;
-  const model = process.env.OPENAI_MODEL || 'gpt-5.4-mini';
+function extractChoiceText(responseBody) {
+  return responseBody?.choices?.[0]?.message?.content || '';
+}
+
+function parseJsonSuggestions(outputText) {
+  const trimmed = outputText.trim();
+
+  try {
+    return JSON.parse(trimmed);
+  } catch (error) {
+    const jsonStart = trimmed.indexOf('[');
+    const jsonEnd = trimmed.lastIndexOf(']');
+
+    if (jsonStart === -1 || jsonEnd === -1 || jsonEnd <= jsonStart) {
+      throw error;
+    }
+
+    return JSON.parse(trimmed.slice(jsonStart, jsonEnd + 1));
+  }
+}
+
+async function requestOpenRouterSuggestions({ category, goal, currentHabits }) {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  const model = process.env.OPENROUTER_MODEL || 'openrouter/auto';
 
   if (!apiKey) {
     return {
       provider: 'local',
       model: 'fallback',
       suggestions: getFallbackSuggestions(category, goal),
-      note: 'OPENAI_API_KEY не задан, поэтому показаны локальные рекомендации без обращения к OpenAI.'
+      note: 'OPENROUTER_API_KEY не задан, поэтому показаны локальные рекомендации без обращения к OpenRouter.'
     };
   }
 
-  const prompt = [
+  const systemPrompt = [
     'Ты помощник приложения Eco Tracker.',
-    'Сгенерируй экологичные привычки для пользователя на русском языке.',
+    'Генерируй только безопасные экологичные привычки на русском языке.',
+    'Не предлагай опасные действия, медицинские советы или незаконные действия.',
     'Верни только JSON-массив без markdown и пояснений.',
     'Каждый элемент должен иметь поля: title, description, frequency, targetValue, unit.',
     'frequency: daily, weekly или monthly.',
-    'unit: times, liters, kwh, kg или items.',
+    'unit: times, liters, kwh, kg или items.'
+  ].join('\n');
+
+  const userPrompt = [
     `Категория: ${CATEGORY_LABELS[category] || CATEGORY_LABELS.other}.`,
     `Цель пользователя: ${goal || 'не указана'}.`,
     `Текущие привычки пользователя: ${currentHabits.length ? currentHabits.join(', ') : 'нет'}.`,
-    'Не предлагай опасные действия, медицинские советы или незаконные действия.'
+    'Сгенерируй 3-5 новых привычек, которые не дублируют текущие.'
   ].join('\n');
 
-  const response = await fetch(OPENAI_RESPONSES_URL, {
+  const response = await fetch(OPENROUTER_CHAT_URL, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json'
-    },
+    headers: getOpenRouterHeaders(apiKey),
     body: JSON.stringify({
       model,
-      input: prompt,
-      max_output_tokens: 900
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ],
+      max_tokens: 900,
+      temperature: 0.4
     })
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`OpenAI API вернул ошибку ${response.status}: ${errorText.slice(0, 300)}`);
+    throw new Error(`OpenRouter API вернул ошибку ${response.status}: ${errorText.slice(0, 300)}`);
   }
 
   const responseBody = await response.json();
-  const outputText = extractOutputText(responseBody);
-  const parsed = JSON.parse(outputText);
+  const outputText = extractChoiceText(responseBody);
+  const parsed = parseJsonSuggestions(outputText);
   const suggestions = normalizeSuggestions(parsed, category);
 
   if (suggestions.length === 0) {
-    throw new Error('OpenAI API вернул пустой список рекомендаций');
+    throw new Error('OpenRouter API вернул пустой список рекомендаций');
   }
 
   return {
-    provider: 'openai',
-    model,
+    provider: 'openrouter',
+    model: responseBody.model || model,
     suggestions,
-    note: 'Рекомендации сгенерированы через OpenAI Responses API.'
+    note: 'Рекомендации сгенерированы через OpenRouter Chat Completions API.'
   };
 }
 
@@ -146,7 +173,7 @@ async function generateHabitSuggestions({ category = 'other', goal = '', current
   const safeCategory = CATEGORY_LABELS[category] ? category : 'other';
 
   try {
-    return await requestOpenAiSuggestions({
+    return await requestOpenRouterSuggestions({
       category: safeCategory,
       goal: goal.trim(),
       currentHabits
@@ -157,7 +184,7 @@ async function generateHabitSuggestions({ category = 'other', goal = '', current
       provider: 'local',
       model: 'fallback',
       suggestions: getFallbackSuggestions(safeCategory, goal),
-      note: `OpenAI API недоступен: ${error.message}. Показаны локальные рекомендации.`
+      note: `OpenRouter API недоступен: ${error.message}. Показаны локальные рекомендации.`
     };
   }
 }

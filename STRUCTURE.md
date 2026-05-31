@@ -48,7 +48,7 @@ Sequelize-модели и связи.
 
 ### `services/`
 Сервисный слой для бизнес-логики, которую нужно использовать вне HTTP-контроллеров.
-- `aiHabitService.js` — генерация рекомендаций эко-привычек через OpenAI Responses API с локальным fallback-режимом.
+- `aiHabitService.js` — генерация рекомендаций эко-привычек через OpenRouter Chat Completions API с локальным fallback-режимом.
 
 ### `views/`
 EJS-шаблоны интерфейса.
