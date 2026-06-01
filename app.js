@@ -22,7 +22,8 @@ const moderatorRoutes = require('./routes/moderatorRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = Number(process.env.PORT || 3001);
+const HOST = process.env.HOST || '0.0.0.0';
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 500,
@@ -119,20 +120,20 @@ async function ensureDatabase() {
 }
 
 async function startServer() {
-  try {
-    await ensureDatabase();
-    configureApp();
+  configureApp();
 
-    await initializeDatabase({ force: false });
-    console.log('База данных подключена и инициализирована');
+  const server = app.listen(PORT, HOST, async () => {
+    console.log(`Сервер запущен на http://${HOST}:${PORT}`);
 
-    app.listen(PORT, () => {
-      console.log(`Сервер запущен на http://localhost:${PORT}`);
-    });
-  } catch (error) {
-    console.error('Ошибка запуска сервера:', error);
-    process.exit(1);
-  }
+    try {
+      await ensureDatabase();
+      await initializeDatabase({ force: false });
+      console.log('База данных подключена и инициализирована');
+    } catch (error) {
+      console.error('Ошибка запуска сервера:', error);
+      server.close(() => process.exit(1));
+    }
+  });
 }
 
 if (require.main === module) {

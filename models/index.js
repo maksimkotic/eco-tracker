@@ -1,5 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
 
+const DATABASE_URL = process.env.DATABASE_URL;
 const DB_NAME = process.env.DB_NAME || 'eco_tracker';
 const DB_USER = process.env.DB_USER;
 const DB_PASSWORD = process.env.DB_PASSWORD;
@@ -7,14 +8,7 @@ const DB_HOST = process.env.DB_HOST || 'localhost';
 const DB_PORT = Number(process.env.DB_PORT || 5432);
 const DB_LOGGING = process.env.DB_LOGGING === 'true';
 
-
-if (!DB_USER || !DB_PASSWORD) {
-  throw new Error('DB_USER и DB_PASSWORD должны быть заданы в переменных окружения');
-}
-
-const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
-  host: DB_HOST,
-  port: DB_PORT,
+const sequelizeOptions = {
   dialect: 'postgres',
   logging: DB_LOGGING ? console.log : false,
   define: {
@@ -30,7 +24,19 @@ const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
         }
       }
     : undefined
-});
+};
+
+if (!DATABASE_URL && (!DB_USER || !DB_PASSWORD)) {
+  throw new Error('DATABASE_URL или DB_USER и DB_PASSWORD должны быть заданы в переменных окружения');
+}
+
+const sequelize = DATABASE_URL
+  ? new Sequelize(DATABASE_URL, sequelizeOptions)
+  : new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
+      ...sequelizeOptions,
+      host: DB_HOST,
+      port: DB_PORT
+    });
 
 const User = require('./User')(sequelize, DataTypes);
 const Role = require('./Role')(sequelize, DataTypes);
