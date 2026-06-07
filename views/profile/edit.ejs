@@ -1,3 +1,20 @@
+<%
+  const formErrors = Array.isArray(errors) ? errors : [];
+  const errorsByField = formErrors.reduce((acc, error) => {
+    const field = error.path || error.param || 'form';
+    acc[field] = acc[field] || [];
+    acc[field].push(error.msg || error);
+    return acc;
+  }, {});
+  const formValue = (field, fallback = '') => {
+    if (oldInput && Object.prototype.hasOwnProperty.call(oldInput, field)) {
+      return oldInput[field] || '';
+    }
+    return fallback || '';
+  };
+  const inputClass = (field) => errorsByField[field] ? ' is-invalid' : '';
+%>
+
 <div class="container py-4">
   <div class="row justify-content-center">
     <div class="col-md-8">
@@ -6,6 +23,17 @@
           <h4 class="mb-0"><i class="bi bi-pencil-square"></i> Редактирование профиля</h4>
         </div>
         <div class="card-body p-4">
+          <% if (formErrors.length) { %>
+            <div class="alert alert-danger" role="alert">
+              <h6 class="alert-heading mb-2"><i class="bi bi-exclamation-circle"></i> Проверьте данные профиля</h6>
+              <ul class="mb-0 ps-3">
+                <% formErrors.forEach(error => { %>
+                  <li><%= error.msg || error %></li>
+                <% }); %>
+              </ul>
+            </div>
+          <% } %>
+
           <div class="text-center mb-4">
             <% if (user.avatar && user.avatar !== 'default-avatar.png') { %>
               <img src="/uploads/avatars/<%= user.avatar %>"
@@ -25,27 +53,36 @@
               <input type="hidden" name="_csrf" value="<%= csrfToken %>">
               <label for="avatar" class="form-label">Сменить аватар</label>
               <div class="input-group">
-                <input type="file" class="form-control" id="avatar" name="avatar" accept="image/jpeg,image/png,image/gif" required>
+                <input type="file" class="form-control" id="avatar" name="avatar" accept="image/jpeg,image/jpg,image/png,image/gif" required>
                 <button type="submit" class="btn btn-outline-primary">Загрузить</button>
               </div>
               <div class="form-text">Максимальный размер: 5MB. Разрешены: JPG, PNG, GIF</div>
             </form>
           </div>
 
-          <form action="/profile" method="POST">
+          <form action="/profile" method="POST" id="profileEditForm" novalidate>
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <input type="hidden" name="_method" value="PUT">
             
             <div class="mb-3">
               <label for="username" class="form-label">Имя пользователя *</label>
-              <input type="text" class="form-control" id="username" name="username"
-                     value="<%= user.username %>" required>
+              <input type="text" class="form-control<%= inputClass('username') %>" id="username" name="username"
+                     value="<%= formValue('username', user.username) %>" minlength="3" maxlength="50"
+                     pattern="[A-Za-z0-9_]+" data-original-value="<%= user.username %>" required>
+              <% if (errorsByField.username) { %>
+                <div class="invalid-feedback"><%= errorsByField.username[0] %></div>
+              <% } %>
+              <div class="form-text">От 3 до 50 символов: латинские буквы, цифры и подчеркивания.</div>
             </div>
 
             <div class="mb-3">
               <label for="email" class="form-label">Email адрес *</label>
-              <input type="email" class="form-control" id="email" name="email"
-                     value="<%= user.email %>" required>
+              <input type="email" class="form-control<%= inputClass('email') %>" id="email" name="email"
+                     value="<%= formValue('email', user.email) %>" maxlength="100"
+                     data-original-value="<%= user.email %>" required>
+              <% if (errorsByField.email) { %>
+                <div class="invalid-feedback"><%= errorsByField.email[0] %></div>
+              <% } %>
             </div>
             
             <div class="card border-warning mb-4">
@@ -54,23 +91,37 @@
               </div>
               <div class="card-body">
                 <p class="text-muted small mb-3">
-                  Оставьте эти поля пустыми, если не хотите менять пароль
+                  Оставьте поля нового пароля пустыми, если не хотите менять пароль.
+                  Текущий пароль потребуется для смены имени, email или пароля.
                 </p>
 
                 <div class="mb-3">
                   <label for="currentPassword" class="form-label">Текущий пароль</label>
-                  <input type="password" class="form-control" id="currentPassword" name="currentPassword">
+                  <input type="password" class="form-control<%= inputClass('currentPassword') %>" id="currentPassword" name="currentPassword"
+                         autocomplete="current-password">
+                  <% if (errorsByField.currentPassword) { %>
+                    <div class="invalid-feedback"><%= errorsByField.currentPassword[0] %></div>
+                  <% } %>
+                  <div class="form-text">Обязателен при изменении имени, email или пароля.</div>
                 </div>
 
                 <div class="mb-3">
                   <label for="newPassword" class="form-label">Новый пароль</label>
-                  <input type="password" class="form-control" id="newPassword" name="newPassword">
-                  <div class="form-text">Минимум 6 символов, должна быть хотя бы одна цифра</div>
+                  <input type="password" class="form-control<%= inputClass('newPassword') %>" id="newPassword" name="newPassword"
+                         minlength="6" maxlength="255" pattern="(?=.*\d).{6,}" autocomplete="new-password">
+                  <% if (errorsByField.newPassword) { %>
+                    <div class="invalid-feedback"><%= errorsByField.newPassword[0] %></div>
+                  <% } %>
+                  <div class="form-text">От 6 символов, должна быть хотя бы одна цифра.</div>
                 </div>
 
                 <div class="mb-3">
                   <label for="confirmPassword" class="form-label">Подтверждение нового пароля</label>
-                  <input type="password" class="form-control" id="confirmPassword" name="confirmPassword">
+                  <input type="password" class="form-control<%= inputClass('confirmPassword') %>" id="confirmPassword" name="confirmPassword"
+                         autocomplete="new-password">
+                  <% if (errorsByField.confirmPassword) { %>
+                    <div class="invalid-feedback"><%= errorsByField.confirmPassword[0] %></div>
+                  <% } %>
                 </div>
               </div>
             </div>
@@ -129,7 +180,7 @@
               Для подтверждения введите свой пароль:
             </label>
             <input type="password" class="form-control" id="confirmPasswordDelete"
-                   name="password" required>
+                   name="password" autocomplete="current-password" required>
           </div>
         </form>
       </div>
@@ -142,3 +193,49 @@
     </div>
   </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('profileEditForm');
+    if (!form) return;
+
+    const username = document.getElementById('username');
+    const email = document.getElementById('email');
+    const currentPassword = document.getElementById('currentPassword');
+    const newPassword = document.getElementById('newPassword');
+    const confirmPassword = document.getElementById('confirmPassword');
+
+    const profileChanged = () => (
+      username.value !== username.dataset.originalValue ||
+      email.value !== email.dataset.originalValue
+    );
+
+    const passwordChangeRequested = () => Boolean(newPassword.value || confirmPassword.value);
+
+    const validatePasswords = () => {
+      currentPassword.required = profileChanged() || passwordChangeRequested();
+
+      if (passwordChangeRequested() && newPassword.value !== confirmPassword.value) {
+        confirmPassword.setCustomValidity('Подтверждение нового пароля не совпадает');
+      } else {
+        confirmPassword.setCustomValidity('');
+      }
+    };
+
+    [username, email, currentPassword, newPassword, confirmPassword].forEach((field) => {
+      field.addEventListener('input', validatePasswords);
+      field.addEventListener('change', validatePasswords);
+    });
+
+    form.addEventListener('submit', (event) => {
+      validatePasswords();
+      if (!form.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      form.classList.add('was-validated');
+    });
+
+    validatePasswords();
+  });
+</script>
