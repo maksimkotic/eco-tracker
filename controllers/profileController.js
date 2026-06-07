@@ -178,12 +178,12 @@ const profileController = {
 
       await user.destroy();
 
-
       req.session.destroy((err) => {
         if (err) {
-          console.error('Ошибка при выходе:', err);
+          console.error('Ошибка при очистке сессии после удаления аккаунта:', err);
+          return res.redirect('/');
         }
-        req.flash('info', 'Ваш аккаунт успешно удален');
+
         res.redirect('/');
       });
     } catch (error) {

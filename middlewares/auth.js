@@ -30,7 +30,7 @@ const loadUser = async (req, res, next) => {
 
       if (user) {
         if (user.isBanned) {
-          req.session.destroy();
+          delete req.session.user;
           req.flash('error', 'Ваш аккаунт заблокирован');
           return res.redirect('/auth/login');
         }
@@ -43,7 +43,7 @@ const loadUser = async (req, res, next) => {
           await user.save();
         }
       } else {
-        req.session.destroy();
+        delete req.session.user;
       }
     } catch (error) {
       console.error('Ошибка загрузки пользователя:', error);
