@@ -27,7 +27,7 @@
   <div class="row justify-content-center">
     <div class="col-lg-8 col-xl-7">
       <div class="checkin-card card shadow border-0 overflow-hidden">
-        <div class="checkin-hero text-white" style="--habit-color: <%= habitColor %>;">
+        <div class="checkin-hero text-white" style="--habit-color: <%= habitColor %>; background: linear-gradient(135deg, <%= habitColor %> 0%, #198754 100%); color: #fff;">
           <div class="checkin-hero__content d-flex align-items-center gap-3">
             <div class="checkin-hero__icon">
               <i class="bi bi-check2-circle"></i>
@@ -219,7 +219,6 @@ if (checkinValueInput) {
 
 .checkin-hero {
   --habit-color: #28a745;
-  background: linear-gradient(135deg, var(--habit-color) 0%, #198754 100%);
   padding: 1.75rem;
 }
 
