@@ -13,6 +13,8 @@ router.get('/habits', moderatorController.habitsIndex);
 router.get('/habits/:id/edit', moderatorController.editHabit);
 router.put('/habits/:id', moderatorController.updateHabit);
 router.delete('/habits/:id', moderatorController.destroyHabit);
+router.post('/habits/:id/delete', moderatorController.destroyHabit);
+router.post('/habits/:id/reset', moderatorController.resetHabitStats);
 
 router.get('/achievements', moderatorController.achievementsIndex);
 router.get('/achievements/create', moderatorController.createAchievement);

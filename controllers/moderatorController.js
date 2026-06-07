@@ -1,5 +1,91 @@
-const { Habit, User, Achievement, UserAchievement, Role, Checkin } = require('../models');
+const { Habit, User, Achievement, UserAchievement, Role, Checkin, sequelize } = require('../models');
 const { Op } = require('sequelize');
+
+
+const wantsJson = (req) =>
+  req.xhr || (typeof req.get === 'function' && (req.get('accept') || '').includes('json'));
+
+function getUtcDayKey(date) {
+  const parsedDate = new Date(date);
+  const year = parsedDate.getUTCFullYear();
+  const month = String(parsedDate.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(parsedDate.getUTCDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
+function getPreviousUtcDayKey(dayKey) {
+  const [year, month, day] = dayKey.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  date.setUTCDate(date.getUTCDate() - 1);
+
+  return getUtcDayKey(date);
+}
+
+function calculateUserStreakFromCheckins(checkins) {
+  const dayKeys = [...new Set(checkins.map((checkin) => getUtcDayKey(checkin.date)))].sort();
+
+  if (!dayKeys.length) {
+    return 0;
+  }
+
+  const activeDays = new Set(dayKeys);
+  let streak = 1;
+  let previousDayKey = getPreviousUtcDayKey(dayKeys[dayKeys.length - 1]);
+
+  while (activeDays.has(previousDayKey)) {
+    streak += 1;
+    previousDayKey = getPreviousUtcDayKey(previousDayKey);
+  }
+
+  return streak;
+}
+
+function getCheckinBasePoints(category) {
+  switch (category) {
+    case 'water':
+    case 'energy':
+      return 5;
+    case 'waste':
+      return 10;
+    case 'transport':
+      return 7;
+    case 'food':
+      return 8;
+    default:
+      return 3;
+  }
+}
+
+function getCheckinEcoPoints(category, value) {
+  return getCheckinBasePoints(category) * Number(value || 0);
+}
+
+async function recalculateUserAfterRemovedCheckins(userId, pointsToRevoke, transaction) {
+  const [user, remainingCheckins] = await Promise.all([
+    User.findByPk(userId, { transaction }),
+    Checkin.findAll({
+      where: { userId },
+      attributes: ['date'],
+      order: [['date', 'ASC']],
+      transaction
+    })
+  ]);
+
+  if (!user) {
+    return null;
+  }
+
+  user.ecoPoints = Math.max(0, Math.round((user.ecoPoints || 0) - (pointsToRevoke || 0)));
+  user.level = Math.max(1, Math.floor(user.ecoPoints / 100) + 1);
+  user.currentStreak = calculateUserStreakFromCheckins(remainingCheckins);
+  user.lastActive = remainingCheckins.length
+    ? new Date(Math.max(...remainingCheckins.map((checkin) => new Date(checkin.date).getTime())))
+    : new Date();
+
+  await user.save({ transaction });
+  return user;
+}
 
 const moderatorController = {
 
@@ -25,7 +111,7 @@ const moderatorController = {
         include: [{
           model: User,
           as: 'User',
-          attributes: ['id', 'username', 'avatar']
+          attributes: ['id', 'username', 'avatar', 'ecoPoints', 'level', 'createdAt']
         }],
         order: [['createdAt', 'DESC']],
         limit: 10
@@ -88,7 +174,7 @@ const moderatorController = {
         include: [{
           model: User,
           as: 'User',
-          attributes: ['id', 'username', 'avatar']
+          attributes: ['id', 'username', 'avatar', 'ecoPoints', 'level', 'createdAt']
         }],
         order: [['createdAt', 'DESC']],
         limit,
@@ -197,26 +283,105 @@ const moderatorController = {
       const habit = await Habit.findByPk(req.params.id);
 
       if (!habit) {
+        if (wantsJson(req)) {
+          return res.status(404).json({ success: false, error: 'Привычка не найдена' });
+        }
+        req.flash('error', 'Привычка не найдена');
+        return res.redirect('/moderator/habits');
+      }
+
+      const habitTitle = habit.title;
+      const habitUserId = habit.userId;
+
+      await sequelize.transaction(async (transaction) => {
+        const checkinsToRemove = await Checkin.findAll({
+          where: { habitId: habit.id },
+          attributes: ['value'],
+          transaction
+        });
+        const pointsToRevoke = checkinsToRemove.reduce((total, checkin) => (
+          total + getCheckinEcoPoints(habit.category, checkin.value)
+        ), 0);
+
+        await Checkin.destroy({
+          where: { habitId: habit.id },
+          transaction
+        });
+
+        await habit.destroy({ transaction });
+        await recalculateUserAfterRemovedCheckins(habitUserId, pointsToRevoke, transaction);
+      });
+
+      console.log(`Модератор ${req.currentUser.username} удалил привычку ${req.params.id}`);
+
+      req.flash('success', `Привычка "${habitTitle}" успешно удалена, статистика владельца пересчитана`);
+      if (wantsJson(req)) {
+        return res.json({ success: true, message: 'Привычка удалена' });
+      }
+      res.redirect('/moderator/habits');
+    } catch (error) {
+      console.error('Ошибка удаления привычки:', error);
+      if (wantsJson(req)) {
+        return res.status(500).json({ success: false, error: 'Не удалось удалить привычку' });
+      }
+      req.flash('error', 'Не удалось удалить привычку');
+      res.redirect('/moderator/habits');
+    }
+  },
+
+
+  resetHabitStats: async (req, res) => {
+    try {
+      const habit = await Habit.findByPk(req.params.id);
+
+      if (!habit) {
+        if (wantsJson(req)) {
+          return res.status(404).json({ success: false, error: 'Привычка не найдена' });
+        }
         req.flash('error', 'Привычка не найдена');
         return res.redirect('/moderator/habits');
       }
 
       const habitTitle = habit.title;
 
-      await Checkin.destroy({
-        where: { habitId: habit.id }
+      await sequelize.transaction(async (transaction) => {
+        const checkinsToRemove = await Checkin.findAll({
+          where: { habitId: habit.id },
+          attributes: ['value'],
+          transaction
+        });
+        const pointsToRevoke = checkinsToRemove.reduce((total, checkin) => (
+          total + getCheckinEcoPoints(habit.category, checkin.value)
+        ), 0);
+
+        await Checkin.destroy({
+          where: { habitId: habit.id },
+          transaction
+        });
+
+        await habit.update({
+          currentStreak: 0,
+          bestStreak: 0,
+          totalCompletions: 0,
+          lastCompleted: null
+        }, { transaction });
+
+        await recalculateUserAfterRemovedCheckins(habit.userId, pointsToRevoke, transaction);
       });
 
-      await habit.destroy();
+      console.log(`Модератор ${req.currentUser.username} сбросил статистику привычки ${req.params.id}`);
 
-
-      console.log(`Модератор ${req.currentUser.username} удалил привычку ${req.params.id}`);
-
-      req.flash('success', `Привычка "${habitTitle}" успешно удалена`);
+      req.flash('success', `Статистика привычки "${habitTitle}" сброшена`);
+      if (wantsJson(req)) {
+        return res.json({ success: true, message: 'Статистика привычки сброшена' });
+      }
       res.redirect('/moderator/habits');
     } catch (error) {
-      console.error('Ошибка удаления привычки:', error);
-      req.flash('error', 'Не удалось удалить привычку');
+      console.error('Ошибка сброса статистики привычки:', error);
+      if (wantsJson(req)) {
+        return res.status(500).json({ success: false, error: 'Не удалось сбросить статистику привычки' });
+      }
+      req.flash('error', 'Не удалось сбросить статистику привычки');
       res.redirect('/moderator/habits');
     }
   },

@@ -299,7 +299,7 @@
               </a>
             </li>
 
-            <% if (user) { %>
+            <% if (typeof currentUser !== "undefined" && currentUser) { %>
             <li class="nav-item">
               <a class="nav-link" href="/habits">
                 <i class="bi bi-list-check"></i> Мои привычки
@@ -336,7 +336,7 @@
           </ul>
 
           <ul class="navbar-nav">
-            <% if (user) { %>
+            <% if (typeof currentUser !== "undefined" && currentUser) { %>
             <li class="nav-item dropdown">
               <a
                 class="nav-link dropdown-toggle"
@@ -345,7 +345,7 @@
                 data-bs-toggle="dropdown"
               >
                 <i class="bi bi-person-circle"></i>
-                <%= user.username %>
+                <%= currentUser.username %>
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
                 <li>
@@ -424,7 +424,7 @@
               <li>
                 <a href="/" class="text-white text-decoration-none">Главная</a>
               </li>
-              <% if (user) { %>
+              <% if (typeof currentUser !== "undefined" && currentUser) { %>
               <li>
                 <a href="/habits" class="text-white text-decoration-none"
                   >Мои привычки</a
@@ -605,14 +605,18 @@
             method: "DELETE",
             headers: {
               "Content-Type": "application/json",
+              "Accept": "application/json",
             },
-          }).then((response) => {
-            if (response.ok) {
-              location.reload();
-            } else {
-              alert("Ошибка удаления пользователя");
-            }
-          });
+          })
+            .then((response) => response.json().then((data) => ({ response, data })))
+            .then(({ response, data }) => {
+              if (response.ok && data.success) {
+                location.reload();
+              } else {
+                alert(data.error || "Ошибка удаления пользователя");
+              }
+            })
+            .catch(() => alert("Ошибка сети при удалении пользователя"));
         }
       }
 
@@ -626,6 +630,7 @@
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              "Accept": "application/json",
             },
           })
             .then((response) => response.json())
@@ -646,16 +651,22 @@
             `Вы уверены, что хотите удалить пользователя "${username}"? Это удалит все его привычки и достижения. Действие нельзя отменить.`
           )
         ) {
-          fetch(`/admin/users/${userId}/delete`, {
-            method: "POST",
+          fetch(`/admin/users/${userId}`, {
+            method: "DELETE",
             headers: {
               "Content-Type": "application/json",
+              "Accept": "application/json",
             },
-          }).then((response) => {
-            if (response.ok) {
-              location.reload();
-            }
-          });
+          })
+            .then((response) => response.json().then((data) => ({ response, data })))
+            .then(({ response, data }) => {
+              if (response.ok && data.success) {
+                location.reload();
+              } else {
+                alert(data.error || "Ошибка удаления пользователя");
+              }
+            })
+            .catch(() => alert("Ошибка сети при удалении пользователя"));
         }
       }
 
@@ -817,16 +828,48 @@
             `Вы уверены, что хотите удалить привычку "${habitTitle}"? Это действие нельзя отменить.`
           )
         ) {
-          fetch(`/moderator/habits/${habitId}/delete`, {
+          fetch(`/moderator/habits/${habitId}`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+          })
+            .then((response) => response.json().then((data) => ({ response, data })))
+            .then(({ response, data }) => {
+              if (response.ok && data.success) {
+                location.reload();
+              } else {
+                alert(data.error || "Ошибка удаления привычки");
+              }
+            })
+            .catch(() => alert("Ошибка сети при удалении привычки"));
+        }
+      }
+
+      function resetModeratorHabitStats(habitId, habitTitle) {
+        if (
+          confirm(
+            `Откатить всю статистику для привычки "${habitTitle}"? История выполнений будет удалена, очки и уровень владельца пересчитаны.`
+          )
+        ) {
+          fetch(`/moderator/habits/${habitId}/reset`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              "Accept": "application/json",
             },
-          }).then((response) => {
-            if (response.ok) {
-              location.reload();
-            }
-          });
+          })
+            .then((response) => response.json().then((data) => ({ response, data })))
+            .then(({ response, data }) => {
+              if (response.ok && data.success) {
+                alert("Статистика привычки сброшена");
+                location.reload();
+              } else {
+                alert(data.error || "Ошибка при сбросе статистики привычки");
+              }
+            })
+            .catch(() => alert("Ошибка сети при сбросе статистики привычки"));
         }
       }
 
@@ -861,14 +904,18 @@
             method: "DELETE",
             headers: {
               "Content-Type": "application/json",
+              "Accept": "application/json",
             },
-          }).then((response) => {
-            if (response.ok) {
-              location.reload();
-            } else {
-              alert("Ошибка удаления роли");
-            }
-          });
+          })
+            .then((response) => response.json().then((data) => ({ response, data })))
+            .then(({ response, data }) => {
+              if (response.ok && data.success) {
+                location.reload();
+              } else {
+                alert(data.error || "Ошибка удаления роли");
+              }
+            })
+            .catch(() => alert("Ошибка сети при удалении роли"));
         }
       }
 
