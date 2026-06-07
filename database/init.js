@@ -3,6 +3,7 @@ require('dotenv').config();
 const { Op } = require('sequelize');
 const { sequelize, User, Role, Habit, Achievement, UserAchievement } = require('../models');
 const { ensureDefaultRoles } = require('./roleobj');
+const { ensureDefaultAchievements } = require('./achievementSeeds');
 const bcrypt = require('bcrypt');
 
 async function initializeDatabase(options = {}) {
@@ -14,14 +15,6 @@ async function initializeDatabase(options = {}) {
     await sequelize.sync({ force: shouldForceSync });
     console.log(shouldForceSync ? '✅ Таблицы пересозданы успешно' : '✅ Таблицы синхронизированы успешно');
 
-    if (!shouldForceSync) {
-      const existingUsers = await User.count();
-      if (existingUsers > 0) {
-        console.log('ℹ️ В базе уже есть пользователи. Для полной пересборки запустите: npm run reset-db');
-        return;
-      }
-    }
-
     console.log('👥 Подготовка ролей...');
     await ensureDefaultRoles();
     const roles = await Role.findAll({
@@ -32,6 +25,18 @@ async function initializeDatabase(options = {}) {
       }
     });
     console.log('✅ Роли подготовлены');
+
+    console.log('🏆 Подготовка достижений...');
+    const achievements = await ensureDefaultAchievements(Achievement);
+    console.log('✅ Достижения подготовлены');
+
+    if (!shouldForceSync) {
+      const existingUsers = await User.count();
+      if (existingUsers > 0) {
+        console.log('ℹ️ В базе уже есть пользователи. Справочники обновлены. Для полной пересборки запустите: npm run reset-db');
+        return;
+      }
+    }
 
     const isProduction = process.env.NODE_ENV === 'production';
     const allowDemoSeed = process.env.ALLOW_DEMO_SEED === 'true';
@@ -97,133 +102,7 @@ async function initializeDatabase(options = {}) {
     ]);
     console.log('✅ Пользователи созданы');
 
-    console.log('🏆 Создание достижений...');
-    const achievements = await Achievement.bulkCreate([
-      {
-        title: 'Начало пути',
-        description: 'Создал первую эко-привычку',
-        icon: 'seedling',
-        points: 10,
-        conditionType: 'total_habits',
-        conditionValue: 1,
-        rarity: 'common',
-        isHidden: false
-      },
-      {
-        title: 'Эко-энтузиаст',
-        description: 'Создал 5 эко-привычек',
-        icon: 'leaf',
-        points: 25,
-        conditionType: 'total_habits',
-        conditionValue: 5,
-        rarity: 'common',
-        isHidden: false
-      },
-      {
-        title: 'Мастер привычек',
-        description: 'Создал 10 эко-привычек',
-        icon: 'award',
-        points: 50,
-        conditionType: 'total_habits',
-        conditionValue: 10,
-        rarity: 'rare',
-        isHidden: false
-      },
-      {
-        title: 'Стремительный старт',
-        description: 'Выполнял привычки 3 дня подряд',
-        icon: 'fire',
-        points: 15,
-        conditionType: 'streak',
-        conditionValue: 3,
-        rarity: 'common',
-        isHidden: false
-      },
-      {
-        title: 'Эко-воин',
-        description: 'Выполнял привычки 7 дней подряд',
-        icon: 'shield',
-        points: 30,
-        conditionType: 'streak',
-        conditionValue: 7,
-        rarity: 'rare',
-        isHidden: false
-      },
-      {
-        title: 'Непрерывный рост',
-        description: 'Выполнял привычки 30 дней подряд',
-        icon: 'trophy',
-        points: 100,
-        conditionType: 'streak',
-        conditionValue: 30,
-        rarity: 'epic',
-        isHidden: false
-      },
-      {
-        title: 'Зеленый новичок',
-        description: 'Заработал 50 эко-очков',
-        icon: 'star',
-        points: 20,
-        conditionType: 'eco_points',
-        conditionValue: 50,
-        rarity: 'common',
-        isHidden: false
-      },
-      {
-        title: 'Эко-герой',
-        description: 'Заработал 500 эко-очков',
-        icon: 'gem',
-        points: 75,
-        conditionType: 'eco_points',
-        conditionValue: 500,
-        rarity: 'rare',
-        isHidden: false
-      },
-      {
-        title: 'Зеленый титан',
-        description: 'Заработал 1000 эко-очков',
-        icon: 'crown',
-        points: 150,
-        conditionType: 'eco_points',
-        conditionValue: 1000,
-        rarity: 'legendary',
-        isHidden: false
-      },
-      {
-        title: 'Хранитель воды',
-        description: 'Создал 3 привычки по экономии воды',
-        icon: 'droplet',
-        points: 40,
-        conditionType: 'category_master',
-        conditionValue: 3,
-        conditionExtra: JSON.stringify({ category: 'water' }),
-        rarity: 'rare',
-        isHidden: false
-      },
-      {
-        title: 'Энергосберегатель',
-        description: 'Создал 3 привычки по экономии энергии',
-        icon: 'lightning',
-        points: 40,
-        conditionType: 'category_master',
-        conditionValue: 3,
-        conditionExtra: JSON.stringify({ category: 'energy' }),
-        rarity: 'rare',
-        isHidden: false
-      },
-      {
-        title: 'Секретное достижение',
-        description: 'Найдите секретное достижение',
-        icon: 'question',
-        points: 200,
-        conditionType: 'specific_habit',
-        conditionValue: 1,
-        conditionExtra: JSON.stringify({ habitName: 'секрет' }),
-        rarity: 'legendary',
-        isHidden: true
-      }
-    ]);
-    console.log('✅ Достижения созданы');
+    console.log(`🏆 Достижения готовы: ${achievements.length}`);
 
 
     console.log('🌱 Создание тестовых привычек...');

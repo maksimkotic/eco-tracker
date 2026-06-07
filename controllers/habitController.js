@@ -1,7 +1,6 @@
 const {
   Habit,
   User,
-  UserAchievement,
   Achievement,
   Checkin,
 } = require("../models");
@@ -780,7 +779,12 @@ async function checkAchievements(userId) {
   try {
     console.log(`🔍 Проверяем достижения для пользователя ${userId}...`);
 
-    const achievements = await Achievement.findAll();
+    const achievements = await Achievement.findAll({
+      order: [
+        ['points', 'ASC'],
+        ['id', 'ASC']
+      ]
+    });
     const user = await User.findByPk(userId);
 
     if (!user) {
@@ -790,69 +794,22 @@ async function checkAchievements(userId) {
 
     console.log(`👤 Пользователь: ${user.username}, Очки: ${user.ecoPoints}, Серия: ${user.currentStreak}`);
 
-
-    const earnedAchievements = await UserAchievement.findAll({
-      where: { userId },
-      attributes: ['achievementId']
-    });
-    const earnedIds = earnedAchievements.map(a => a.achievementId);
-
     for (const achievement of achievements) {
       try {
+        console.log(`📊 Проверяем достижение: ${achievement.title} (${achievement.conditionType})`);
 
-        if (earnedIds.includes(achievement.id)) {
+        const earned = await achievement.checkEarned(userId);
+        console.log(`   Условие выполнено: ${earned}`);
+
+        if (!earned) {
           continue;
         }
 
-        let earned = false;
+        console.log(`🎉 Пользователь ${user.username} заработал достижение: ${achievement.title} (+${achievement.points} очков)`);
 
-        console.log(`📊 Проверяем достижение: ${achievement.title} (${achievement.conditionType})`);
+        await achievement.grantToUser(userId);
 
-        switch (achievement.conditionType) {
-          case 'streak':
-            earned = user.currentStreak >= achievement.conditionValue;
-            console.log(`   Серия: ${user.currentStreak} >= ${achievement.conditionValue} = ${earned}`);
-            break;
-
-          case 'total_habits':
-            const habitCount = await Habit.count({ where: { userId } });
-            earned = habitCount >= achievement.conditionValue;
-            console.log(`   Привычек: ${habitCount} >= ${achievement.conditionValue} = ${earned}`);
-            break;
-
-          case 'eco_points':
-            earned = user.ecoPoints >= achievement.conditionValue;
-            console.log(`   Очков: ${user.ecoPoints} >= ${achievement.conditionValue} = ${earned}`);
-            break;
-
-          case 'days_active':
-
-            earned = user.currentStreak >= achievement.conditionValue;
-            console.log(`   Активных дней: ${user.currentStreak} >= ${achievement.conditionValue} = ${earned}`);
-            break;
-
-          case 'specific_habit':
-          case 'category_master':
-
-            console.log(`   Пропускаем сложное достижение: ${achievement.conditionType}`);
-            continue;
-        }
-
-        if (earned) {
-          console.log(`🎉 Пользователь ${user.username} заработал достижение: ${achievement.title} (+${achievement.points} очков)`);
-
-
-          await UserAchievement.create({
-            userId,
-            achievementId: achievement.id,
-            earnedAt: new Date()
-          });
-
-
-          await user.addEcoPoints(achievement.points);
-
-          console.log(`   ✅ Достижение выдано, очки начислены`);
-        }
+        console.log('   ✅ Достижение выдано, очки начислены');
       } catch (achievementError) {
         console.error(`❌ Ошибка проверки достижения ${achievement.id}:`, achievementError);
       }

@@ -23,7 +23,8 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING(50),
       defaultValue: 'trophy',
       validate: {
-        isIn: [['trophy', 'star', 'award', 'medal', 'crown', 'gem', 'shield', 'heart', 'seedling', 'recycle']]
+        len: [1, 50],
+        is: /^[a-z0-9-]+$/i
       }
     },
     points: {
@@ -114,25 +115,37 @@ module.exports = (sequelize, DataTypes) => {
         earned = user.currentStreak >= this.conditionValue;
         break;
 
-      case 'specific_habit':
+      case 'specific_habit': {
+        const habitName = this.conditionExtraParsed?.habitName;
+        if (!habitName) {
+          break;
+        }
+
         const habit = await Habit.findOne({
           where: {
             userId,
-            title: { [Op.iLike]: `%${this.conditionExtraParsed?.habitName || ''}%` }
+            title: { [Op.iLike]: `%${habitName}%` }
           }
         });
-        earned = habit && habit.currentStreak >= this.conditionValue;
+        earned = Boolean(habit && habit.currentStreak >= this.conditionValue);
         break;
+      }
 
-      case 'category_master':
+      case 'category_master': {
+        const category = this.conditionExtraParsed?.category;
+        if (!category) {
+          break;
+        }
+
         const categoryHabits = await Habit.count({
           where: {
             userId,
-            category: this.conditionExtraParsed?.category
+            category
           }
         });
         earned = categoryHabits >= this.conditionValue;
         break;
+      }
     }
 
     return earned;
