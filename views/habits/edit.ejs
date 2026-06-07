@@ -168,8 +168,7 @@
             Удаление привычки приведет к потере всей статистики и истории выполнения.
             Это действие нельзя отменить.
           </p>
-          <form action="/habits/<%= habit.id %>" method="POST" class="d-inline">
-            <input type="hidden" name="_method" value="DELETE">
+          <form action="/habits/<%= habit.id %>/delete" method="POST" class="d-inline">
             <button type="submit" class="btn btn-danger"
                     onclick="return confirm('Вы уверены, что хотите удалить привычку &quot;<%= habit.title %>&quot;?')">
               <i class="bi bi-trash"></i> Удалить привычку

@@ -11,6 +11,43 @@ const { CATEGORY_LABELS, generateHabitSuggestions } = require("../services/aiHab
 const wantsJson = (req) =>
   req.xhr || (typeof req.get === 'function' && (req.get('accept') || '').includes('json'));
 
+
+function getUtcDayKey(date) {
+  const parsedDate = new Date(date);
+  const year = parsedDate.getUTCFullYear();
+  const month = String(parsedDate.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(parsedDate.getUTCDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
+function getPreviousUtcDayKey(dayKey) {
+  const [year, month, day] = dayKey.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  date.setUTCDate(date.getUTCDate() - 1);
+
+  return getUtcDayKey(date);
+}
+
+function calculateUserStreakFromCheckins(checkins) {
+  const dayKeys = [...new Set(checkins.map((checkin) => getUtcDayKey(checkin.date)))].sort();
+
+  if (!dayKeys.length) {
+    return 0;
+  }
+
+  const activeDays = new Set(dayKeys);
+  let streak = 1;
+  let previousDayKey = getPreviousUtcDayKey(dayKeys[dayKeys.length - 1]);
+
+  while (activeDays.has(previousDayKey)) {
+    streak += 1;
+    previousDayKey = getPreviousUtcDayKey(previousDayKey);
+  }
+
+  return streak;
+}
+
 const habitController = {
 
   index: async (req, res) => {
@@ -569,11 +606,34 @@ resetStats: async (req, res) => {
       return res.status(404).json({ error: 'Привычка не найдена' });
     }
 
+    await Checkin.destroy({
+      where: {
+        habitId: habit.id,
+        userId: req.currentUser.id
+      }
+    });
+
     await habit.update({
       currentStreak: 0,
+      bestStreak: 0,
       totalCompletions: 0,
       lastCompleted: null
     });
+
+    const remainingCheckins = await Checkin.findAll({
+      where: { userId: req.currentUser.id },
+      attributes: ['date'],
+      order: [['date', 'ASC']]
+    });
+
+    const user = await User.findByPk(req.currentUser.id);
+    if (user) {
+      user.currentStreak = calculateUserStreakFromCheckins(remainingCheckins);
+      user.lastActive = remainingCheckins.length
+        ? new Date(Math.max(...remainingCheckins.map((checkin) => new Date(checkin.date).getTime())))
+        : new Date();
+      await user.save();
+    }
 
     res.json({ success: true, message: 'Статистика сброшена' });
   } catch (error) {
