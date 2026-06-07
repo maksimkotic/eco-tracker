@@ -11,6 +11,7 @@ const { Op } = require("sequelize");
 const bcrypt = require("bcrypt");
 const logger = require('../utils/logger');
 const packageJson = require('../package.json');
+const { getSettings, updateSettingsFromBody, HABIT_CATEGORIES, calculateLevel } = require('../services/settingsService');
 
 const appStartedAt = new Date();
 
@@ -269,6 +270,18 @@ const adminController = {
         return res.redirect("/admin/users");
       }
 
+      const settings = await getSettings();
+      if (settings.security.preventLastAdminRemoval && user.roleId !== role.id) {
+        const currentRole = await Role.findByPk(user.roleId);
+        if (currentRole && currentRole.name === "admin") {
+          const adminCount = await User.count({ where: { roleId: currentRole.id, isBanned: false } });
+          if (adminCount <= 1) {
+            req.flash("error", "Нельзя снять роль у последнего активного администратора");
+            return res.redirect("/admin/users");
+          }
+        }
+      }
+
       await user.update({ roleId });
 
 
@@ -348,6 +361,12 @@ const adminController = {
       }
 
 
+      const settings = await getSettings();
+      if (settings.users.passwordResetMode === "manual_admin") {
+        req.flash("info", "Сброс пароля переведен в ручной режим. Свяжитесь с пользователем и задайте новый пароль через защищенный процесс.");
+        return res.redirect(`/admin/users/${user.id}`);
+      }
+
       const tempPassword = Math.random().toString(36).slice(-8);
 
 
@@ -401,6 +420,35 @@ const adminController = {
       }
 
       const username = user.username;
+      const settings = await getSettings();
+
+      if (settings.security.preventLastAdminRemoval) {
+        const adminRole = await Role.findOne({ where: { name: "admin" } });
+        if (adminRole && user.roleId === adminRole.id) {
+          const adminCount = await User.count({ where: { roleId: adminRole.id, isBanned: false } });
+          if (adminCount <= 1) {
+            req.flash("error", "Нельзя удалить последнего активного администратора");
+            return res.redirect("/admin/users");
+          }
+        }
+      }
+
+      if (settings.users.deletionPolicy === "ban_only") {
+        await user.update({ isBanned: true });
+        req.flash("success", `Пользователь ${username} заблокирован согласно политике удаления`);
+        return res.redirect("/admin/users");
+      }
+
+      if (settings.users.deletionPolicy === "anonymize") {
+        await user.update({
+          username: `deleted_user_${user.id}`,
+          email: `deleted_${user.id}@anonymized.local`,
+          avatar: "default-avatar.png",
+          isBanned: true
+        });
+        req.flash("success", `Пользователь ${username} анонимизирован согласно политике удаления`);
+        return res.redirect("/admin/users");
+      }
 
 
       await sequelize.transaction(async (transaction) => {
@@ -513,6 +561,12 @@ const adminController = {
   createRole: async (req, res) => {
     try {
       const { name, description, permissions } = req.body;
+      const settings = await getSettings();
+
+      if (!settings.users.allowCustomRoles) {
+        req.flash("error", "Создание кастомных ролей отключено в настройках");
+        return res.redirect("/admin/roles");
+      }
 
 
       const existingRole = await Role.findOne({ where: { name } });
@@ -548,6 +602,107 @@ const adminController = {
     }
   },
 
+
+
+  settings: async (req, res) => {
+    try {
+      const settings = await getSettings();
+      const roles = await Role.findAll({ order: [["name", "ASC"]] });
+
+      res.render("admin/settings", {
+        title: "Настройки системы",
+        settings,
+        roles,
+        habitCategories: HABIT_CATEGORIES,
+      });
+    } catch (error) {
+      console.error("Ошибка загрузки настроек:", error);
+      req.flash("error", "Не удалось загрузить настройки");
+      res.redirect("/admin");
+    }
+  },
+
+  updateSettings: async (req, res) => {
+    try {
+      await updateSettingsFromBody(req.body);
+
+      console.log(`Администратор ${req.currentUser.username} обновил системные настройки`);
+      req.flash("success", "Настройки успешно сохранены");
+      res.redirect("/admin/settings");
+    } catch (error) {
+      console.error("Ошибка сохранения настроек:", error);
+      req.flash("error", "Не удалось сохранить настройки");
+      res.redirect("/admin/settings");
+    }
+  },
+
+  runMaintenance: async (req, res) => {
+    try {
+      const { action } = req.body;
+      const settings = await getSettings();
+      let message = "Обслуживание завершено";
+
+      if (action === "recalculate_habits") {
+        const habits = await Habit.findAll();
+        for (const habit of habits) {
+          await habit.recalculateStats();
+        }
+        message = `Пересчитана статистика привычек: ${habits.length}`;
+      } else if (action === "recalculate_levels") {
+        const users = await User.findAll();
+        for (const user of users) {
+          await user.update({
+            level: calculateLevel(user.ecoPoints, settings.gamification.pointsPerLevel)
+          });
+        }
+        message = `Пересчитаны уровни пользователей: ${users.length}`;
+      } else if (action === "check_achievements") {
+        if (!settings.gamification.achievementsEnabled) {
+          message = "Автопроверка достижений отключена в настройках геймификации";
+        } else {
+          const users = await User.findAll({ attributes: ["id"] });
+          const achievements = await Achievement.findAll({
+            where: settings.gamification.hiddenAchievementsEnabled ? {} : { isHidden: false },
+            order: [["points", "ASC"], ["id", "ASC"]]
+          });
+          let grantedCount = 0;
+
+          for (const user of users) {
+            for (const achievement of achievements) {
+              const earned = await achievement.checkEarned(user.id);
+              if (earned) {
+                const granted = await achievement.grantToUser(user.id);
+                if (granted) grantedCount += 1;
+              }
+            }
+          }
+
+          message = `Проверка достижений завершена. Обработано пользователей: ${users.length}, достижений выдано/найдено: ${grantedCount}`;
+        }
+      } else if (action === "health_check") {
+        await sequelize.authenticate();
+        message = "Проверка здоровья пройдена: база данных доступна";
+      } else {
+        message = "Выберите действие обслуживания";
+      }
+
+      console.log(`Администратор ${req.currentUser.username} запустил обслуживание: ${action}`);
+
+      if (wantsJson(req)) {
+        return res.json({ success: true, message });
+      }
+
+      req.flash("success", message);
+      return res.redirect("/admin/settings#system");
+    } catch (error) {
+      console.error("Ошибка обслуживания системы:", error);
+      if (wantsJson(req)) {
+        return res.status(500).json({ success: false, error: "Не удалось выполнить обслуживание" });
+      }
+      req.flash("error", "Не удалось выполнить обслуживание");
+      return res.redirect("/admin/settings#system");
+    }
+  },
 
   showLogs: (req, res) => {
     res.render("admin/logs", {
@@ -668,10 +823,23 @@ const adminController = {
         return res.redirect(`/admin/users/${userId}`);
       }
 
+      const settings = await getSettings();
+      const nextRoleId = parseInt(roleId);
+      if (settings.security.preventLastAdminRemoval && user.roleId !== nextRoleId) {
+        const currentRole = await Role.findByPk(user.roleId);
+        if (currentRole && currentRole.name === "admin") {
+          const adminCount = await User.count({ where: { roleId: currentRole.id, isBanned: false } });
+          if (adminCount <= 1) {
+            req.flash("error", "Нельзя снять роль у последнего активного администратора");
+            return res.redirect(`/admin/users/${userId}/edit`);
+          }
+        }
+      }
+
       await user.update({
         username,
         email,
-        roleId: parseInt(roleId),
+        roleId: nextRoleId,
         ecoPoints: parseInt(ecoPoints),
         level: parseInt(level),
         isBanned: isBanned === "on",
@@ -765,7 +933,9 @@ const adminController = {
       }
 
 
-      if (["user", "moderator", "admin"].includes(role.name)) {
+      const settings = await getSettings();
+      const protectedRoles = settings.users.protectedRoles || ["user", "moderator", "admin"];
+      if (protectedRoles.includes(role.name)) {
         if (wantsJson(req)) {
           return res.status(400).json({ success: false, error: "Нельзя удалить стандартную роль" });
         }

@@ -44,6 +44,7 @@ const Habit = require('./Habit')(sequelize, DataTypes);
 const Achievement = require('./Achievement')(sequelize, DataTypes);
 const UserAchievement = require('./UserAchievement')(sequelize, DataTypes);
 const Checkin = require('./Checkin')(sequelize, DataTypes);
+const AppSetting = require('./AppSetting')(sequelize, DataTypes);
 
 User.belongsTo(Role, { foreignKey: 'roleId', as: 'Role' });
 Role.hasMany(User, { foreignKey: 'roleId', as: 'Users' });
@@ -83,5 +84,6 @@ module.exports = {
   Habit,
   Achievement,
   UserAchievement,
-  Checkin
+  Checkin,
+  AppSetting
 };

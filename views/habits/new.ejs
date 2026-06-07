@@ -21,12 +21,9 @@
                             <label for="category" class="form-label">Категория *</label>
                             <select class="form-select" id="category" name="category" required>
                                 <option value="">Выберите категорию</option>
-                                <option value="water" <%= suggestedHabit && suggestedHabit.category === 'water' ? 'selected' : '' %>>💧 Экономия воды</option>
-                                <option value="energy" <%= suggestedHabit && suggestedHabit.category === 'energy' ? 'selected' : '' %>>⚡ Экономия энергии</option>
-                                <option value="waste" <%= suggestedHabit && suggestedHabit.category === 'waste' ? 'selected' : '' %>>🗑️ Сортировка отходов</option>
-                                <option value="transport" <%= suggestedHabit && suggestedHabit.category === 'transport' ? 'selected' : '' %>>🚗 Экотранспорт</option>
-                                <option value="food" <%= suggestedHabit && suggestedHabit.category === 'food' ? 'selected' : '' %>>🍎 Экопитание</option>
-                                <option value="other" <%= suggestedHabit && suggestedHabit.category === 'other' ? 'selected' : '' %>>🌱 Прочее</option>
+                                <% categories.forEach(category => { %>
+                                    <option value="<%= category.value %>" <%= suggestedHabit && suggestedHabit.category === category.value ? 'selected' : '' %>><%= category.label %></option>
+                                <% }); %>
                             </select>
                         </div>
 
@@ -42,9 +39,9 @@
                             <div class="col-md-6 mb-3">
                                 <label for="frequency" class="form-label">Частота выполнения *</label>
                                 <select class="form-select" id="frequency" name="frequency" required>
-                                    <option value="daily">📅 Ежедневно</option>
-                                    <option value="weekly">📆 Еженедельно</option>
-                                    <option value="monthly">📊 Ежемесячно</option>
+                                    <option value="daily" <%= habitSettings && habitSettings.defaultFrequency === 'daily' ? 'selected' : '' %>>📅 Ежедневно</option>
+                                    <option value="weekly" <%= habitSettings && habitSettings.defaultFrequency === 'weekly' ? 'selected' : '' %>>📆 Еженедельно</option>
+                                    <option value="monthly" <%= habitSettings && habitSettings.defaultFrequency === 'monthly' ? 'selected' : '' %>>📊 Ежемесячно</option>
                                 </select>
                             </div>
 
@@ -53,13 +50,13 @@
                                 <label for="targetValue" class="form-label">Цель *</label>
                                 <div class="input-group">
                                     <input type="number" class="form-control" id="targetValue"
-                                           name="targetValue" min="1" max="1000" value="1" required>
+                                           name="targetValue" min="<%= habitSettings && habitSettings.minTargetValue || 1 %>" max="<%= habitSettings && habitSettings.maxTargetValue || 1000 %>" value="<%= habitSettings && habitSettings.defaultTargetValue || 1 %>" required>
                                     <select class="form-select" id="unit" name="unit" style="max-width: 120px;">
-                                        <option value="times">раз</option>
-                                        <option value="liters">литров</option>
-                                        <option value="kwh">кВт·ч</option>
-                                        <option value="kg">кг</option>
-                                        <option value="items">шт.</option>
+                                        <option value="times" <%= habitSettings && habitSettings.defaultUnit === 'times' ? 'selected' : '' %>>раз</option>
+                                        <option value="liters" <%= habitSettings && habitSettings.defaultUnit === 'liters' ? 'selected' : '' %>>литров</option>
+                                        <option value="kwh" <%= habitSettings && habitSettings.defaultUnit === 'kwh' ? 'selected' : '' %>>кВт·ч</option>
+                                        <option value="kg" <%= habitSettings && habitSettings.defaultUnit === 'kg' ? 'selected' : '' %>>кг</option>
+                                        <option value="items" <%= habitSettings && habitSettings.defaultUnit === 'items' ? 'selected' : '' %>>шт.</option>
                                     </select>
                                 </div>
                             </div>
