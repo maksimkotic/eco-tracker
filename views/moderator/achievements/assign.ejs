@@ -1,11 +1,72 @@
-<%- include('../../shared/under-construction', {
-  heading: 'Назначение достижения в разработке',
-  description: 'Интерфейс ручной выдачи достижений пользователям пока находится в работе.',
-  details: [
-    'поиск пользователя',
-    'выбор достижения из списка',
-    'проверка повторного назначения'
-  ],
-  backUrl: '/moderator/achievements',
-  backLabel: 'К управлению достижениями'
-}) %>
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="bi bi-person-plus text-info"></i> Назначить достижение</h1>
+            <p class="text-muted mb-0">Выберите пользователя и достижение для ручной выдачи.</p>
+        </div>
+        <a href="/moderator/achievements" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> К достижениям
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3 align-items-end">
+                <div class="col-md-8">
+                    <label class="form-label" for="userSearch">Поиск пользователя</label>
+                    <input type="text" class="form-control" id="userSearch" name="userSearch"
+                           value="<%= filters.userSearch || '' %>"
+                           placeholder="Имя пользователя или email">
+                </div>
+                <div class="col-md-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-fill">
+                        <i class="bi bi-search"></i> Найти
+                    </button>
+                    <a href="/moderator/achievements/assign" class="btn btn-outline-secondary">Сброс</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <form action="/moderator/achievements/assign" method="POST">
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <label class="form-label" for="userId">Пользователь</label>
+                        <select class="form-select" id="userId" name="userId" size="12" required>
+                            <% users.forEach((user) => { %>
+                            <option value="<%= user.id %>" <%= String(selectedUserId) === String(user.id) ? 'selected' : '' %>>
+                                <%= user.username %> · <%= user.email %> · <%= user.ecoPoints || 0 %> очк. · лвл <%= user.level || 1 %>
+                            </option>
+                            <% }); %>
+                        </select>
+                        <% if (!users.length) { %>
+                        <div class="text-muted small mt-2">Пользователи не найдены. Измените поиск.</div>
+                        <% } %>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <label class="form-label" for="achievementId">Достижение</label>
+                        <select class="form-select" id="achievementId" name="achievementId" size="12" required>
+                            <% achievements.forEach((achievement) => { %>
+                            <option value="<%= achievement.id %>" <%= String(selectedAchievementId) === String(achievement.id) ? 'selected' : '' %>>
+                                <%= achievement.title %> · +<%= achievement.points %> очк. · <%= achievement.rarity %><%= achievement.isHidden ? ' · скрытое' : '' %>
+                            </option>
+                            <% }); %>
+                        </select>
+                        <% if (!achievements.length) { %>
+                        <div class="text-muted small mt-2">Сначала создайте достижение.</div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer d-flex justify-content-end gap-2">
+                <a href="/moderator/achievements" class="btn btn-outline-secondary">Отмена</a>
+                <button type="submit" class="btn btn-info text-white" <%= !users.length || !achievements.length ? 'disabled' : '' %>>
+                    <i class="bi bi-person-plus"></i> Назначить достижение
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

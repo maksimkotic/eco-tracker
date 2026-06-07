@@ -153,12 +153,12 @@
                             <h5 class="mb-1"><%= habit.User.username %></h5>
                             <p class="mb-1">
                                 <span class="badge bg-success">
-                                    <i class="bi bi-lightning-charge"></i> <%= habit.User.ecoPoints %> очков
+                                    <i class="bi bi-lightning-charge"></i> <%= habit.User.ecoPoints || 0 %> очков
                                 </span>
-                                <span class="badge bg-info ms-1">Уровень <%= habit.User.level %></span>
+                                <span class="badge bg-info ms-1">Уровень <%= habit.User.level || 1 %></span>
                             </p>
                             <small class="text-muted">
-                                Зарегистрирован: <%= new Date(habit.User.createdAt).toLocaleDateString('ru-RU') %>
+                                Зарегистрирован: <%= habit.User.createdAt ? new Date(habit.User.createdAt).toLocaleDateString('ru-RU') : 'неизвестно' %>
                             </small>
                         </div>
                     </div>

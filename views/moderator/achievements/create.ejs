@@ -1,11 +1,124 @@
-<%- include('../../shared/under-construction', {
-  heading: 'Создание достижения в разработке',
-  description: 'Форма создания достижений пока не готова, поэтому раздел временно закрыт заглушкой.',
-  details: [
-    'выбор иконки, редкости и количества очков',
-    'настройка условий получения достижения',
-    'предпросмотр карточки перед публикацией'
-  ],
-  backUrl: '/moderator/achievements',
-  backLabel: 'К управлению достижениями'
-}) %>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="bi bi-plus-circle text-success"></i> Создать достижение</h1>
+            <p class="text-muted mb-0">Настройте награду, условие получения и количество эко-очков.</p>
+        </div>
+        <a href="/moderator/achievements" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> К достижениям
+        </a>
+    </div>
+
+    <form action="/moderator/achievements" method="POST" class="card shadow">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="mb-3">
+                        <label class="form-label" for="title">Название</label>
+                        <input type="text" class="form-control" id="title" name="title"
+                               value="<%= formData.title || '' %>" minlength="3" maxlength="100" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="description">Описание</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" required><%= formData.description || '' %></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="conditionType">Условие получения</label>
+                            <select class="form-select" id="conditionType" name="conditionType" required>
+                                <% conditionTypes.forEach((type) => { %>
+                                <option value="<%= type.value %>" <%= formData.conditionType === type.value ? 'selected' : '' %>><%= type.label %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="conditionValue">Значение условия</label>
+                            <input type="number" class="form-control" id="conditionValue" name="conditionValue"
+                                   value="<%= formData.conditionValue || 1 %>" min="1" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 condition-extra" data-condition="specific_habit">
+                        <label class="form-label" for="habitName">Название привычки</label>
+                        <input type="text" class="form-control" id="habitName" name="habitName"
+                               value="<%= formData.habitName || '' %>"
+                               placeholder="Например: Экономить воду">
+                    </div>
+
+                    <div class="mb-3 condition-extra" data-condition="category_master">
+                        <label class="form-label" for="category">Категория привычек</label>
+                        <select class="form-select" id="category" name="category">
+                            <option value="">Выберите категорию</option>
+                            <% categories.forEach((category) => { %>
+                            <option value="<%= category.value %>" <%= formData.category === category.value ? 'selected' : '' %>><%= category.label %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="row">
+                        <div class="col-md-6 col-lg-12 mb-3">
+                            <label class="form-label" for="points">Очки</label>
+                            <input type="number" class="form-control" id="points" name="points"
+                                   value="<%= formData.points || 10 %>" min="1" required>
+                        </div>
+                        <div class="col-md-6 col-lg-12 mb-3">
+                            <label class="form-label" for="rarity">Редкость</label>
+                            <select class="form-select" id="rarity" name="rarity">
+                                <% rarities.forEach((rarity) => { %>
+                                <option value="<%= rarity.value %>" <%= (formData.rarity || 'common') === rarity.value ? 'selected' : '' %>><%= rarity.label %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="icon">Иконка</label>
+                        <select class="form-select" id="icon" name="icon">
+                            <% icons.forEach((icon) => { %>
+                            <option value="<%= icon %>" <%= (formData.icon || 'trophy') === icon ? 'selected' : '' %>>
+                                <%= icon %>
+                            </option>
+                            <% }); %>
+                        </select>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" name="isHidden" id="isHidden" <%= formData.isHidden ? 'checked' : '' %>>
+                        <label class="form-check-label" for="isHidden">Скрытое достижение</label>
+                    </div>
+
+                    <div class="alert alert-info small mb-0">
+                        <i class="bi bi-info-circle"></i>
+                        При ручном назначении пользователь сразу получает очки достижения.
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer d-flex justify-content-end gap-2">
+            <a href="/moderator/achievements" class="btn btn-outline-secondary">Отмена</a>
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-check-circle"></i> Создать достижение
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const conditionType = document.getElementById('conditionType');
+    const extras = document.querySelectorAll('.condition-extra');
+
+    function updateExtraFields() {
+      extras.forEach((extra) => {
+        extra.classList.toggle('d-none', extra.dataset.condition !== conditionType.value);
+      });
+    }
+
+    conditionType.addEventListener('change', updateExtraFields);
+    updateExtraFields();
+  });
+</script>

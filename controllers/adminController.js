@@ -340,6 +340,9 @@ const adminController = {
       const user = await User.findByPk(req.params.id);
 
       if (!user) {
+        if (wantsJson(req)) {
+          return res.status(404).json({ success: false, error: "Пользователь не найден" });
+        }
         req.flash("error", "Пользователь не найден");
         return res.redirect("/admin/users");
       }
@@ -361,9 +364,21 @@ const adminController = {
         "success",
         `Пароль пользователя ${user.username} сброшен. Временный пароль: ${tempPassword}`
       );
+
+      if (wantsJson(req)) {
+        return res.json({
+          success: true,
+          message: "Пароль сброшен",
+          password: tempPassword,
+        });
+      }
+
       res.redirect(`/admin/users/${user.id}`);
     } catch (error) {
       console.error("Ошибка сброса пароля:", error);
+      if (wantsJson(req)) {
+        return res.status(500).json({ success: false, error: "Не удалось сбросить пароль" });
+      }
       req.flash("error", "Не удалось сбросить пароль");
       res.redirect("/admin/users");
     }
@@ -742,17 +757,24 @@ const adminController = {
       const role = await Role.findByPk(req.params.id);
 
       if (!role) {
+        if (wantsJson(req)) {
+          return res.status(404).json({ success: false, error: "Роль не найдена" });
+        }
         req.flash("error", "Роль не найдена");
         return res.redirect("/admin/roles");
       }
 
 
       if (["user", "moderator", "admin"].includes(role.name)) {
+        if (wantsJson(req)) {
+          return res.status(400).json({ success: false, error: "Нельзя удалить стандартную роль" });
+        }
         req.flash("error", "Нельзя удалить стандартную роль");
         return res.redirect("/admin/roles");
       }
 
 
+      const roleName = role.name;
       const userRole = await Role.findOne({ where: { name: "user" } });
       await User.update(
         { roleId: userRole.id },
@@ -762,16 +784,30 @@ const adminController = {
       await role.destroy();
 
       console.log(
-        `Администратор ${req.currentUser.username} удалил роль "${role.name}"`
+        `Администратор ${req.currentUser.username} удалил роль "${roleName}"`
       );
 
       req.flash(
         "success",
-        `Роль "${role.name}" удалена. Все пользователи переведены в роль "user".`
+        `Роль "${roleName}" удалена. Все пользователи переведены в роль "user".`
       );
+
+      if (wantsJson(req)) {
+        return res.json({
+          success: true,
+          message: `Роль "${roleName}" удалена`,
+        });
+      }
+
       res.redirect("/admin/roles");
     } catch (error) {
       console.error("Ошибка удаления роли:", error);
+      if (wantsJson(req)) {
+        return res.status(500).json({
+          success: false,
+          error: "Не удалось удалить роль",
+        });
+      }
       req.flash("error", "Не удалось удалить роль");
       res.redirect("/admin/roles");
     }
