@@ -146,16 +146,24 @@ module.exports = (sequelize, DataTypes) => {
     return getPeriodKey(date, frequency);
   };
 
-  const calculateStreakFromDates = (dates, frequency) => {
-    const periodKeys = [...new Set(dates.map((date) => getPeriodKey(date, frequency)))].sort();
+  const calculateStreakFromCheckins = (checkins, frequency, targetValue) => {
+    const totalsByPeriod = checkins.reduce((totals, checkin) => {
+      const periodKey = getPeriodKey(checkin.date, frequency);
+      totals.set(periodKey, (totals.get(periodKey) || 0) + Number(checkin.value || 0));
+      return totals;
+    }, new Map());
+    const completedPeriodKeys = [...totalsByPeriod.entries()]
+      .filter(([, value]) => value >= targetValue)
+      .map(([periodKey]) => periodKey)
+      .sort();
 
-    if (!periodKeys.length) {
+    if (!completedPeriodKeys.length) {
       return 0;
     }
 
-    const completedPeriods = new Set(periodKeys);
+    const completedPeriods = new Set(completedPeriodKeys);
     let streak = 1;
-    let previousPeriodKey = getPreviousPeriodKey(periodKeys[periodKeys.length - 1], frequency);
+    let previousPeriodKey = getPreviousPeriodKey(completedPeriodKeys[completedPeriodKeys.length - 1], frequency);
 
     while (completedPeriods.has(previousPeriodKey)) {
       streak += 1;
@@ -191,11 +199,15 @@ module.exports = (sequelize, DataTypes) => {
     const { Checkin, User } = require('./index');
     const habitCheckins = await Checkin.findAll({
       where: { habitId: this.id },
-      attributes: ['date'],
+      attributes: ['date', 'value'],
       order: [['date', 'ASC']]
     });
     const completionDates = habitCheckins.map((checkin) => checkin.date);
-    const recalculatedStreak = calculateStreakFromDates(completionDates, this.frequency);
+    const recalculatedStreak = calculateStreakFromCheckins(
+      habitCheckins,
+      this.frequency,
+      Number(this.targetValue) || 1
+    );
     const totalCompletions = habitCheckins.length;
     const previousStreak = this.currentStreak || 0;
 

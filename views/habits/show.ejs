@@ -118,10 +118,9 @@
                             <span>Выполнение цели</span>
                             <span>
                                 <strong>
-                                    <%= Math.min(((habit.currentStreak || 0) / habit.targetValue) * 100, 100).toFixed(1)
-                                        %>%
+                                    <%= progressPercentage.toFixed(1) %>%
                                 </strong>
-                                (<%= habit.currentStreak || 0 %>/<%= habit.targetValue %>)
+                                (<%= periodValue %>/<%= habit.targetValue %> <%= habit.unit %>)
                             </span>
                         </div>
                         <div class="progress" style="height: 20px;">
@@ -185,7 +184,7 @@
                                             <td>
                                                 <div class="progress" style="height: 6px;">
                                                     <div class="progress-bar"
-                                                        style="width: <%= (check.value / habit.targetValue) * 100 %>%; background-color: <%= habit.color || '#28a745' %>;">
+                                                        style="width: <%= Math.min((check.value / habit.targetValue) * 100, 100) %>%; background-color: <%= habit.color || '#28a745' %>;">
                                                     </div>
                                                 </div>
                                             </td>

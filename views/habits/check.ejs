@@ -1,7 +1,8 @@
 <%
   const habitColor = habit.color || '#28a745';
-  const currentValue = habit.currentStreak || 0;
-  const progressValue = Math.min((currentValue / habit.targetValue) * 100, 100);
+  const currentValue = habit.getDataValue ? (habit.getDataValue('periodValue') || 0) : (habit.periodValue || 0);
+  const progressValue = habit.getDataValue ? (habit.getDataValue('progressPercentage') || 0) : Math.min((currentValue / habit.targetValue) * 100, 100);
+  const currentStreak = habit.currentStreak || 0;
   const frequencyLabel = habit.frequency === 'daily' ? 'Ежедневно' : habit.frequency === 'weekly' ? 'Еженедельно' : 'Ежемесячно';
   const categoryLabel = habit.category === 'water' ? '💧 Вода' :
     habit.category === 'energy' ? '⚡ Энергия' :
@@ -62,9 +63,9 @@
             <div class="streak-strip mt-3">
               <div>
                 <i class="bi bi-fire text-warning"></i>
-                <span class="fw-semibold">Текущая серия:</span> <%= currentValue %> дней
+                <span class="fw-semibold">Текущая серия:</span> <%= currentStreak %> дней
               </div>
-              <% if (habit.bestStreak > currentValue) { %>
+              <% if (habit.bestStreak > currentStreak) { %>
                 <div>
                   <i class="bi bi-trophy text-warning"></i>
                   <span class="fw-semibold">Рекорд:</span> <%= habit.bestStreak %> дней
