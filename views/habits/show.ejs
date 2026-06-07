@@ -210,33 +210,6 @@
         <div class="col-md-4">
 
             <div class="card shadow mb-4">
-                <div class="card-header bg-success text-white">
-                    <h6 class="mb-0"><i class="bi bi-globe"></i> Экологический вклад</h6>
-                </div>
-                <div class="card-body">
-                    <% if (habit.category==='water' ) { %>
-                        <p>Экономия <strong>
-                                <%= (habit.currentStreak || 0) * 10 %>
-                            </strong> литров воды</p>
-                        <p class="small text-muted">*Примерно 10 литров за каждое выполнение</p>
-                        <% } else if (habit.category==='energy' ) { %>
-                            <p>Экономия <strong>
-                                    <%= (habit.currentStreak || 0) * 0.5 %>
-                                </strong> кВт·ч энергии</p>
-                            <p class="small text-muted">*Примерно 0.5 кВт·ч за каждое выполнение</p>
-                            <% } else if (habit.category==='waste' ) { %>
-                                <p>Переработано <strong>
-                                        <%= (habit.currentStreak || 0) * 0.2 %>
-                                    </strong> кг отходов</p>
-                                <p class="small text-muted">*Примерно 0.2 кг за каждое выполнение</p>
-                                <% } else { %>
-                                    <p>Ваша привычка уже сделала планету чище!</p>
-                                    <% } %>
-                </div>
-            </div>
-
-
-            <div class="card shadow mb-4">
                 <div class="card-header bg-info text-white">
                     <h6 class="mb-0"><i class="bi bi-lightbulb"></i> Советы по улучшению</h6>
                 </div>
