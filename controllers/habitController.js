@@ -87,6 +87,44 @@ async function attachHabitsProgress(habits, referenceDate = new Date()) {
   return Promise.all(habits.map((habit) => attachHabitProgress(habit, referenceDate)));
 }
 
+function getCheckinBasePoints(category) {
+  switch (category) {
+    case "water":
+    case "energy":
+      return 5;
+    case "waste":
+      return 10;
+    case "transport":
+      return 7;
+    case "food":
+      return 8;
+    default:
+      return 3;
+  }
+}
+
+function getCheckinEcoPoints(category, value) {
+  return getCheckinBasePoints(category) * Number(value || 0);
+}
+
+async function subtractUserEcoPoints(userId, points) {
+  if (!points) {
+    return null;
+  }
+
+  const user = await User.findByPk(userId);
+
+  if (!user) {
+    return null;
+  }
+
+  user.ecoPoints = Math.max(0, Math.round((user.ecoPoints || 0) - points));
+  user.level = Math.max(1, Math.floor(user.ecoPoints / 100) + 1);
+  await user.save();
+
+  return user;
+}
+
 function calculateUserStreakFromCheckins(checkins) {
   const dayKeys = [...new Set(checkins.map((checkin) => getUtcDayKey(checkin.date)))].sort();
 
@@ -586,7 +624,7 @@ const habitController = {
       }
 
 
-      const checkin = await Checkin.create({
+      await Checkin.create({
         habitId: habit.id,
         userId: req.currentUser.id,
         value: parseFloat(value),
@@ -595,35 +633,10 @@ const habitController = {
       });
 
 
-      await habit.markCompleted(
-        parseFloat(value),
-        date ? new Date(date) : new Date()
-      );
+      await habit.markCompleted();
 
 
-      let pointsEarned = 0;
-      switch (habit.category) {
-        case "water":
-          pointsEarned = 5;
-          break;
-        case "energy":
-          pointsEarned = 5;
-          break;
-        case "waste":
-          pointsEarned = 10;
-          break;
-        case "transport":
-          pointsEarned = 7;
-          break;
-        case "food":
-          pointsEarned = 8;
-          break;
-        default:
-          pointsEarned = 3;
-      }
-
-
-      pointsEarned *= parseFloat(value);
+      const pointsEarned = getCheckinEcoPoints(habit.category, value);
 
 
       await req.currentUser.addEcoPoints(pointsEarned);
@@ -637,6 +650,48 @@ const habitController = {
       console.error("Ошибка отметки выполнения:", error);
       req.flash("error", "Не удалось отметить выполнение");
       res.redirect(`/habits/${req.params.id}/check`);
+    }
+  },
+
+
+  undoCheckin: async (req, res) => {
+    try {
+      const habit = await Habit.findOne({
+        where: {
+          id: req.params.id,
+          userId: req.currentUser.id,
+        },
+      });
+
+      if (!habit) {
+        req.flash("error", "Привычка не найдена");
+        return res.redirect("/habits");
+      }
+
+      const checkin = await Checkin.findOne({
+        where: {
+          id: req.params.checkinId,
+          habitId: habit.id,
+          userId: req.currentUser.id,
+        },
+      });
+
+      if (!checkin) {
+        req.flash("error", "Выполнение не найдено или уже отменено");
+        return res.redirect(`/habits/${habit.id}`);
+      }
+
+      const pointsToRevoke = getCheckinEcoPoints(habit.category, checkin.value);
+      await checkin.destroy();
+      await habit.recalculateStats();
+      await subtractUserEcoPoints(req.currentUser.id, pointsToRevoke);
+
+      req.flash("success", `Выполнение отменено. Списано ${pointsToRevoke} эко-очков`);
+      res.redirect(`/habits/${habit.id}`);
+    } catch (error) {
+      console.error("Ошибка отмены выполнения:", error);
+      req.flash("error", "Не удалось отменить выполнение");
+      res.redirect(`/habits/${req.params.id}`);
     }
   },
 

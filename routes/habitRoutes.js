@@ -25,6 +25,7 @@ router.post('/:id/delete', habitController.destroy);
 
 router.get('/:id/check', habitController.showCheck);
 router.post('/:id/check', habitController.check);
+router.post('/:id/checkins/:checkinId/delete', habitController.undoCheckin);
 
 router.post('/:id/toggle-active', habitController.toggleActive);
 

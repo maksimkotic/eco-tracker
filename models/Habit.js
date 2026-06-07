@@ -146,7 +146,7 @@ module.exports = (sequelize, DataTypes) => {
     return getPeriodKey(date, frequency);
   };
 
-  const calculateStreakFromCheckins = (checkins, frequency, targetValue) => {
+  const calculateStreakStatsFromCheckins = (checkins, frequency, targetValue) => {
     const totalsByPeriod = checkins.reduce((totals, checkin) => {
       const periodKey = getPeriodKey(checkin.date, frequency);
       totals.set(periodKey, (totals.get(periodKey) || 0) + Number(checkin.value || 0));
@@ -158,19 +158,34 @@ module.exports = (sequelize, DataTypes) => {
       .sort();
 
     if (!completedPeriodKeys.length) {
-      return 0;
+      return { currentStreak: 0, bestStreak: 0 };
+    }
+
+    let bestStreak = 1;
+    let runningStreak = 1;
+
+    for (let index = 1; index < completedPeriodKeys.length; index += 1) {
+      const previousPeriodKey = getPreviousPeriodKey(completedPeriodKeys[index], frequency);
+
+      if (previousPeriodKey === completedPeriodKeys[index - 1]) {
+        runningStreak += 1;
+      } else {
+        runningStreak = 1;
+      }
+
+      bestStreak = Math.max(bestStreak, runningStreak);
     }
 
     const completedPeriods = new Set(completedPeriodKeys);
-    let streak = 1;
+    let currentStreak = 1;
     let previousPeriodKey = getPreviousPeriodKey(completedPeriodKeys[completedPeriodKeys.length - 1], frequency);
 
     while (completedPeriods.has(previousPeriodKey)) {
-      streak += 1;
+      currentStreak += 1;
       previousPeriodKey = getPreviousPeriodKey(previousPeriodKey, frequency);
     }
 
-    return streak;
+    return { currentStreak, bestStreak };
   };
 
   const calculateUserStreakFromCheckins = (checkins) => {
@@ -193,8 +208,8 @@ module.exports = (sequelize, DataTypes) => {
   };
 
 
-  Habit.prototype.markCompleted = async function (value = 1, date = new Date()) {
-    console.log(`📝 Отмечаем выполнение привычки ${this.id}: ${this.title}`);
+  Habit.prototype.recalculateStats = async function () {
+    console.log(`🔄 Пересчитываем статистику привычки ${this.id}: ${this.title}`);
 
     const { Checkin, User } = require('./index');
     const habitCheckins = await Checkin.findAll({
@@ -203,7 +218,7 @@ module.exports = (sequelize, DataTypes) => {
       order: [['date', 'ASC']]
     });
     const completionDates = habitCheckins.map((checkin) => checkin.date);
-    const recalculatedStreak = calculateStreakFromCheckins(
+    const streakStats = calculateStreakStatsFromCheckins(
       habitCheckins,
       this.frequency,
       Number(this.targetValue) || 1
@@ -211,15 +226,12 @@ module.exports = (sequelize, DataTypes) => {
     const totalCompletions = habitCheckins.length;
     const previousStreak = this.currentStreak || 0;
 
-    this.currentStreak = recalculatedStreak;
+    this.currentStreak = streakStats.currentStreak;
+    this.bestStreak = streakStats.bestStreak;
     this.totalCompletions = totalCompletions;
     this.lastCompleted = completionDates.length
       ? new Date(Math.max(...completionDates.map((completionDate) => new Date(completionDate).getTime())))
-      : date;
-
-    if (this.currentStreak > (this.bestStreak || 0)) {
-      this.bestStreak = this.currentStreak;
-    }
+      : null;
 
     await this.save();
 
@@ -234,13 +246,21 @@ module.exports = (sequelize, DataTypes) => {
       });
       const userCurrentStreak = user.currentStreak || 0;
       user.currentStreak = calculateUserStreakFromCheckins(userCheckins);
-      user.lastActive = new Date();
+      user.lastActive = userCheckins.length
+        ? new Date(Math.max(...userCheckins.map((checkin) => new Date(checkin.date).getTime())))
+        : new Date();
       await user.save();
 
       console.log(`   👤 Серия пользователя: ${userCurrentStreak} → ${user.currentStreak}`);
     }
 
     return this;
+  };
+
+
+  Habit.prototype.markCompleted = async function () {
+    console.log(`📝 Отмечаем выполнение привычки ${this.id}: ${this.title}`);
+    return this.recalculateStats();
   };
 
 
