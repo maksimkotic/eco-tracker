@@ -181,6 +181,7 @@
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                 </div>
                                                 <form action="/moderator/achievements/<%= achievement.id %>?_method=PUT" method="POST">
+                                                    <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
                                                     <div class="modal-body">
                                                         <div class="mb-3">
                                                             <label class="form-label">Название</label>

@@ -30,6 +30,7 @@
 
     <div class="card shadow">
         <form action="/moderator/achievements/assign" method="POST">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
             <div class="card-body">
                 <div class="row g-4">
                     <div class="col-lg-6">

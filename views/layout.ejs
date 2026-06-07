@@ -883,14 +883,18 @@
             method: "DELETE",
             headers: {
               "Content-Type": "application/json",
+              "Accept": "application/json",
             },
-          }).then((response) => {
-            if (response.ok) {
-              location.reload();
-            } else {
-              alert("Ошибка удаления достижения");
-            }
-          });
+          })
+            .then((response) => response.json().then((data) => ({ response, data })))
+            .then(({ response, data }) => {
+              if (response.ok && data.success) {
+                location.reload();
+              } else {
+                alert(data.error || "Ошибка удаления достижения");
+              }
+            })
+            .catch(() => alert("Ошибка сети при удалении достижения"));
         }
       }
 

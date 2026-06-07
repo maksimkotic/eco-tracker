@@ -3,7 +3,10 @@ const { Op } = require('sequelize');
 
 
 const wantsJson = (req) =>
-  req.xhr || (typeof req.get === 'function' && (req.get('accept') || '').includes('json'));
+  req.xhr || (typeof req.get === 'function' && (
+    (req.get('accept') || '').includes('json') ||
+    (req.get('content-type') || '').includes('json')
+  ));
 
 function getUtcDayKey(date) {
   const parsedDate = new Date(date);
@@ -170,6 +173,21 @@ function getAchievementFormData(body = {}) {
     isHidden: body.isHidden === 'on',
     habitName: (body.habitName || '').trim(),
     category: (body.category || '').trim()
+  };
+}
+
+
+function getAchievementPayload(formData) {
+  return {
+    title: formData.title,
+    description: formData.description,
+    icon: formData.icon,
+    points: formData.points,
+    conditionType: formData.conditionType,
+    conditionValue: formData.conditionValue,
+    conditionExtra: formData.conditionExtra,
+    rarity: formData.rarity,
+    isHidden: formData.isHidden
   };
 }
 
@@ -553,7 +571,7 @@ const moderatorController = {
     const formData = getAchievementFormData(req.body);
 
     try {
-      await Achievement.create(formData);
+      await Achievement.create(getAchievementPayload(formData));
 
       console.log(`Модератор ${req.currentUser.username} создал достижение "${formData.title}"`);
 
@@ -587,7 +605,7 @@ const moderatorController = {
       const pointsDelta = formData.points - achievement.points;
 
       await sequelize.transaction(async (transaction) => {
-        await achievement.update(formData, { transaction });
+        await achievement.update(getAchievementPayload(formData), { transaction });
 
         if (pointsDelta) {
           const userAchievements = await UserAchievement.findAll({

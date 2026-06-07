@@ -21,6 +21,7 @@ router.get('/achievements/api/list', moderatorController.listAchievementsApi);
 router.get('/achievements/create', moderatorController.createAchievement);
 router.get('/achievements/new', moderatorController.createAchievement);
 router.post('/achievements', moderatorController.storeAchievement);
+router.post('/achievements/create', moderatorController.storeAchievement);
 router.get('/achievements/assign', moderatorController.assignAchievement);
 router.post('/achievements/assign', moderatorController.processAssignment);
 router.put('/achievements/:id', moderatorController.updateAchievement);
