@@ -30,15 +30,10 @@
         <div class="checkin-hero text-white" style="--habit-color: <%= habitColor %>; background: linear-gradient(135deg, <%= habitColor %> 0%, #198754 100%); color: #fff;">
           <div class="checkin-hero__content d-flex align-items-center gap-3">
             <div class="checkin-hero__icon">
-              <i class="bi bi-check2-circle"></i>
             </div>
             <div class="min-width-0">
-              <p class="checkin-hero__eyebrow mb-1">Отметка выполнения</p>
-              <h1 class="checkin-hero__title mb-2"><%= habit.title %></h1>
-              <div class="checkin-hero__badges d-flex flex-wrap gap-2">
-                <span class="badge rounded-pill"><%= categoryLabel %></span>
-                <span class="badge rounded-pill"><i class="bi bi-calendar-week me-1"></i><%= frequencyLabel %></span>
-              </div>
+              <p class="checkin-hero__eyebrow mt-2 mb-0">Отметка выполнения</p>
+              <h1 class="checkin-hero__title mb-4"><%= habit.title %></h1>
             </div>
           </div>
         </div>
@@ -141,47 +136,6 @@
               </button>
             </div>
           </form>
-        </div>
-      </div>
-
-      <div class="impact-card card shadow-sm border-0 mt-4">
-        <div class="card-body p-4">
-          <div class="d-flex align-items-start gap-3">
-            <div class="impact-card__icon bg-info text-white">
-              <i class="bi bi-globe"></i>
-            </div>
-            <div>
-              <h2 class="h5 mb-2">Ваше влияние на экологию</h2>
-              <% let impact = 0; %>
-              <% let impactUnit = ''; %>
-              <% let impactDescription = ''; %>
-
-              <% switch(habit.category) {
-                case 'water':
-                  impact = 10;
-                  impactUnit = 'литров воды';
-                  impactDescription = 'Экономия воды помогает сохранить пресноводные ресурсы';
-                  break;
-                case 'energy':
-                  impact = 0.5;
-                  impactUnit = 'кг CO₂';
-                  impactDescription = 'Снижение выбросов углекислого газа';
-                  break;
-                case 'waste':
-                  impact = 0.2;
-                  impactUnit = 'кг отходов';
-                  impactDescription = 'Предотвращение попадания отходов на свалки';
-                  break;
-                default:
-                  impact = 1;
-                  impactUnit = 'эко-очков';
-                  impactDescription = 'Положительное влияние на окружающую среду';
-              } %>
-
-              <p class="mb-1">Каждое выполнение этой привычки экономит примерно <strong><%= impact %> <%= impactUnit %></strong>.</p>
-              <p class="small text-muted mb-0"><%= impactDescription %></p>
-            </div>
-          </div>
         </div>
       </div>
     </div>
