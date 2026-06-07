@@ -15,6 +15,7 @@ router.post('/users/:id/role', adminController.updateUserRole);
 router.post('/users/:id/ban', adminController.toggleBan);
 router.post('/users/:id/reset-password', adminController.resetPassword);
 router.delete('/users/:id', adminController.destroyUser);
+router.post('/users/:id/delete', adminController.destroyUser);
 
 router.get('/roles', adminController.rolesIndex);
 router.post('/roles', adminController.createRole);
@@ -35,6 +36,7 @@ router.put('/users/:id', adminController.updateUser);
 router.get('/roles/:id/edit', adminController.editRole);
 router.put('/roles/:id', adminController.updateRole);
 router.delete('/roles/:id', adminController.deleteRole);
+router.post('/roles/:id/delete', adminController.deleteRole);
 
 
 
