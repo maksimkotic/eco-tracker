@@ -1,0 +1,41 @@
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7">
+      <div class="card shadow border-0 text-center">
+        <div class="card-body p-5">
+          <div class="mb-4">
+            <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-warning bg-opacity-25 text-warning" style="width: 96px; height: 96px;">
+              <i class="bi bi-tools" style="font-size: 3rem;"></i>
+            </span>
+          </div>
+
+          <span class="badge bg-warning text-dark mb-3">Страница в разработке</span>
+          <h1 class="display-6 fw-bold mb-3"><%= typeof heading !== 'undefined' ? heading : 'Скоро здесь появится новый раздел' %></h1>
+          <p class="lead text-muted mb-4">
+            <%= typeof description !== 'undefined' ? description : 'Мы уже работаем над этой страницей. Пока функция недоступна, но она появится в одном из следующих обновлений.' %>
+          </p>
+
+          <% if (typeof details !== 'undefined' && details && details.length) { %>
+            <div class="alert alert-light border text-start mb-4">
+              <h2 class="h6 mb-3"><i class="bi bi-list-check text-success"></i> Что планируется</h2>
+              <ul class="mb-0">
+                <% details.forEach(item => { %>
+                  <li><%= item %></li>
+                <% }) %>
+              </ul>
+            </div>
+          <% } %>
+
+          <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+            <a href="<%= typeof backUrl !== 'undefined' ? backUrl : '/' %>" class="btn btn-success btn-lg">
+              <i class="bi bi-arrow-left-circle"></i> <%= typeof backLabel !== 'undefined' ? backLabel : 'Вернуться назад' %>
+            </a>
+            <a href="/" class="btn btn-outline-secondary btn-lg">
+              <i class="bi bi-house"></i> На главную
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

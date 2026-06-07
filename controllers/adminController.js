@@ -10,6 +10,38 @@ const {
 const { Op } = require("sequelize");
 const bcrypt = require("bcrypt");
 const logger = require('../utils/logger');
+const packageJson = require('../package.json');
+
+const appStartedAt = new Date();
+
+const formatUptime = (totalSeconds) => {
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+  const parts = [];
+  if (days > 0) parts.push(`${days} дн.`);
+  if (hours > 0) parts.push(`${hours} ч.`);
+  if (minutes > 0 || parts.length === 0) parts.push(`${minutes} мин.`);
+
+  return parts.join(' ');
+};
+
+const getDatabaseSize = async () => {
+  if (sequelize.getDialect() !== 'postgres') {
+    return 'Недоступно для текущей БД';
+  }
+
+  try {
+    const [rows] = await sequelize.query(
+      'SELECT pg_size_pretty(pg_database_size(current_database())) AS size'
+    );
+    return rows?.[0]?.size || 'Недоступно';
+  } catch (error) {
+    console.error('Ошибка получения размера базы данных:', error);
+    return 'Недоступно';
+  }
+};
 
 const wantsJson = (req) =>
   req.xhr || (typeof req.get === 'function' && (req.get('accept') || '').includes('json'));
@@ -61,9 +93,10 @@ const adminController = {
 
 
       const systemInfo = {
-        startDate: "2024-01-01",
-        dbSize: "~5 MB",
-        uptime: "24 дня",
+        version: packageJson.version,
+        startDate: appStartedAt.toLocaleDateString('ru-RU'),
+        dbSize: await getDatabaseSize(),
+        uptime: formatUptime(process.uptime()),
       };
 
       res.render("admin/dashboard", {
@@ -523,20 +556,10 @@ const adminController = {
   },
 
 
-  showLogs: async (req, res) => {
-    try {
-      const logs = await logger.getLogs(req.query);
-
-      res.render("admin/logs", {
-        title: "Системные логи",
-        logs,
-        filters: req.query,
-      });
-    } catch (error) {
-      console.error("Ошибка загрузки логов:", error);
-      req.flash("error", "Не удалось загрузить логи");
-      res.redirect("/admin");
-    }
+  showLogs: (req, res) => {
+    res.render("admin/logs", {
+      title: "Системные логи",
+    });
   },
 
   clearLogs: async (req, res) => {

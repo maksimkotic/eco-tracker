@@ -197,40 +197,16 @@
                 <div class="card-header">
                     <h5 class="mb-0"><i class="bi bi-clock-history"></i> Последние системные события</h5>
                 </div>
-                <div class="card-body">
-                    <div class="list-group list-group-flush">
-                        <% const sampleEvents=[ { type: 'user_register' , text: 'Новый пользователь зарегистрировался' ,
-                            time: '5 минут назад' }, { type: 'habit_created' , text: 'Создана новая привычка' ,
-                            time: '15 минут назад' }, { type: 'achievement_earned' ,
-                            text: 'Пользователь получил достижение' , time: '30 минут назад' }, {
-                            type: 'moderator_action' , text: 'Модератор отредактировал привычку' , time: '1 час назад'
-                            }, { type: 'admin_action' , text: 'Администратор изменил роль пользователя' ,
-                            time: '2 часа назад' } ]; %>
-
-                            <% sampleEvents.forEach(event=> { %>
-                                <div class="list-group-item">
-                                    <div class="d-flex w-100 justify-content-between">
-                                        <div>
-                                            <i class="bi bi-<%=
-                                        event.type.includes('user') ? 'person' :
-                                        event.type.includes('habit') ? 'list-check' :
-                                        event.type.includes('achievement') ? 'trophy' :
-                                        event.type.includes('moderator') ? 'shield-check' : 'shield'
-                                    %> me-2"></i>
-                                            <%= event.text %>
-                                        </div>
-                                        <small class="text-muted">
-                                            <%= event.time %>
-                                        </small>
-                                    </div>
-                                </div>
-                                <% }); %>
-                    </div>
-                    <div class="text-center mt-3">
-                        <a href="/admin/logs" class="btn btn-sm btn-outline-secondary">
-                            <i class="bi bi-journal-text"></i> Просмотреть все логи
-                        </a>
-                    </div>
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-tools text-warning" style="font-size: 3rem;"></i>
+                    <h6 class="mt-3 mb-2">Раздел в разработке</h6>
+                    <p class="text-muted mb-3">
+                        Здесь появится реальная лента системных событий: регистрации, изменения ролей,
+                        действия модераторов и технические операции.
+                    </p>
+                    <a href="/admin/logs" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-journal-text"></i> Страница логов
+                    </a>
                 </div>
             </div>
         </div>
@@ -413,7 +389,7 @@
                                 <i class="bi bi-cpu text-primary me-2"></i>
                                 <div>
                                     <strong>Версия системы</strong>
-                                    <div class="small text-muted">1.0.0</div>
+                                    <div class="small text-muted"><%= systemInfo.version %></div>
                                 </div>
                             </div>
                         </div>
@@ -423,7 +399,7 @@
                                 <div>
                                     <strong>Дата запуска</strong>
                                     <div class="small text-muted">
-                                        <%= '2025-12-12' %>
+                                        <%= systemInfo.startDate %>
                                     </div>
                                 </div>
                             </div>
@@ -445,7 +421,7 @@
                                 <div>
                                     <strong>Время работы</strong>
                                     <div class="small text-muted">
-                                        <%= '8 дней' %>
+                                        <%= systemInfo.uptime %>
                                     </div>
                                 </div>
                             </div>
