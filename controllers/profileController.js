@@ -165,6 +165,10 @@ const profileController = {
 
       await user.update({ avatar: req.file.filename });
 
+      if (req.session.user) {
+        req.session.user.avatar = req.file.filename;
+      }
+
       req.flash('success', 'Аватар успешно обновлен');
       res.redirect('/profile');
     } catch (error) {
