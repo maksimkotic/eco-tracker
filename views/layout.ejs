@@ -63,6 +63,73 @@
         background-color: #343a40;
       }
 
+      .footer__top {
+        display: grid;
+        grid-template-columns:
+          minmax(260px, 1.15fr) minmax(170px, 0.7fr) minmax(280px, 1.15fr);
+        gap: 3rem;
+        align-items: start;
+      }
+
+      .footer__section {
+        min-width: 0;
+      }
+
+      .footer__title {
+        display: flex;
+        align-items: center;
+        min-height: 1.75rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .footer__text {
+        line-height: 1.55;
+        max-width: 34rem;
+      }
+
+      .footer__nav {
+        margin-bottom: 0;
+      }
+
+      .footer__nav li + li {
+        margin-top: 0.35rem;
+      }
+
+      .footer__divider {
+        margin: 2rem 0 1.25rem;
+        opacity: 0.25;
+      }
+
+      .footer__bottom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+
+      .footer__links {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1.5rem;
+      }
+
+      @media (max-width: 767.98px) {
+        .footer__top {
+          grid-template-columns: 1fr;
+          gap: 1.5rem;
+        }
+
+        .footer__bottom {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .footer__links {
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+      }
+
       .card {
         border-radius: 10px;
         overflow: hidden;
@@ -320,17 +387,19 @@
 
     <footer class="footer text-white py-4 mt-4">
       <div class="container">
-        <div class="row">
-          <div class="col-md-4 mb-3">
-            <h5><i class="bi bi-tree"></i> Эко-Трекер</h5>
-            <p class="mb-0 small">
+        <div class="footer__top">
+          <section class="footer__section">
+            <h5 class="footer__title">
+              <i class="bi bi-tree me-2"></i>Эко-Трекер
+            </h5>
+            <p class="footer__text mb-0 small">
               Отслеживайте свои экологические привычки и делайте планету чище
               вместе с нами.
             </p>
-          </div>
-          <div class="col-md-4 mb-3">
-            <h5>Навигация</h5>
-            <ul class="list-unstyled">
+          </section>
+          <nav class="footer__section" aria-label="Навигация в подвале">
+            <h5 class="footer__title">Навигация</h5>
+            <ul class="footer__nav list-unstyled">
               <li>
                 <a href="/" class="text-white text-decoration-none">Главная</a>
               </li>
@@ -368,30 +437,27 @@
                 >
               </li>
             </ul>
-          </div>
-          <div class="col-md-4 mb-3">
-            <h5>Информация</h5>
-            <p class="small mb-0">
-              Разработано с использованием Node.js, Express, Sequelize,
-              Bootstrap 5 и с лучшими пожеланиями зеленому обществу!
+          </nav>
+          <section class="footer__section">
+            <h5 class="footer__title">Информация</h5>
+            <p class="footer__text small mb-0">
+              Курсовая работа по дисциплине "Веб-программирование".<br />
+              Разработано с использованием Node.js, Express, Sequelize и
+              Bootstrap 5.
             </p>
-          </div>
+          </section>
         </div>
-        <hr class="bg-light" />
-        <div class="row">
-          <div class="col-md-6">
-            <small>&copy; 2025 Эко-Трекер. Все права защищены.</small>
-          </div>
-          <div class="col-md-6 text-md-end">
-            <small>
-              <a href="/privacy" class="text-white text-decoration-none me-3"
-                >Конфиденциальность</a
-              >
-              <a href="/terms" class="text-white text-decoration-none"
-                >Условия использования</a
-              >
-            </small>
-          </div>
+        <hr class="footer__divider bg-light" />
+        <div class="footer__bottom">
+          <small>&copy; 2025 Эко-Трекер. Все права защищены.</small>
+          <small class="footer__links">
+            <a href="/privacy" class="text-white text-decoration-none"
+              >Конфиденциальность</a
+            >
+            <a href="/terms" class="text-white text-decoration-none"
+              >Условия использования</a
+            >
+          </small>
         </div>
       </div>
     </footer>
