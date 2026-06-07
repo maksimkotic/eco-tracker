@@ -278,7 +278,7 @@ const moderatorController = {
       ],
       icons: [
         'trophy', 'star', 'award', 'medal', 'crown',
-        'gem', 'shield', 'heart', 'seedling', 'recycle'
+        'gem', 'shield', 'heart', 'flower1', 'recycle'
       ]
     });
   },
