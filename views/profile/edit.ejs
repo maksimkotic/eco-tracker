@@ -6,33 +6,35 @@
           <h4 class="mb-0"><i class="bi bi-pencil-square"></i> Редактирование профиля</h4>
         </div>
         <div class="card-body p-4">
+          <div class="text-center mb-4">
+            <% if (user.avatar && user.avatar !== 'default-avatar.png') { %>
+              <img src="/uploads/avatars/<%= user.avatar %>"
+                   class="rounded-circle mb-3"
+                   width="100" height="100"
+                   alt="Аватар">
+            <% } else { %>
+              <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center mb-3"
+                   style="width: 100px; height: 100px;">
+                <span class="text-white display-6">
+                  <%= user.username.charAt(0).toUpperCase() %>
+                </span>
+              </div>
+            <% } %>
+
+            <form action="/profile/avatar?_csrf=<%= csrfToken %>" method="POST" enctype="multipart/form-data" class="mb-3">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <label for="avatar" class="form-label">Сменить аватар</label>
+              <div class="input-group">
+                <input type="file" class="form-control" id="avatar" name="avatar" accept="image/jpeg,image/png,image/gif" required>
+                <button type="submit" class="btn btn-outline-primary">Загрузить</button>
+              </div>
+              <div class="form-text">Максимальный размер: 5MB. Разрешены: JPG, PNG, GIF</div>
+            </form>
+          </div>
+
           <form action="/profile" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <input type="hidden" name="_method" value="PUT">
-            
-            <div class="text-center mb-4">
-              <% if (user.avatar && user.avatar !== 'default-avatar.png') { %>
-                <img src="/uploads/avatars/<%= user.avatar %>"
-                     class="rounded-circle mb-3"
-                     width="100" height="100"
-                     alt="Аватар">
-              <% } else { %>
-                <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center mb-3"
-                     style="width: 100px; height: 100px;">
-                  <span class="text-white display-6">
-                    <%= user.username.charAt(0).toUpperCase() %>
-                  </span>
-                </div>
-              <% } %>
-              
-              <form action="/profile/avatar" method="POST" enctype="multipart/form-data" class="mb-3">
-                <label for="avatar" class="form-label">Сменить аватар</label>
-                <div class="input-group">
-                  <input type="file" class="form-control" id="avatar" name="avatar" accept="image/*" required>
-                  <button type="submit" class="btn btn-outline-primary">Загрузить</button>
-                </div>
-                <div class="form-text">Максимальный размер: 5MB. Разрешены: JPG, PNG, GIF</div>
-              </form>
-            </div>
             
             <div class="mb-3">
               <label for="username" class="form-label">Имя пользователя *</label>
@@ -120,6 +122,7 @@
         <p>Все ваши данные будут безвозвратно удалены.</p>
 
         <form action="/profile" method="POST" id="deleteAccountForm">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <input type="hidden" name="_method" value="DELETE">
           <div class="mb-3">
             <label for="confirmPasswordDelete" class="form-label">
