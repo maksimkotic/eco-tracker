@@ -102,6 +102,7 @@ router.use(isAuthenticated);
 router.get('/', profileController.show);
 
 router.get('/edit', profileController.edit);
+router.post('/', profileUpdateValidation, profileController.update);
 router.put('/', profileUpdateValidation, profileController.update);
 
 router.delete('/', profileController.destroy);
