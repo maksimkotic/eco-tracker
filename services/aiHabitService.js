@@ -68,6 +68,10 @@ function normalizeSuggestions(rawSuggestions, category) {
   })).filter((item) => item.title);
 }
 
+function getOpenRouterApiKey() {
+  return String(process.env.OPENROUTER_API_KEY || '').trim();
+}
+
 function getOpenRouterHeaders(apiKey) {
   const headers = {
     Authorization: `Bearer ${apiKey}`,
@@ -80,6 +84,51 @@ function getOpenRouterHeaders(apiKey) {
   }
 
   return headers;
+}
+
+function extractOpenRouterErrorMessage(errorBody) {
+  if (!errorBody) return '';
+
+  try {
+    const parsed = JSON.parse(errorBody);
+    return String(parsed?.error?.message || parsed?.message || '').trim();
+  } catch (parseError) {
+    return String(errorBody).trim();
+  }
+}
+
+function createOpenRouterError(response, errorBody) {
+  const providerMessage = extractOpenRouterErrorMessage(errorBody);
+  const error = new Error(providerMessage || `OpenRouter API вернул ошибку ${response.status}`);
+
+  error.status = response.status;
+  error.providerMessage = providerMessage;
+
+  return error;
+}
+
+function getFriendlyOpenRouterError(error) {
+  if (error.status === 401 || error.status === 403) {
+    return 'ключ OpenRouter недействителен или не имеет доступа. Проверьте переменную OPENROUTER_API_KEY в окружении и укажите новый ключ из личного кабинета OpenRouter';
+  }
+
+  if (error.status === 402) {
+    return 'на балансе OpenRouter недостаточно средств или превышен лимит аккаунта';
+  }
+
+  if (error.status === 429) {
+    return 'OpenRouter временно ограничил количество запросов. Попробуйте ещё раз позже';
+  }
+
+  if (error.status >= 500) {
+    return 'на стороне OpenRouter временная ошибка. Попробуйте ещё раз позже';
+  }
+
+  if (error.name === 'SyntaxError') {
+    return 'OpenRouter вернул ответ в неожиданном формате';
+  }
+
+  return error.message || 'неизвестная ошибка OpenRouter';
 }
 
 function extractChoiceText(responseBody) {
@@ -104,7 +153,7 @@ function parseJsonSuggestions(outputText) {
 }
 
 async function requestOpenRouterSuggestions({ category, goal, currentHabits }) {
-  const apiKey = process.env.OPENROUTER_API_KEY;
+  const apiKey = getOpenRouterApiKey();
   const model = process.env.OPENROUTER_MODEL || 'openrouter/auto';
 
   if (!apiKey) {
@@ -149,7 +198,7 @@ async function requestOpenRouterSuggestions({ category, goal, currentHabits }) {
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`OpenRouter API вернул ошибку ${response.status}: ${errorText.slice(0, 300)}`);
+    throw createOpenRouterError(response, errorText);
   }
 
   const responseBody = await response.json();
@@ -171,25 +220,29 @@ async function requestOpenRouterSuggestions({ category, goal, currentHabits }) {
 
 async function generateHabitSuggestions({ category = 'other', goal = '', currentHabits = [] }) {
   const safeCategory = CATEGORY_LABELS[category] ? category : 'other';
+  const safeGoal = String(goal || '').trim();
 
   try {
     return await requestOpenRouterSuggestions({
       category: safeCategory,
-      goal: goal.trim(),
+      goal: safeGoal,
       currentHabits
     });
   } catch (error) {
-    console.error('Ошибка генерации ИИ-рекомендаций:', error.message);
+    const friendlyMessage = getFriendlyOpenRouterError(error);
+
+    console.error('Ошибка генерации ИИ-рекомендаций:', friendlyMessage);
     return {
       provider: 'local',
       model: 'fallback',
-      suggestions: getFallbackSuggestions(safeCategory, goal),
-      note: `OpenRouter API недоступен: ${error.message}. Показаны локальные рекомендации.`
+      suggestions: getFallbackSuggestions(safeCategory, safeGoal),
+      note: `OpenRouter API недоступен: ${friendlyMessage}. Показаны локальные рекомендации.`
     };
   }
 }
 
 module.exports = {
   CATEGORY_LABELS,
-  generateHabitSuggestions
+  generateHabitSuggestions,
+  getFriendlyOpenRouterError
 };
