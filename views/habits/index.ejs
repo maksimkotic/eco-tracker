@@ -51,6 +51,8 @@
   <% if (habits && habits.length > 0) { %>
   <div class="row" id="habitsList">
     <% habits.forEach(habit => { %>
+    <% const periodValue = habit.getDataValue ? (habit.getDataValue('periodValue') || 0) : (habit.periodValue || 0); %>
+    <% const progressPercentage = habit.getDataValue ? (habit.getDataValue('progressPercentage') || 0) : (habit.progressPercentage || 0); %>
     <div
       class="col-md-6 mb-4 habit-item"
       data-category="<%= habit.category %>"
@@ -90,7 +92,7 @@
               <small>Прогресс</small>
               <small
                 ><strong
-                  ><%= habit.currentStreak || 0 %> / <%= habit.targetValue
+                  ><%= periodValue %> / <%= habit.targetValue
                   %></strong
                 ></small
               >
@@ -98,7 +100,7 @@
             <div class="progress" style="height: 10px">
               <div
                 class="progress-bar"
-                style="width: <%= Math.min(((habit.currentStreak || 0) / habit.targetValue) * 100, 100 )%>%; background-color: <%= habit.color || '#28a745' %>;"
+                style="width: <%= progressPercentage %>%; background-color: <%= habit.color || '#28a745' %>;"
               ></div>
             </div>
           </div>
