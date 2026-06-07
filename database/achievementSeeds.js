@@ -2,7 +2,7 @@ const DEFAULT_ACHIEVEMENTS = [
   {
     title: 'Начало пути',
     description: 'Создал первую эко-привычку',
-    icon: 'seedling',
+    icon: 'flower1',
     points: 10,
     conditionType: 'total_habits',
     conditionValue: 1,
