@@ -1,6 +1,7 @@
-const { User, Habit, UserAchievement, Achievement, Role } = require('../models');
+const { User, Habit, UserAchievement, Achievement, Role, Checkin, sequelize } = require('../models');
 const { validationResult } = require('express-validator');
 const { Op } = require('sequelize');
+const { attachHabitsProgress } = require('../utils/habitProgress');
 
 const profileController = {
 
@@ -15,11 +16,11 @@ const profileController = {
       });
 
 
-      const habits = await Habit.findAll({
+      const habits = await attachHabitsProgress(await Habit.findAll({
         where: { userId: req.currentUser.id },
         order: [['createdAt', 'DESC']],
         limit: 5
-      });
+      }));
 
 
       const userAchievements = await UserAchievement.findAll({
@@ -176,7 +177,24 @@ const profileController = {
       }
 
 
-      await user.destroy();
+      await sequelize.transaction(async (transaction) => {
+        await Checkin.destroy({
+          where: { userId: user.id },
+          transaction
+        });
+
+        await Habit.destroy({
+          where: { userId: user.id },
+          transaction
+        });
+
+        await UserAchievement.destroy({
+          where: { userId: user.id },
+          transaction
+        });
+
+        await user.destroy({ transaction });
+      });
 
       req.session.destroy((err) => {
         if (err) {
