@@ -59,7 +59,7 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Название</th>
-                                <th>Пользователь</th>
+                                <th>Владелец</th>
                                 <th>Категория</th>
                                 <th>Прогресс</th>
                                 <th>Статус</th>
@@ -77,7 +77,7 @@
                                     <div class="d-flex align-items-center">
                                         <div class="color-indicator me-2"
                                              style="width: 10px; height: 10px; background-color: <%= habit.color || '#28a745' %>;"></div>
-                                        <a href="/habits/<%= habit.id %>" class="text-decoration-none">
+                                        <a href="/moderator/habits/<%= habit.id %>/edit" class="text-decoration-none" title="Редактировать привычку">
                                             <%= habit.title %>
                                         </a>
                                     </div>
@@ -97,7 +97,17 @@
                                         <% } %>
                                         <div>
                                             <div><%= habit.User ? habit.User.username : 'Неизвестно' %></div>
-                                            <small class="text-muted">Уровень: <%= habit.User ? habit.User.level : '?' %></small>
+                                            <% if (habit.User) { %>
+                                            <small class="text-muted d-block">
+                                                <i class="bi bi-star-fill text-warning"></i>
+                                                <%= habit.User.ecoPoints || 0 %> очк. · Лвл <%= habit.User.level || 1 %>
+                                            </small>
+                                            <small class="text-muted d-block">
+                                                Регистрация: <%= new Date(habit.User.createdAt).toLocaleDateString('ru-RU') %>
+                                            </small>
+                                            <% } else { %>
+                                            <small class="text-muted">Нет данных</small>
+                                            <% } %>
                                         </div>
                                     </div>
                                 </td>
@@ -137,12 +147,13 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <a href="/habits/<%= habit.id %>" class="btn btn-outline-primary" title="Просмотреть">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
                                         <a href="/moderator/habits/<%= habit.id %>/edit" class="btn btn-outline-warning" title="Редактировать">
                                             <i class="bi bi-pencil"></i>
                                         </a>
+                                        <button type="button" class="btn btn-outline-secondary" title="Откатить статистику"
+                                                onclick="resetModeratorHabitStats(<%= habit.id %>, '<%= habit.title %>')">
+                                            <i class="bi bi-arrow-counterclockwise"></i>
+                                        </button>
                                         <button type="button" class="btn btn-outline-danger" title="Удалить"
                                                 onclick="confirmDeleteHabit(<%= habit.id %>, '<%= habit.title %>')">
                                             <i class="bi bi-trash"></i>
