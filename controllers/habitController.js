@@ -3,9 +3,11 @@ const {
   User,
   Achievement,
   Checkin,
+  sequelize,
 } = require("../models");
 const { Op } = require("sequelize");
 const { CATEGORY_LABELS, generateHabitSuggestions } = require("../services/aiHabitService");
+const { attachHabitProgress, attachHabitsProgress } = require("../utils/habitProgress");
 
 const wantsJson = (req) =>
   req.xhr || (typeof req.get === 'function' && (req.get('accept') || '').includes('json'));
@@ -28,63 +30,6 @@ function getPreviousUtcDayKey(dayKey) {
   return getUtcDayKey(date);
 }
 
-
-function getUtcPeriodRange(frequency, referenceDate = new Date()) {
-  const date = new Date(referenceDate);
-  const year = date.getUTCFullYear();
-  const month = date.getUTCMonth();
-  const day = date.getUTCDate();
-  let start;
-  let end;
-
-  if (frequency === 'monthly') {
-    start = new Date(Date.UTC(year, month, 1));
-    end = new Date(Date.UTC(year, month + 1, 1));
-  } else if (frequency === 'weekly') {
-    start = new Date(Date.UTC(year, month, day));
-    const dayOfWeek = start.getUTCDay() || 7;
-    start.setUTCDate(start.getUTCDate() - dayOfWeek + 1);
-    end = new Date(start);
-    end.setUTCDate(end.getUTCDate() + 7);
-  } else {
-    start = new Date(Date.UTC(year, month, day));
-    end = new Date(start);
-    end.setUTCDate(end.getUTCDate() + 1);
-  }
-
-  return { start, end };
-}
-
-async function getHabitPeriodValue(habit, referenceDate = new Date()) {
-  const { start, end } = getUtcPeriodRange(habit.frequency, referenceDate);
-  const value = await Checkin.sum('value', {
-    where: {
-      habitId: habit.id,
-      userId: habit.userId,
-      date: {
-        [Op.gte]: start,
-        [Op.lt]: end,
-      },
-    },
-  });
-
-  return value || 0;
-}
-
-async function attachHabitProgress(habit, referenceDate = new Date()) {
-  const periodValue = await getHabitPeriodValue(habit, referenceDate);
-  const targetValue = Number(habit.targetValue) || 1;
-  const progressPercentage = Math.min((periodValue / targetValue) * 100, 100);
-
-  habit.setDataValue('periodValue', periodValue);
-  habit.setDataValue('progressPercentage', progressPercentage);
-
-  return habit;
-}
-
-async function attachHabitsProgress(habits, referenceDate = new Date()) {
-  return Promise.all(habits.map((habit) => attachHabitProgress(habit, referenceDate)));
-}
 
 function getCheckinBasePoints(category) {
   switch (category) {
@@ -516,16 +461,16 @@ const habitController = {
       }
 
 
-      await Checkin.destroy({
-        where: { habitId: habit.id }
+      await sequelize.transaction(async (transaction) => {
+        await Checkin.destroy({
+          where: { habitId: habit.id },
+          transaction
+        });
+
+        await habit.destroy({ transaction });
       });
 
-      console.log('Удалены связанные checkins для привычки:', habit.id);
-
-
-      await habit.destroy();
-
-      console.log('Привычка удалена:', habit.id);
+      console.log('Привычка и связанные checkins удалены:', habit.id);
 
       req.flash('success', `Привычка "${habit.title}" успешно удалена`);
 
@@ -539,28 +484,6 @@ const habitController = {
     } catch (error) {
       console.error('Ошибка удаления привычки:', error);
       console.error('Полная ошибка:', error.stack);
-
-
-      if (error.name === 'SequelizeForeignKeyConstraintError') {
-        try {
-
-          await sequelize.query(`
-            PRAGMA foreign_keys = OFF;
-            DELETE FROM habits WHERE id = :habitId AND userId = :userId;
-            PRAGMA foreign_keys = ON;
-          `, {
-            replacements: {
-              habitId: req.params.id,
-              userId: req.currentUser.id
-            }
-          });
-
-          req.flash('success', `Привычка удалена`);
-          return res.redirect('/habits');
-        } catch (sqlError) {
-          console.error('SQL ошибка удаления:', sqlError);
-        }
-      }
 
 
       if (wantsJson(req)) {
@@ -735,12 +658,25 @@ resetStats: async (req, res) => {
       return res.status(404).json({ error: 'Привычка не найдена' });
     }
 
+    const checkinsToRemove = await Checkin.findAll({
+      where: {
+        habitId: habit.id,
+        userId: req.currentUser.id
+      },
+      attributes: ['value']
+    });
+    const pointsToRevoke = checkinsToRemove.reduce((total, checkin) => (
+      total + getCheckinEcoPoints(habit.category, checkin.value)
+    ), 0);
+
     await Checkin.destroy({
       where: {
         habitId: habit.id,
         userId: req.currentUser.id
       }
     });
+
+    await subtractUserEcoPoints(req.currentUser.id, pointsToRevoke);
 
     await habit.update({
       currentStreak: 0,

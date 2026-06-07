@@ -93,6 +93,8 @@
                 </thead>
                 <tbody>
                   <% habits.forEach(habit => { %>
+                  <% const periodValue = habit.getDataValue ? (habit.getDataValue('periodValue') || 0) : (habit.periodValue || 0); %>
+                  <% const progressPercentage = habit.getDataValue ? (habit.getDataValue('progressPercentage') || 0) : (habit.progressPercentage || 0); %>
                   <tr>
                     <td>
                       <a href="/habits/<%= habit.id %>" class="text-decoration-none">
@@ -116,10 +118,10 @@
                       <div class="d-flex align-items-center">
                         <div class="progress flex-grow-1 me-2" style="height: 8px;">
                           <div class="progress-bar bg-success"
-                               style="width: <%= Math.min((habit.currentStreak || 0) / habit.targetValue * 100, 100) %>%">
+                               style="width: <%= progressPercentage %>%">
                           </div>
                         </div>
-                        <small><%= habit.currentStreak || 0 %>/<%= habit.targetValue %></small>
+                        <small><%= periodValue %>/<%= habit.targetValue %> <%= habit.unit %></small>
                       </div>
                     </td>
                     <td>
