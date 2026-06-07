@@ -6,3 +6,4 @@ logs/
 env
 sessions/sessions.db
 .env
+uploads/
