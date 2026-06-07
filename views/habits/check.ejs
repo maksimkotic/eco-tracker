@@ -80,10 +80,10 @@
                 Сколько <%= displayUnit %> вы <%= actionVerb %> сегодня? <span class="text-danger">*</span>
               </label>
               <div class="input-group input-group-lg checkin-input">
-                <input type="number" class="form-control" id="value" name="value" min="1" max="1000" value="1" required>
+                <input type="number" class="form-control" id="value" name="value" min="<%= habitSettings && habitSettings.minTargetValue || 1 %>" max="<%= habitSettings && habitSettings.maxTargetValue || 1000 %>" value="<%= habitSettings && habitSettings.defaultTargetValue || 1 %>" required>
                 <span class="input-group-text"><%= displayUnit %></span>
               </div>
-              <div class="form-text">Минимум: 1 <%= displayUnit %>, максимум: 1000 <%= displayUnit %></div>
+              <div class="form-text">Минимум: <%= habitSettings && habitSettings.minTargetValue || 1 %> <%= displayUnit %>, максимум: <%= habitSettings && habitSettings.maxTargetValue || 1000 %> <%= displayUnit %></div>
             </div>
 
             <div class="mb-4">

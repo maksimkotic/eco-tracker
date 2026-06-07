@@ -6,6 +6,12 @@
                     <h4 class="mb-0"><i class="bi bi-person-plus"></i> Регистрация</h4>
                 </div>
                 <div class="card-body p-4">
+                    <% if (registrationSettings && !registrationSettings.registrationEnabled) { %>
+                        <div class="alert alert-warning">
+                            <i class="bi bi-lock"></i> Регистрация временно отключена администратором.
+                        </div>
+                    <% } %>
+
                     <% if (errors && errors.length) { %>
                         <div class="alert alert-danger">
                             <% errors.forEach(error => { %>
@@ -31,7 +37,7 @@
                         <div class="mb-3">
                             <label for="password" class="form-label">Пароль *</label>
                             <input type="password" class="form-control" id="password" name="password" required>
-                            <div class="form-text">Не менее 6 символов</div>
+                            <div class="form-text">Не менее <%= registrationSettings && registrationSettings.minPasswordLength || 6 %> символов</div>
                         </div>
 
                         <div class="mb-4">
@@ -40,7 +46,7 @@
                         </div>
 
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-success btn-lg">
+                            <button type="submit" class="btn btn-success btn-lg" <%= registrationSettings && !registrationSettings.registrationEnabled ? 'disabled' : '' %>>
                                 <i class="bi bi-person-check"></i> Создать аккаунт
                             </button>
                         </div>

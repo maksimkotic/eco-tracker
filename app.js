@@ -11,6 +11,7 @@ require('dotenv').config();
 const { sequelize } = require('./models');
 const initializeDatabase = require('./database/init');
 const { loadUser, csrfProtection } = require('./middlewares/auth');
+const { getPublicSettings } = require('./services/settingsService');
 
 
 const indexRoutes = require('./routes/index');
@@ -41,6 +42,42 @@ const securityHeaders = (req, res, next) => {
       "connect-src 'self' https://cdn.jsdelivr.net"
   );
   next();
+};
+
+
+const settingsLocals = async (req, res, next) => {
+  try {
+    const appSettings = await getPublicSettings();
+    res.locals.appSettings = appSettings;
+
+    const isAdminRequest = req.path.startsWith('/admin');
+    const isAuthRequest = req.path.startsWith('/auth') || req.path === '/logout';
+    const isStaticAsset = req.path.startsWith('/uploads') || req.path.startsWith('/css') || req.path.startsWith('/js');
+
+    const publicInfoPagePaths = new Set(['/', '/contacts', '/guide', '/terms', '/privacy']);
+    const isPublicInfoPage = publicInfoPagePaths.has(req.path);
+
+    if (appSettings.maintenanceMode && !isPublicInfoPage && !isAdminRequest && !isAuthRequest && !isStaticAsset) {
+      return res.status(503).render('shared/under-construction', {
+        title: 'Техническое обслуживание',
+        heading: 'Сервис временно на обслуживании',
+        description: appSettings.maintenanceMessage || 'Мы скоро вернемся.',
+        details: [
+          'администраторы могут войти и отключить режим обслуживания',
+          'пользовательские страницы временно недоступны',
+          'данные привычек и достижений сохранены'
+        ],
+        backUrl: '/auth/login',
+        backLabel: 'Войти как администратор'
+      });
+    }
+
+    return next();
+  } catch (error) {
+    console.error('Ошибка загрузки публичных настроек:', error);
+    res.locals.appSettings = {};
+    return next();
+  }
 };
 
 const templateLocals = (req, res, next) => {
@@ -99,6 +136,7 @@ function configureApp() {
 
   app.use(templateLocals);
   app.use(loadUser);
+  app.use(settingsLocals);
   app.use(csrfProtection);
 
   app.use('/', indexRoutes);
