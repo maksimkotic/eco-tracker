@@ -1,204 +1,304 @@
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow">
-                <div class="card-header bg-success text-white text-center">
-                    <h3 class="mb-0">
-                        <i class="bi bi-check-circle"></i> Отметить выполнение
-                    </h3>
-                </div>
-                <div class="card-body p-4">
+<%
+  const habitColor = habit.color || '#28a745';
+  const currentValue = habit.currentStreak || 0;
+  const progressValue = Math.min((currentValue / habit.targetValue) * 100, 100);
+  const frequencyLabel = habit.frequency === 'daily' ? 'Ежедневно' : habit.frequency === 'weekly' ? 'Еженедельно' : 'Ежемесячно';
+  const categoryLabel = habit.category === 'water' ? '💧 Вода' :
+    habit.category === 'energy' ? '⚡ Энергия' :
+    habit.category === 'waste' ? '🗑️ Отходы' :
+    habit.category === 'transport' ? '🚗 Транспорт' :
+    habit.category === 'food' ? '🍎 Питание' : '🌱 Прочее';
+  const unitLabels = {
+    times: 'раз',
+    liters: 'литров',
+    kwh: 'кВт·ч',
+    kg: 'кг',
+    items: 'шт.'
+  };
+  const displayUnit = unitLabels[habit.unit] || habit.unit;
+  const actionVerb = habit.category === 'water' ? 'сэкономили' :
+    habit.category === 'energy' ? 'сберегли' :
+    habit.category === 'waste' ? 'переработали' :
+    habit.category === 'transport' ? 'проехали экологично' :
+    habit.category === 'food' ? 'выбрали экологично' : 'сделали';
+%>
 
-                    <div class="card border-0 bg-light mb-4">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center">
-                                <div class="me-3">
-                                    <div class="color-indicator"
-                                         style="width: 40px; height: 40px; background-color: <%= habit.color || '#28a745' %>; border-radius: 10px;"></div>
-                                </div>
-                                <div>
-                                    <h5 class="mb-1"><%= habit.title %></h5>
-                                    <div class="d-flex flex-wrap gap-1">
-                                        <span class="badge bg-<%=
-                                            habit.category === 'water' ? 'primary' :
-                                            habit.category === 'energy' ? 'warning' :
-                                            habit.category === 'waste' ? 'danger' :
-                                            habit.category === 'transport' ? 'info' : 'success'
-                                        %>">
-                                            <%= habit.category === 'water' ? '💧 Вода' :
-                                               habit.category === 'energy' ? '⚡ Энергия' :
-                                               habit.category === 'waste' ? '🗑️ Отходы' :
-                                               habit.category === 'transport' ? '🚗 Транспорт' : '🌱 Прочее' %>
-                                        </span>
-                                        <span class="badge bg-secondary">
-                                            <%= habit.frequency === 'daily' ? 'Ежедневно' :
-                                               habit.frequency === 'weekly' ? 'Еженедельно' : 'Ежемесячно' %>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-
-                    <div class="mb-4">
-                        <h6>Текущий прогресс</h6>
-                        <div class="d-flex justify-content-between mb-1">
-                            <small>Выполнено: <strong><%= habit.currentStreak || 0 %> <%= habit.unit %></strong></small>
-                            <small>Цель: <strong><%= habit.targetValue %> <%= habit.unit %></strong></small>
-                        </div>
-                        <div class="progress" style="height: 15px;">
-                        <div class="text-center mt-1">
-                            <small><strong><%= Math.min(((habit.currentStreak || 0) / habit.targetValue) * 100, 100).toFixed(1) %>%</strong> от цели</small>
-                        </div>
-                    </div>
-
-
-                    <div class="alert alert-info mb-4">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <i class="bi bi-fire"></i>
-                                <strong>Текущая серия:</strong> <%= habit.currentStreak || 0 %> дней
-                            </div>
-                            <% if (habit.bestStreak > (habit.currentStreak || 0)) { %>
-                            <div>
-                                <i class="bi bi-trophy"></i>
-                                <strong>Рекорд:</strong> <%= habit.bestStreak %> дней
-                            </div>
-                            <% } %>
-                        </div>
-                    </div>
-
-
-                    <form action="/habits/<%= habit.id %>/check" method="POST">
-                        <div class="mb-4">
-                            <label for="value" class="form-label">
-                                Сколько <%= habit.unit %> вы <%=
-                                    habit.category === 'water' ? 'сэкономили' :
-                                    habit.category === 'energy' ? 'сберегли' :
-                                    habit.category === 'waste' ? 'переработали' : 'сделали'
-                                %> сегодня? *
-                            </label>
-                            <div class="input-group input-group-lg">
-                                <input type="number" class="form-control" id="value" name="value"
-                                       min="1" max="1000" value="1" required>
-                                <span class="input-group-text"><%= habit.unit %></span>
-                            </div>
-                            <div class="form-text">
-                                Минимум: 1 <%= habit.unit %>, максимум: 1000 <%= habit.unit %>
-                            </div>
-                        </div>
-
-
-                        <div class="mb-4">
-                            <label class="form-label">Быстрый выбор:</label>
-                            <div class="d-flex flex-wrap gap-2">
-                                <% const quickValues = [1, 5, 10, 25, 50]; %>
-                                <% quickValues.forEach(val => { %>
-                                    <button type="button" class="btn btn-outline-success quick-value"
-                                            data-value="<%= val %>">
-                                        <%= val %> <%= habit.unit %>
-                                    </button>
-                                <% }); %>
-                            </div>
-                        </div>
-
-
-                        <div class="mb-4">
-                            <label for="date" class="form-label">Дата выполнения</label>
-                            <input type="date" class="form-control" id="date" name="date"
-                                   value="<%= new Date().toISOString().split('T')[0] %>" max="<%= new Date().toISOString().split('T')[0] %>">
-                            <div class="form-text">Можно отметить выполнение за прошедшие дни</div>
-                        </div>
-
-
-                        <div class="mb-4">
-                            <label for="notes" class="form-label">Примечание (необязательно)</label>
-                            <textarea class="form-control" id="notes" name="notes" rows="3"
-                                      placeholder="Что сегодня было особенным? Какие были трудности?"></textarea>
-                        </div>
-
-
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-between">
-                            <a href="/habits/<%= habit.id %>" class="btn btn-outline-secondary">
-                                <i class="bi bi-arrow-left"></i> Назад к привычке
-                            </a>
-                            <button type="submit" class="btn btn-success btn-lg px-5">
-                                <i class="bi bi-check-lg"></i> Подтвердить выполнение
-                            </button>
-                        </div>
-                    </form>
-                </div>
+<div class="container py-4 checkin-page">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7">
+      <div class="checkin-card card shadow border-0 overflow-hidden">
+        <div class="checkin-hero text-white" style="background: linear-gradient(135deg, <%= habitColor %>, #198754);">
+          <div class="d-flex align-items-center gap-3">
+            <div class="checkin-hero__icon">
+              <i class="bi bi-check2-circle"></i>
             </div>
-
-
-            <div class="card shadow mt-4">
-                <div class="card-header bg-info text-white">
-                    <h6 class="mb-0"><i class="bi bi-globe"></i> Ваше влияние на экологию</h6>
-                </div>
-                <div class="card-body">
-                    <% let impact = 0; %>
-                    <% let impactUnit = ''; %>
-                    <% let impactDescription = ''; %>
-
-                    <% switch(habit.category) {
-                        case 'water':
-                            impact = 10;
-                            impactUnit = 'литров воды';
-                            impactDescription = 'Экономия воды помогает сохранить пресноводные ресурсы';
-                            break;
-                        case 'energy':
-                            impact = 0.5;
-                            impactUnit = 'кг CO₂';
-                            impactDescription = 'Снижение выбросов углекислого газа';
-                            break;
-                        case 'waste':
-                            impact = 0.2;
-                            impactUnit = 'кг отходов';
-                            impactDescription = 'Предотвращение попадания отходов на свалки';
-                            break;
-                        default:
-                            impact = 1;
-                            impactUnit = 'эко-очков';
-                            impactDescription = 'Положительное влияние на окружающую среду';
-                    } %>
-
-                    <p>Каждое выполнение этой привычки экономит примерно <strong><%= impact %> <%= impactUnit %></strong>.</p>
-                    <p class="small text-muted mb-0"><%= impactDescription %></p>
-                </div>
+            <div>
+              <p class="text-uppercase small fw-semibold mb-1 opacity-75">Отметка выполнения</p>
+              <h1 class="h3 mb-0"><%= habit.title %></h1>
             </div>
+          </div>
+          <div class="d-flex flex-wrap gap-2 mt-3">
+            <span class="badge rounded-pill bg-light text-dark"><%= categoryLabel %></span>
+            <span class="badge rounded-pill bg-light text-dark"><i class="bi bi-calendar-week me-1"></i><%= frequencyLabel %></span>
+          </div>
         </div>
+
+        <div class="card-body p-4 p-md-5">
+          <section class="progress-panel mb-4">
+            <div class="d-flex flex-wrap justify-content-between gap-2 mb-3">
+              <div>
+                <h2 class="h5 mb-1">Текущий прогресс</h2>
+                <p class="text-muted mb-0">Выполнено <strong><%= currentValue %> <%= displayUnit %></strong> из <strong><%= habit.targetValue %> <%= displayUnit %></strong></p>
+              </div>
+              <div class="progress-panel__percent" style="color: <%= habitColor %>;">
+                <%= progressValue.toFixed(1) %>%
+              </div>
+            </div>
+            <div class="progress checkin-progress">
+              <div
+                class="progress-bar"
+                role="progressbar"
+                style="width: <%= progressValue %>%; background-color: <%= habitColor %>;"
+                aria-valuenow="<%= progressValue.toFixed(0) %>"
+                aria-valuemin="0"
+                aria-valuemax="100"
+              ></div>
+            </div>
+            <div class="streak-strip mt-3">
+              <div>
+                <i class="bi bi-fire text-warning"></i>
+                <span class="fw-semibold">Текущая серия:</span> <%= currentValue %> дней
+              </div>
+              <% if (habit.bestStreak > currentValue) { %>
+                <div>
+                  <i class="bi bi-trophy text-warning"></i>
+                  <span class="fw-semibold">Рекорд:</span> <%= habit.bestStreak %> дней
+                </div>
+              <% } %>
+            </div>
+          </section>
+
+          <form action="/habits/<%= habit.id %>/check" method="POST" class="checkin-form">
+            <div class="mb-4">
+              <label for="value" class="form-label fw-semibold">
+                Сколько <%= displayUnit %> вы <%= actionVerb %> сегодня? <span class="text-danger">*</span>
+              </label>
+              <div class="input-group input-group-lg checkin-input">
+                <input type="number" class="form-control" id="value" name="value" min="1" max="1000" value="1" required>
+                <span class="input-group-text"><%= displayUnit %></span>
+              </div>
+              <div class="form-text">Минимум: 1 <%= displayUnit %>, максимум: 1000 <%= displayUnit %></div>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label fw-semibold">Быстрый выбор</label>
+              <div class="quick-values d-flex flex-wrap gap-2">
+                <% const quickValues = [1, 5, 10, 25, 50]; %>
+                <% quickValues.forEach((val, index) => { %>
+                  <button
+                    type="button"
+                    class="btn quick-value <%= index === 0 ? 'active' : '' %>"
+                    style="--habit-color: <%= habitColor %>;"
+                    data-value="<%= val %>"
+                  >
+                    <%= val %> <%= displayUnit %>
+                  </button>
+                <% }); %>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <label for="date" class="form-label fw-semibold">Дата выполнения</label>
+                <input
+                  type="date"
+                  class="form-control form-control-lg"
+                  id="date"
+                  name="date"
+                  value="<%= new Date().toISOString().split('T')[0] %>"
+                  max="<%= new Date().toISOString().split('T')[0] %>"
+                >
+                <div class="form-text">Можно отметить выполнение за прошедшие дни</div>
+              </div>
+              <div class="col-md-6">
+                <label for="notes" class="form-label fw-semibold">Примечание</label>
+                <textarea
+                  class="form-control"
+                  id="notes"
+                  name="notes"
+                  rows="3"
+                  placeholder="Что получилось хорошо?"
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="checkin-actions d-flex flex-column flex-sm-row gap-3">
+              <a href="/habits/<%= habit.id %>" class="btn btn-outline-secondary btn-lg flex-sm-fill">
+                <i class="bi bi-arrow-left"></i> Назад
+              </a>
+              <button type="submit" class="btn btn-success btn-lg flex-sm-fill" style="background-color: <%= habitColor %>; border-color: <%= habitColor %>;">
+                <i class="bi bi-check-lg"></i> Подтвердить
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="impact-card card shadow-sm border-0 mt-4">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-start gap-3">
+            <div class="impact-card__icon bg-info text-white">
+              <i class="bi bi-globe"></i>
+            </div>
+            <div>
+              <h2 class="h5 mb-2">Ваше влияние на экологию</h2>
+              <% let impact = 0; %>
+              <% let impactUnit = ''; %>
+              <% let impactDescription = ''; %>
+
+              <% switch(habit.category) {
+                case 'water':
+                  impact = 10;
+                  impactUnit = 'литров воды';
+                  impactDescription = 'Экономия воды помогает сохранить пресноводные ресурсы';
+                  break;
+                case 'energy':
+                  impact = 0.5;
+                  impactUnit = 'кг CO₂';
+                  impactDescription = 'Снижение выбросов углекислого газа';
+                  break;
+                case 'waste':
+                  impact = 0.2;
+                  impactUnit = 'кг отходов';
+                  impactDescription = 'Предотвращение попадания отходов на свалки';
+                  break;
+                default:
+                  impact = 1;
+                  impactUnit = 'эко-очков';
+                  impactDescription = 'Положительное влияние на окружающую среду';
+              } %>
+
+              <p class="mb-1">Каждое выполнение этой привычки экономит примерно <strong><%= impact %> <%= impactUnit %></strong>.</p>
+              <p class="small text-muted mb-0"><%= impactDescription %></p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
 
 <script>
-
-document.querySelectorAll('.quick-value').forEach(button => {
-    button.addEventListener('click', function() {
-        document.getElementById('value').value = this.dataset.value;
-    });
+document.querySelectorAll('.quick-value').forEach((button) => {
+  button.addEventListener('click', function () {
+    document.querySelectorAll('.quick-value').forEach((item) => item.classList.remove('active'));
+    this.classList.add('active');
+    document.getElementById('value').value = this.dataset.value;
+  });
 });
 
-
-document.getElementById('value').addEventListener('change', function() {
-    const max = parseInt(this.max);
-    const value = parseInt(this.value);
+const checkinValueInput = document.getElementById('value');
+if (checkinValueInput) {
+  checkinValueInput.addEventListener('change', function () {
+    const max = parseInt(this.max, 10);
+    const value = parseInt(this.value, 10);
 
     if (value > max) {
-        this.value = max;
-        alert(`Максимальное значение: ${max} ${document.querySelector('.input-group-text').textContent}`);
+      this.value = max;
+      alert(`Максимальное значение: ${max} ${document.querySelector('.input-group-text').textContent}`);
     }
-});
+  });
+}
 </script>
 
 <style>
+.checkin-card,
+.impact-card {
+  border-radius: 1rem;
+}
+
+.checkin-hero {
+  padding: 1.75rem;
+}
+
+.checkin-hero__icon,
+.impact-card__icon {
+  align-items: center;
+  border-radius: 1rem;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 3rem;
+  justify-content: center;
+  width: 3rem;
+}
+
+.checkin-hero__icon {
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 1.7rem;
+}
+
+.progress-panel {
+  background: #f8fafc;
+  border: 1px solid #e9ecef;
+  border-radius: 1rem;
+  padding: 1.25rem;
+}
+
+.progress-panel__percent {
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+
+.checkin-progress {
+  background-color: #e9ecef;
+  border-radius: 999px;
+  height: 0.9rem;
+}
+
+.checkin-progress .progress-bar {
+  border-radius: 999px;
+}
+
+.streak-strip {
+  background: #fff;
+  border-radius: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  padding: 0.85rem 1rem;
+}
+
+.checkin-input .form-control,
+.checkin-input .input-group-text,
+.checkin-form .form-control,
+.checkin-form .form-select {
+  border-color: #d7dee8;
+}
+
 .quick-value {
-    transition: all 0.2s;
+  --habit-color: #28a745;
+  background: #fff;
+  border: 1px solid var(--habit-color);
+  color: var(--habit-color);
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
-.quick-value:hover {
-    transform: translateY(-2px);
+
+.quick-value:hover,
+.quick-value.active {
+  background: var(--habit-color);
+  color: #fff;
+  transform: translateY(-1px);
 }
-.color-indicator {
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+.checkin-actions .btn {
+  border-radius: 0.75rem;
+}
+
+@media (max-width: 575.98px) {
+  .checkin-hero,
+  .card-body.p-4.p-md-5 {
+    padding: 1.25rem !important;
+  }
 }
 </style>
