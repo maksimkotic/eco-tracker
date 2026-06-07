@@ -8,7 +8,7 @@
           </h4>
         </div>
         <div class="card-body p-4">
-          <form action="/habits/<%= habit.id %>" method="POST" id="editHabitForm">
+          <form action="/habits/<%= habit.id %>?_method=PUT" method="POST" id="editHabitForm">
             <input type="hidden" name="_method" value="PUT">
 
 
