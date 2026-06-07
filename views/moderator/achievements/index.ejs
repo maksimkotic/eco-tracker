@@ -199,15 +199,50 @@
                                                                        value="<%= achievement.points %>" min="1" required>
                                                             </div>
                                                             <div class="col-md-6 mb-3">
-                                                                <label class="form-label">Иконка</label>
-                                                                <select class="form-select" name="icon">
-                                                                    <option value="trophy" <%= achievement.icon === 'trophy' ? 'selected' : '' %>>🏆 Трофей</option>
-                                                                    <option value="star" <%= achievement.icon === 'star' ? 'selected' : '' %>>⭐ Звезда</option>
-                                                                    <option value="award" <%= achievement.icon === 'award' ? 'selected' : '' %>>🎖️ Награда</option>
-                                                                    <option value="medal" <%= achievement.icon === 'medal' ? 'selected' : '' %>>🥇 Медаль</option>
-                                                                    <option value="crown" <%= achievement.icon === 'crown' ? 'selected' : '' %>>👑 Корона</option>
+                                                                <label class="form-label">Редкость</label>
+                                                                <select class="form-select" name="rarity">
+                                                                    <% rarities.forEach((rarity) => { %>
+                                                                    <option value="<%= rarity.value %>" <%= achievement.rarity === rarity.value ? 'selected' : '' %>><%= rarity.label %></option>
+                                                                    <% }); %>
                                                                 </select>
                                                             </div>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="col-md-6 mb-3">
+                                                                <label class="form-label">Условие</label>
+                                                                <select class="form-select achievement-condition-type" name="conditionType" data-achievement-id="<%= achievement.id %>">
+                                                                    <% conditionTypes.forEach((type) => { %>
+                                                                    <option value="<%= type.value %>" <%= achievement.conditionType === type.value ? 'selected' : '' %>><%= type.label %></option>
+                                                                    <% }); %>
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-md-6 mb-3">
+                                                                <label class="form-label">Значение условия</label>
+                                                                <input type="number" class="form-control" name="conditionValue"
+                                                                       value="<%= achievement.conditionValue %>" min="1" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="mb-3 achievement-extra" data-achievement-id="<%= achievement.id %>" data-condition="specific_habit">
+                                                            <label class="form-label">Название привычки</label>
+                                                            <input type="text" class="form-control" name="habitName"
+                                                                   value="<%= achievement.conditionExtraParsed && achievement.conditionExtraParsed.habitName ? achievement.conditionExtraParsed.habitName : '' %>">
+                                                        </div>
+                                                        <div class="mb-3 achievement-extra" data-achievement-id="<%= achievement.id %>" data-condition="category_master">
+                                                            <label class="form-label">Категория привычек</label>
+                                                            <select class="form-select" name="category">
+                                                                <option value="">Выберите категорию</option>
+                                                                <% categories.forEach((category) => { %>
+                                                                <option value="<%= category.value %>" <%= achievement.conditionExtraParsed && achievement.conditionExtraParsed.category === category.value ? 'selected' : '' %>><%= category.label %></option>
+                                                                <% }); %>
+                                                            </select>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Иконка</label>
+                                                            <select class="form-select" name="icon">
+                                                                <% icons.forEach((icon) => { %>
+                                                                <option value="<%= icon %>" <%= achievement.icon === icon ? 'selected' : '' %>><%= icon %></option>
+                                                                <% }); %>
+                                                            </select>
                                                         </div>
                                                         <div class="form-check mb-3">
                                                             <input class="form-check-input" type="checkbox" name="isHidden"
@@ -244,3 +279,19 @@
         </div>
     </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    function updateAchievementExtra(select) {
+      const achievementId = select.dataset.achievementId;
+      document.querySelectorAll(`.achievement-extra[data-achievement-id="${achievementId}"]`).forEach((extra) => {
+        extra.classList.toggle('d-none', extra.dataset.condition !== select.value);
+      });
+    }
+
+    document.querySelectorAll('.achievement-condition-type').forEach((select) => {
+      select.addEventListener('change', () => updateAchievementExtra(select));
+      updateAchievementExtra(select);
+    });
+  });
+</script>

@@ -87,6 +87,118 @@ async function recalculateUserAfterRemovedCheckins(userId, pointsToRevoke, trans
   return user;
 }
 
+const achievementConditionTypes = [
+  { value: 'streak', label: 'Дней подряд' },
+  { value: 'total_habits', label: 'Всего привычек' },
+  { value: 'eco_points', label: 'Эко-очков' },
+  { value: 'days_active', label: 'Активных дней' },
+  { value: 'specific_habit', label: 'Конкретная привычка' },
+  { value: 'category_master', label: 'Мастер категории' }
+];
+
+const achievementRarities = [
+  { value: 'common', label: 'Обычное' },
+  { value: 'rare', label: 'Редкое' },
+  { value: 'epic', label: 'Эпическое' },
+  { value: 'legendary', label: 'Легендарное' }
+];
+
+const achievementIcons = [
+  'trophy', 'star', 'award', 'medal', 'crown',
+  'gem', 'shield', 'heart', 'flower1', 'recycle',
+  'tree', 'lightning-charge', 'droplet', 'bicycle', 'check-circle'
+];
+
+const achievementCategories = [
+  { value: 'water', label: 'Вода' },
+  { value: 'energy', label: 'Энергия' },
+  { value: 'waste', label: 'Отходы' },
+  { value: 'transport', label: 'Транспорт' },
+  { value: 'food', label: 'Питание' },
+  { value: 'other', label: 'Прочее' }
+];
+
+function normalizePositiveInt(value, fallback = 1) {
+  const parsed = parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function parseConditionExtra(conditionExtra) {
+  if (!conditionExtra) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(conditionExtra) || {};
+  } catch (error) {
+    return {};
+  }
+}
+
+function buildConditionExtra(conditionType, body) {
+  if (conditionType === 'specific_habit') {
+    const habitName = (body.habitName || '').trim();
+    return habitName ? JSON.stringify({ habitName }) : null;
+  }
+
+  if (conditionType === 'category_master') {
+    const category = (body.category || '').trim();
+    return category ? JSON.stringify({ category }) : null;
+  }
+
+  return null;
+}
+
+function getAchievementFormData(body = {}) {
+  const conditionType = achievementConditionTypes.some((type) => type.value === body.conditionType)
+    ? body.conditionType
+    : 'streak';
+  const rarity = achievementRarities.some((item) => item.value === body.rarity)
+    ? body.rarity
+    : 'common';
+  const icon = achievementIcons.includes(body.icon) ? body.icon : 'trophy';
+
+  return {
+    title: (body.title || '').trim(),
+    description: (body.description || '').trim(),
+    icon,
+    points: normalizePositiveInt(body.points, 10),
+    conditionType,
+    conditionValue: normalizePositiveInt(body.conditionValue, 1),
+    conditionExtra: buildConditionExtra(conditionType, body),
+    rarity,
+    isHidden: body.isHidden === 'on',
+    habitName: (body.habitName || '').trim(),
+    category: (body.category || '').trim()
+  };
+}
+
+function getAchievementFormOptions() {
+  return {
+    conditionTypes: achievementConditionTypes,
+    rarities: achievementRarities,
+    icons: achievementIcons,
+    categories: achievementCategories
+  };
+}
+
+async function adjustUsersEcoPoints(userIds, pointsDelta, transaction) {
+  if (!userIds.length || !pointsDelta) {
+    return;
+  }
+
+  const users = await User.findAll({
+    where: { id: userIds },
+    transaction
+  });
+
+  await Promise.all(users.map(async (user) => {
+    user.ecoPoints = Math.max(0, Math.round((user.ecoPoints || 0) + pointsDelta));
+    user.level = Math.max(1, Math.floor(user.ecoPoints / 100) + 1);
+    await user.save({ transaction });
+  }));
+}
+
 const moderatorController = {
 
   dashboard: async (req, res) => {
@@ -210,7 +322,7 @@ const moderatorController = {
         include: [{
           model: User,
           as: 'User',
-          attributes: ['id', 'username', 'avatar']
+          attributes: ['id', 'username', 'avatar', 'ecoPoints', 'level', 'createdAt']
         }]
       });
 
@@ -405,8 +517,11 @@ const moderatorController = {
         const totalUsers = await User.count();
         const percentage = totalUsers > 0 ? Math.round((earnedCount / totalUsers) * 100) : 0;
 
+        const achievementData = achievement.toJSON();
+
         return {
-          ...achievement.toJSON(),
+          ...achievementData,
+          conditionExtraParsed: parseConditionExtra(achievementData.conditionExtra),
           earnedCount,
           percentage
         };
@@ -414,7 +529,8 @@ const moderatorController = {
 
       res.render('moderator/achievements/index', {
         title: 'Управление достижениями',
-        achievements: achievementsWithStats
+        achievements: achievementsWithStats,
+        ...getAchievementFormOptions()
       });
     } catch (error) {
       console.error('Ошибка загрузки достижений:', error);
@@ -427,74 +543,140 @@ const moderatorController = {
   createAchievement: (req, res) => {
     res.render('moderator/achievements/create', {
       title: 'Создание достижения',
-      conditionTypes: [
-        { value: 'streak', label: 'Дней подряд' },
-        { value: 'total_habits', label: 'Всего привычек' },
-        { value: 'eco_points', label: 'Эко-очков' },
-        { value: 'days_active', label: 'Активных дней' },
-        { value: 'specific_habit', label: 'Конкретная привычка' },
-        { value: 'category_master', label: 'Мастер категории' }
-      ],
-      rarities: [
-        { value: 'common', label: 'Обычное' },
-        { value: 'rare', label: 'Редкое' },
-        { value: 'epic', label: 'Эпическое' },
-        { value: 'legendary', label: 'Легендарное' }
-      ],
-      icons: [
-        'trophy', 'star', 'award', 'medal', 'crown',
-        'gem', 'shield', 'heart', 'flower1', 'recycle'
-      ]
+      ...getAchievementFormOptions(),
+      formData: {}
     });
   },
 
 
   storeAchievement: async (req, res) => {
+    const formData = getAchievementFormData(req.body);
+
     try {
-      const {
-        title,
-        description,
-        icon,
-        points,
-        conditionType,
-        conditionValue,
-        conditionExtra,
-        rarity,
-        isHidden
-      } = req.body;
+      await Achievement.create(formData);
 
-      const achievement = await Achievement.create({
-        title,
-        description,
-        icon: icon || 'trophy',
-        points: parseInt(points),
-        conditionType,
-        conditionValue: parseInt(conditionValue),
-        conditionExtra: conditionExtra || null,
-        rarity: rarity || 'common',
-        isHidden: isHidden === 'on'
-      });
-
-
-      console.log(`Модератор ${req.currentUser.username} создал достижение "${title}"`);
+      console.log(`Модератор ${req.currentUser.username} создал достижение "${formData.title}"`);
 
       req.flash('success', 'Достижение успешно создано');
       res.redirect('/moderator/achievements');
     } catch (error) {
       console.error('Ошибка создания достижения:', error);
-      req.flash('error', 'Не удалось создать достижение');
-      res.redirect('/moderator/achievements/create');
+      req.flash('error', error.name === 'SequelizeValidationError'
+        ? `Не удалось создать достижение: ${error.errors.map((item) => item.message).join(', ')}`
+        : 'Не удалось создать достижение');
+      res.render('moderator/achievements/create', {
+        title: 'Создание достижения',
+        ...getAchievementFormOptions(),
+        formData
+      });
+    }
+  },
+
+
+  updateAchievement: async (req, res) => {
+    const formData = getAchievementFormData(req.body);
+
+    try {
+      const achievement = await Achievement.findByPk(req.params.id);
+
+      if (!achievement) {
+        req.flash('error', 'Достижение не найдено');
+        return res.redirect('/moderator/achievements');
+      }
+
+      const pointsDelta = formData.points - achievement.points;
+
+      await sequelize.transaction(async (transaction) => {
+        await achievement.update(formData, { transaction });
+
+        if (pointsDelta) {
+          const userAchievements = await UserAchievement.findAll({
+            where: { achievementId: achievement.id },
+            attributes: ['userId'],
+            transaction
+          });
+          const userIds = userAchievements.map((item) => item.userId);
+          await adjustUsersEcoPoints(userIds, pointsDelta, transaction);
+        }
+      });
+
+      console.log(`Модератор ${req.currentUser.username} обновил достижение "${formData.title}"`);
+
+      req.flash('success', 'Достижение успешно обновлено');
+      res.redirect('/moderator/achievements');
+    } catch (error) {
+      console.error('Ошибка обновления достижения:', error);
+      req.flash('error', 'Не удалось обновить достижение');
+      res.redirect('/moderator/achievements');
+    }
+  },
+
+
+  deleteAchievement: async (req, res) => {
+    try {
+      const achievement = await Achievement.findByPk(req.params.id);
+
+      if (!achievement) {
+        if (wantsJson(req)) {
+          return res.status(404).json({ success: false, error: 'Достижение не найдено' });
+        }
+        req.flash('error', 'Достижение не найдено');
+        return res.redirect('/moderator/achievements');
+      }
+
+      const achievementTitle = achievement.title;
+
+      await sequelize.transaction(async (transaction) => {
+        const userAchievements = await UserAchievement.findAll({
+          where: { achievementId: achievement.id },
+          attributes: ['userId'],
+          transaction
+        });
+        const userIds = userAchievements.map((item) => item.userId);
+
+        await UserAchievement.destroy({
+          where: { achievementId: achievement.id },
+          transaction
+        });
+        await achievement.destroy({ transaction });
+        await adjustUsersEcoPoints(userIds, -achievement.points, transaction);
+      });
+
+      console.log(`Модератор ${req.currentUser.username} удалил достижение "${achievementTitle}"`);
+
+      req.flash('success', `Достижение "${achievementTitle}" удалено, очки пользователей пересчитаны`);
+      if (wantsJson(req)) {
+        return res.json({ success: true, message: 'Достижение удалено' });
+      }
+      res.redirect('/moderator/achievements');
+    } catch (error) {
+      console.error('Ошибка удаления достижения:', error);
+      if (wantsJson(req)) {
+        return res.status(500).json({ success: false, error: 'Не удалось удалить достижение' });
+      }
+      req.flash('error', 'Не удалось удалить достижение');
+      res.redirect('/moderator/achievements');
     }
   },
 
 
   assignAchievement: async (req, res) => {
     try {
+      const userSearch = (req.query.userSearch || '').trim();
+      const userWhere = { isBanned: false };
+
+      if (userSearch) {
+        userWhere[Op.or] = [
+          { username: { [Op.iLike]: `%${userSearch}%` } },
+          { email: { [Op.iLike]: `%${userSearch}%` } }
+        ];
+      }
+
       const users = await User.findAll({
-        where: { isBanned: false },
-        attributes: ['id', 'username', 'avatar', 'ecoPoints'],
+        where: userWhere,
+        attributes: ['id', 'username', 'email', 'avatar', 'ecoPoints', 'level'],
         order: [['username', 'ASC']],
-        limit: 50
+        limit: 100
       });
 
       const achievements = await Achievement.findAll({
@@ -504,7 +686,10 @@ const moderatorController = {
       res.render('moderator/achievements/assign', {
         title: 'Назначение достижения',
         users,
-        achievements
+        achievements,
+        filters: { userSearch },
+        selectedAchievementId: req.query.achievementId || '',
+        selectedUserId: req.query.userId || ''
       });
     } catch (error) {
       console.error('Ошибка загрузки данных:', error);
@@ -534,7 +719,7 @@ const moderatorController = {
 
       if (existing) {
         req.flash('error', 'У пользователя уже есть это достижение');
-        return res.redirect('/moderator/achievements/assign');
+        return res.redirect(`/moderator/achievements/assign?userId=${userId}&achievementId=${achievementId}`);
       }
 
 
@@ -549,6 +734,21 @@ const moderatorController = {
       console.error('Ошибка назначения достижения:', error);
       req.flash('error', 'Не удалось назначить достижение');
       res.redirect('/moderator/achievements/assign');
+    }
+  },
+
+
+  listAchievementsApi: async (req, res) => {
+    try {
+      const achievements = await Achievement.findAll({
+        attributes: ['id', 'title', 'points', 'rarity', 'icon'],
+        order: [['title', 'ASC']]
+      });
+
+      res.json(achievements);
+    } catch (error) {
+      console.error('Ошибка загрузки списка достижений:', error);
+      res.status(500).json({ success: false, error: 'Не удалось загрузить достижения' });
     }
   }
 };

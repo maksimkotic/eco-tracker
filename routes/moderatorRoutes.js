@@ -17,9 +17,14 @@ router.post('/habits/:id/delete', moderatorController.destroyHabit);
 router.post('/habits/:id/reset', moderatorController.resetHabitStats);
 
 router.get('/achievements', moderatorController.achievementsIndex);
+router.get('/achievements/api/list', moderatorController.listAchievementsApi);
 router.get('/achievements/create', moderatorController.createAchievement);
+router.get('/achievements/new', moderatorController.createAchievement);
 router.post('/achievements', moderatorController.storeAchievement);
 router.get('/achievements/assign', moderatorController.assignAchievement);
 router.post('/achievements/assign', moderatorController.processAssignment);
+router.put('/achievements/:id', moderatorController.updateAchievement);
+router.delete('/achievements/:id', moderatorController.deleteAchievement);
+router.post('/achievements/:id/delete', moderatorController.deleteAchievement);
 
 module.exports = router;
