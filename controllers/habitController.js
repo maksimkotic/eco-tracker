@@ -8,6 +8,7 @@ const {
 const { Op } = require("sequelize");
 const { CATEGORY_LABELS, generateHabitSuggestions } = require("../services/aiHabitService");
 const { attachHabitProgress, attachHabitsProgress } = require("../utils/habitProgress");
+const { getSettings, getHabitCategories, calculateLevel } = require("../services/settingsService");
 
 const wantsJson = (req) =>
   req.xhr || (typeof req.get === 'function' && (req.get('accept') || '').includes('json'));
@@ -62,8 +63,13 @@ async function subtractUserEcoPoints(userId, points) {
     return null;
   }
 
-  user.ecoPoints = Math.max(0, Math.round((user.ecoPoints || 0) - points));
-  user.level = Math.max(1, Math.floor(user.ecoPoints / 100) + 1);
+  const settings = await getSettings();
+  const pointsToSubtract = settings.gamification.enabled
+    ? Math.round(Number(points || 0) * Number(settings.gamification.checkinPointMultiplier || 1))
+    : 0;
+
+  user.ecoPoints = Math.max(0, Math.round((user.ecoPoints || 0) - pointsToSubtract));
+  user.level = calculateLevel(user.ecoPoints, settings.gamification.pointsPerLevel);
   await user.save();
 
   return user;
@@ -236,17 +242,13 @@ const habitController = {
   },
 
 
-  create: (req, res) => {
+  create: async (req, res) => {
+    const settings = await getSettings();
+
     res.render("habits/new", {
       title: "Создание новой привычки",
-      categories: [
-        { value: "water", label: "💧 Экономия воды" },
-        { value: "energy", label: "⚡ Экономия энергии" },
-        { value: "waste", label: "🗑️ Сортировка отходов" },
-        { value: "transport", label: "🚗 Экотранспорт" },
-        { value: "food", label: "🍎 Экопитание" },
-        { value: "other", label: "🌱 Прочее" },
-      ],
+      categories: await getHabitCategories(),
+      habitSettings: settings.habits,
       frequencies: [
         { value: "daily", label: "Ежедневно" },
         { value: "weekly", label: "Еженедельно" },
@@ -281,21 +283,46 @@ const habitController = {
         unit,
         color,
       } = req.body;
+      const settings = await getSettings();
+      const enabledCategories = settings.habits.enabledCategories || [];
+      const parsedTargetValue = parseFloat(targetValue);
+
+      if (!enabledCategories.includes(category)) {
+        req.flash("error", "Выбранная категория привычек отключена администратором");
+        return res.redirect("/habits/new");
+      }
+
+      if (
+        parsedTargetValue < Number(settings.habits.minTargetValue || 1) ||
+        parsedTargetValue > Number(settings.habits.maxTargetValue || 1000)
+      ) {
+        req.flash("error", `Целевое значение должно быть от ${settings.habits.minTargetValue} до ${settings.habits.maxTargetValue}`);
+        return res.redirect("/habits/new");
+      }
 
       const habit = await Habit.create({
         userId: req.currentUser.id,
         title,
         description: description || "",
         category,
-        frequency,
-        targetValue: parseFloat(targetValue),
-        unit: unit || "times",
+        frequency: frequency || settings.habits.defaultFrequency,
+        targetValue: parsedTargetValue,
+        unit: unit || settings.habits.defaultUnit || "times",
         color: color || "#28a745",
         isActive: true,
       });
 
 
-      await checkAchievements(req.currentUser.id);
+      if (Number(settings.gamification.firstHabitBonus || 0) > 0) {
+        const userHabitsCount = await Habit.count({ where: { userId: req.currentUser.id } });
+        if (userHabitsCount === 1) {
+          await req.currentUser.addEcoPoints(Number(settings.gamification.firstHabitBonus));
+        }
+      }
+
+      if (settings.gamification.achievementsEnabled) {
+        await checkAchievements(req.currentUser.id);
+      }
 
       req.flash("success", `Привычка "${habit.title}" успешно создана!`);
       res.redirect(`/habits/${habit.id}`);
@@ -365,17 +392,13 @@ const habitController = {
         return res.redirect("/habits");
       }
 
+      const settings = await getSettings();
+
       res.render("habits/edit", {
         title: `Редактирование: ${habit.title}`,
         habit,
-        categories: [
-          { value: "water", label: "💧 Экономия воды" },
-          { value: "energy", label: "⚡ Экономия энергии" },
-          { value: "waste", label: "🗑️ Сортировка отходов" },
-          { value: "transport", label: "🚗 Экотранспорт" },
-          { value: "food", label: "🍎 Экопитание" },
-          { value: "other", label: "🌱 Прочее" },
-        ],
+        categories: await getHabitCategories(),
+        habitSettings: settings.habits,
         frequencies: [
           { value: "daily", label: "Ежедневно" },
           { value: "weekly", label: "Еженедельно" },
@@ -425,13 +448,30 @@ const habitController = {
         return res.redirect('/habits');
       }
 
+      const settings = await getSettings();
+      const enabledCategories = settings.habits.enabledCategories || [];
+      const parsedTargetValue = parseFloat(targetValue);
+
+      if (!enabledCategories.includes(category)) {
+        req.flash("error", "Выбранная категория привычек отключена администратором");
+        return res.redirect(`/habits/${habit.id}/edit`);
+      }
+
+      if (
+        parsedTargetValue < Number(settings.habits.minTargetValue || 1) ||
+        parsedTargetValue > Number(settings.habits.maxTargetValue || 1000)
+      ) {
+        req.flash("error", `Целевое значение должно быть от ${settings.habits.minTargetValue} до ${settings.habits.maxTargetValue}`);
+        return res.redirect(`/habits/${habit.id}/edit`);
+      }
+
       await habit.update({
         title,
         description: description || '',
         category,
         frequency,
-        targetValue: parseFloat(targetValue),
-        unit: unit || 'times',
+        targetValue: parsedTargetValue,
+        unit: unit || settings.habits.defaultUnit || 'times',
         color: color || '#28a745',
         isActive: isActive === 'on'
       });
@@ -515,10 +555,12 @@ const habitController = {
       }
 
       await attachHabitProgress(habit);
+      const settings = await getSettings();
 
       res.render("habits/check", {
         title: `Отметить выполнение: ${habit.title}`,
         habit,
+        habitSettings: settings.habits,
       });
     } catch (error) {
       console.error("Ошибка загрузки привычки:", error);
@@ -546,10 +588,20 @@ const habitController = {
       }
 
 
+      const settings = await getSettings();
+      const parsedValue = parseFloat(value);
+      if (
+        parsedValue < Number(settings.habits.minTargetValue || 1) ||
+        parsedValue > Number(settings.habits.maxTargetValue || 1000)
+      ) {
+        req.flash("error", `Значение выполнения должно быть от ${settings.habits.minTargetValue} до ${settings.habits.maxTargetValue}`);
+        return res.redirect(`/habits/${habit.id}/check`);
+      }
+
       await Checkin.create({
         habitId: habit.id,
         userId: req.currentUser.id,
-        value: parseFloat(value),
+        value: parsedValue,
         date: date ? new Date(date) : new Date(),
         notes: notes || "",
       });
@@ -558,13 +610,18 @@ const habitController = {
       await habit.markCompleted();
 
 
-      const pointsEarned = getCheckinEcoPoints(habit.category, value);
+      const basePointsEarned = getCheckinEcoPoints(habit.category, parsedValue);
+      const pointsEarned = settings.gamification.enabled
+        ? Math.round(basePointsEarned * Number(settings.gamification.checkinPointMultiplier || 1))
+        : 0;
 
 
       await req.currentUser.addEcoPoints(pointsEarned);
 
 
-      await checkAchievements(req.currentUser.id);
+      if (settings.gamification.achievementsEnabled) {
+        await checkAchievements(req.currentUser.id);
+      }
 
       req.flash("success", `Выполнение отмечено! +${pointsEarned} эко-очков`);
       res.redirect(`/habits/${habit.id}`);
@@ -715,7 +772,10 @@ async function checkAchievements(userId) {
   try {
     console.log(`🔍 Проверяем достижения для пользователя ${userId}...`);
 
+    const settings = await getSettings();
+    const where = settings.gamification.hiddenAchievementsEnabled ? {} : { isHidden: false };
     const achievements = await Achievement.findAll({
+      where,
       order: [
         ['points', 'ASC'],
         ['id', 'ASC']

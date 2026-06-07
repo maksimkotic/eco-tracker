@@ -4,6 +4,7 @@ const { Op } = require('sequelize');
 const { sequelize, User, Role, Habit, Achievement, UserAchievement } = require('../models');
 const { ensureDefaultRoles } = require('./roleobj');
 const { ensureDefaultAchievements } = require('./achievementSeeds');
+const { ensureDefaultSettings } = require('../services/settingsService');
 const bcrypt = require('bcrypt');
 
 async function initializeDatabase(options = {}) {
@@ -14,6 +15,10 @@ async function initializeDatabase(options = {}) {
   try {
     await sequelize.sync({ force: shouldForceSync });
     console.log(shouldForceSync ? '✅ Таблицы пересозданы успешно' : '✅ Таблицы синхронизированы успешно');
+
+    console.log('⚙️ Подготовка настроек...');
+    await ensureDefaultSettings();
+    console.log('✅ Настройки подготовлены');
 
     console.log('👥 Подготовка ролей...');
     await ensureDefaultRoles();

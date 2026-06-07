@@ -24,12 +24,9 @@
               <label for="category" class="form-label">Категория *</label>
               <select class="form-select" id="category" name="category" required>
                 <option value="">Выберите категорию</option>
-                <option value="water" <%= habit.category === 'water' ? 'selected' : '' %>>💧 Экономия воды</option>
-                <option value="energy" <%= habit.category === 'energy' ? 'selected' : '' %>>⚡ Экономия энергии</option>
-                <option value="waste" <%= habit.category === 'waste' ? 'selected' : '' %>>🗑️ Сортировка отходов</option>
-                <option value="transport" <%= habit.category === 'transport' ? 'selected' : '' %>>🚗 Экотранспорт</option>
-                <option value="food" <%= habit.category === 'food' ? 'selected' : '' %>>🍎 Экопитание</option>
-                <option value="other" <%= habit.category === 'other' ? 'selected' : '' %>>🌱 Прочее</option>
+                <% categories.forEach(category => { %>
+                  <option value="<%= category.value %>" <%= habit.category === category.value ? 'selected' : '' %>><%= category.label %></option>
+                <% }); %>
               </select>
             </div>
 
@@ -56,7 +53,7 @@
                 <label for="targetValue" class="form-label">Цель *</label>
                 <div class="input-group">
                   <input type="number" class="form-control" id="targetValue"
-                         name="targetValue" min="1" max="1000"
+                         name="targetValue" min="<%= habitSettings && habitSettings.minTargetValue || 1 %>" max="<%= habitSettings && habitSettings.maxTargetValue || 1000 %>"
                          value="<%= habit.targetValue %>" required>
                   <select class="form-select" id="unit" name="unit" style="max-width: 120px;">
                     <option value="times" <%= habit.unit === 'times' ? 'selected' : '' %>>раз</option>

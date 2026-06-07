@@ -1,0 +1,336 @@
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1><i class="bi bi-gear text-dark"></i> Настройки системы</h1>
+      <p class="text-muted mb-0">Единый центр управления Eco Tracker без разделов AI и логов/аудита</p>
+    </div>
+    <a href="/admin" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i> К панели администратора
+    </a>
+  </div>
+
+  <form action="/admin/settings" method="POST">
+    <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab">Общие</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="registration-tab" data-bs-toggle="tab" data-bs-target="#registration" type="button" role="tab">Регистрация</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab">Пользователи</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="habits-tab" data-bs-toggle="tab" data-bs-target="#habits" type="button" role="tab">Привычки</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="gamification-tab" data-bs-toggle="tab" data-bs-target="#gamification" type="button" role="tab">Геймификация</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab">Безопасность</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="system-tab" data-bs-toggle="tab" data-bs-target="#system" type="button" role="tab">Система</button>
+      </li>
+    </ul>
+
+    <div class="tab-content card shadow border-top-0 rounded-top-0 mb-4" id="settingsTabsContent">
+      <div class="tab-pane fade show active card-body" id="general" role="tabpanel">
+        <h5 class="mb-3"><i class="bi bi-house-heart"></i> Общие настройки приложения</h5>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Название приложения</label>
+            <input type="text" class="form-control" name="appName" value="<%= settings.general.appName %>" maxlength="100" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Слоган / описание</label>
+            <input type="text" class="form-control" name="appTagline" value="<%= settings.general.appTagline %>" maxlength="255">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Email поддержки</label>
+            <input type="email" class="form-control" name="supportEmail" value="<%= settings.general.supportEmail %>">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Email администратора</label>
+            <input type="email" class="form-control" name="adminEmail" value="<%= settings.general.adminEmail %>">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Текст футера</label>
+            <input type="text" class="form-control" name="footerText" value="<%= settings.general.footerText %>" maxlength="255">
+          </div>
+          <div class="col-12">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" name="publicPagesEnabled" id="publicPagesEnabled" <%= settings.general.publicPagesEnabled ? 'checked' : '' %>>
+              <label class="form-check-label" for="publicPagesEnabled">Публичные страницы включены</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane fade card-body" id="registration" role="tabpanel">
+        <h5 class="mb-3"><i class="bi bi-person-plus"></i> Регистрация и базовый доступ</h5>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="form-check form-switch mt-4">
+              <input class="form-check-input" type="checkbox" name="registrationEnabled" id="registrationEnabled" <%= settings.registration.registrationEnabled ? 'checked' : '' %>>
+              <label class="form-check-label" for="registrationEnabled">Разрешить регистрацию</label>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Роль по умолчанию</label>
+            <select class="form-select" name="defaultRoleName">
+              <% roles.forEach(role => { %>
+                <option value="<%= role.name %>" <%= settings.registration.defaultRoleName === role.name ? 'selected' : '' %>><%= role.name %></option>
+              <% }); %>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Минимальная длина пароля</label>
+            <input type="number" class="form-control" name="minPasswordLength" min="6" max="128" value="<%= settings.registration.minPasswordLength %>">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Разрешённые email-домены</label>
+            <input type="text" class="form-control" name="allowedEmailDomains" value="<%= settings.registration.allowedEmailDomains %>" placeholder="example.com, company.org">
+            <div class="form-text">Оставьте пустым, чтобы разрешить любые домены.</div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-check form-switch mt-4">
+              <input class="form-check-input" type="checkbox" name="autoBanNewUsers" id="autoBanNewUsers" <%= settings.registration.autoBanNewUsers ? 'checked' : '' %>>
+              <label class="form-check-label" for="autoBanNewUsers">Новые аккаунты требуют ручной разблокировки</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane fade card-body" id="users" role="tabpanel">
+        <h5 class="mb-3"><i class="bi bi-people"></i> Пользователи и роли</h5>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="form-check form-switch mt-4">
+              <input class="form-check-input" type="checkbox" name="allowCustomRoles" id="allowCustomRoles" <%= settings.users.allowCustomRoles ? 'checked' : '' %>>
+              <label class="form-check-label" for="allowCustomRoles">Разрешить кастомные роли</label>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Политика удаления пользователей</label>
+            <select class="form-select" name="deletionPolicy">
+              <option value="hard_delete" <%= settings.users.deletionPolicy === 'hard_delete' ? 'selected' : '' %>>Жёсткое удаление данных</option>
+              <option value="ban_only" <%= settings.users.deletionPolicy === 'ban_only' ? 'selected' : '' %>>Только блокировка</option>
+              <option value="anonymize" <%= settings.users.deletionPolicy === 'anonymize' ? 'selected' : '' %>>Анонимизация</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Сброс пароля</label>
+            <select class="form-select" name="passwordResetMode">
+              <option value="temporary_password" <%= settings.users.passwordResetMode === 'temporary_password' ? 'selected' : '' %>>Временный пароль</option>
+              <option value="manual_admin" <%= settings.users.passwordResetMode === 'manual_admin' ? 'selected' : '' %>>Только ручная инструкция</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Защищённые роли</label>
+            <input type="text" class="form-control" name="protectedRoles" value="<%= (settings.users.protectedRoles || []).join(', ') %>">
+            <div class="form-text">Эти роли нельзя удалить через админку.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane fade card-body" id="habits" role="tabpanel">
+        <h5 class="mb-3"><i class="bi bi-list-check"></i> Правила привычек</h5>
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label">Включённые категории</label>
+            <div class="row g-2">
+              <% habitCategories.forEach(category => { %>
+                <div class="col-md-4">
+                  <div class="border rounded p-3 h-100">
+                    <div class="form-check form-switch mb-2">
+                      <input class="form-check-input" type="checkbox" name="enabledCategories[]" value="<%= category.value %>" id="category_<%= category.value %>" <%= (settings.habits.enabledCategories || []).includes(category.value) ? 'checked' : '' %>>
+                      <label class="form-check-label" for="category_<%= category.value %>"><%= category.label %></label>
+                    </div>
+                    <input type="text" class="form-control form-control-sm" name="categoryLabel_<%= category.value %>" value="<%= settings.habits.categoryLabels && settings.habits.categoryLabels[category.value] || category.label %>">
+                  </div>
+                </div>
+              <% }); %>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Частота по умолчанию</label>
+            <select class="form-select" name="defaultFrequency">
+              <option value="daily" <%= settings.habits.defaultFrequency === 'daily' ? 'selected' : '' %>>Ежедневно</option>
+              <option value="weekly" <%= settings.habits.defaultFrequency === 'weekly' ? 'selected' : '' %>>Еженедельно</option>
+              <option value="monthly" <%= settings.habits.defaultFrequency === 'monthly' ? 'selected' : '' %>>Ежемесячно</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Цель по умолчанию</label>
+            <input type="number" step="0.1" class="form-control" name="defaultTargetValue" value="<%= settings.habits.defaultTargetValue %>">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Минимальная цель</label>
+            <input type="number" step="0.1" class="form-control" name="minTargetValue" value="<%= settings.habits.minTargetValue %>">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Максимальная цель</label>
+            <input type="number" step="0.1" class="form-control" name="maxTargetValue" value="<%= settings.habits.maxTargetValue %>">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Единица измерения по умолчанию</label>
+            <input type="text" class="form-control" name="defaultUnit" value="<%= settings.habits.defaultUnit %>" maxlength="20">
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane fade card-body" id="gamification" role="tabpanel">
+        <h5 class="mb-3"><i class="bi bi-trophy"></i> Баллы, уровни и достижения</h5>
+        <div class="row g-3">
+          <div class="col-md-3">
+            <div class="form-check form-switch mt-4">
+              <input class="form-check-input" type="checkbox" name="gamificationEnabled" id="gamificationEnabled" <%= settings.gamification.enabled ? 'checked' : '' %>>
+              <label class="form-check-label" for="gamificationEnabled">Включить начисления</label>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="form-check form-switch mt-4">
+              <input class="form-check-input" type="checkbox" name="achievementsEnabled" id="achievementsEnabled" <%= settings.gamification.achievementsEnabled ? 'checked' : '' %>>
+              <label class="form-check-label" for="achievementsEnabled">Автодостижения</label>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Очков на уровень</label>
+            <input type="number" class="form-control" name="pointsPerLevel" min="1" value="<%= settings.gamification.pointsPerLevel %>">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Множитель check-in</label>
+            <input type="number" step="0.1" class="form-control" name="checkinPointMultiplier" min="0" value="<%= settings.gamification.checkinPointMultiplier %>">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Бонус за первую привычку</label>
+            <input type="number" class="form-control" name="firstHabitBonus" min="0" value="<%= settings.gamification.firstHabitBonus %>">
+          </div>
+          <div class="col-md-4">
+            <div class="form-check form-switch mt-4">
+              <input class="form-check-input" type="checkbox" name="streakBonusEnabled" id="streakBonusEnabled" <%= settings.gamification.streakBonusEnabled ? 'checked' : '' %>>
+              <label class="form-check-label" for="streakBonusEnabled">Streak-бонусы включены</label>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="form-check form-switch mt-4">
+              <input class="form-check-input" type="checkbox" name="hiddenAchievementsEnabled" id="hiddenAchievementsEnabled" <%= settings.gamification.hiddenAchievementsEnabled ? 'checked' : '' %>>
+              <label class="form-check-label" for="hiddenAchievementsEnabled">Скрытые достижения активны</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane fade card-body" id="security" role="tabpanel">
+        <h5 class="mb-3"><i class="bi bi-shield-lock"></i> Безопасность</h5>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="form-check form-switch mt-4">
+              <input class="form-check-input" type="checkbox" name="preventLastAdminRemoval" id="preventLastAdminRemoval" <%= settings.security.preventLastAdminRemoval ? 'checked' : '' %>>
+              <label class="form-check-label" for="preventLastAdminRemoval">Защищать последнего администратора</label>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="form-check form-switch mt-4">
+              <input class="form-check-input" type="checkbox" name="requirePasswordForDangerousActions" id="requirePasswordForDangerousActions" <%= settings.security.requirePasswordForDangerousActions ? 'checked' : '' %>>
+              <label class="form-check-label" for="requirePasswordForDangerousActions">Пароль для опасных операций</label>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Сессия, дней</label>
+            <input type="number" class="form-control" name="sessionLifetimeDays" min="1" max="365" value="<%= settings.security.sessionLifetimeDays %>">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Remember me, дней</label>
+            <input type="number" class="form-control" name="rememberMeDays" min="1" max="365" value="<%= settings.security.rememberMeDays %>">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Заблокированные email-домены</label>
+            <input type="text" class="form-control" name="blockedEmailDomains" value="<%= settings.security.blockedEmailDomains %>" placeholder="spam.test, tempmail.org">
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane fade card-body" id="system" role="tabpanel">
+        <h5 class="mb-3"><i class="bi bi-tools"></i> Системные переключатели</h5>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="form-check form-switch mt-4">
+              <input class="form-check-input" type="checkbox" name="maintenanceMode" id="maintenanceMode" <%= settings.system.maintenanceMode ? 'checked' : '' %>>
+              <label class="form-check-label" for="maintenanceMode">Maintenance mode</label>
+            </div>
+          </div>
+          <div class="col-md-8">
+            <label class="form-label">Сообщение обслуживания</label>
+            <input type="text" class="form-control" name="maintenanceMessage" value="<%= settings.system.maintenanceMessage %>" maxlength="255">
+          </div>
+          <div class="col-md-4">
+            <div class="form-check form-switch mt-4">
+              <input class="form-check-input" type="checkbox" name="staleSessionCleanupEnabled" id="staleSessionCleanupEnabled" <%= settings.system.staleSessionCleanupEnabled ? 'checked' : '' %>>
+              <label class="form-check-label" for="staleSessionCleanupEnabled">Автоочистка устаревших сессий</label>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Напоминание о backup, дней</label>
+            <input type="number" class="form-control" name="backupReminderDays" min="1" max="365" value="<%= settings.system.backupReminderDays %>">
+          </div>
+          <div class="col-12">
+            <div class="alert alert-info mb-0">
+              <i class="bi bi-info-circle"></i> Операции обслуживания запускаются отдельными кнопками ниже, чтобы случайно не выполнить тяжёлые действия при сохранении формы.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mb-4">
+      <a href="/admin" class="btn btn-outline-secondary">Отмена</a>
+      <button type="submit" class="btn btn-success">
+        <i class="bi bi-check-lg"></i> Сохранить настройки
+      </button>
+    </div>
+  </form>
+
+  <div class="card shadow mb-4" id="system-actions">
+    <div class="card-header bg-dark text-white">
+      <h5 class="mb-0"><i class="bi bi-terminal"></i> Операции обслуживания</h5>
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <form action="/admin/system/maintenance" method="POST">
+            <input type="hidden" name="action" value="recalculate_habits">
+            <button type="submit" class="btn btn-outline-success w-100">
+              <i class="bi bi-arrow-repeat"></i> Пересчитать привычки
+            </button>
+          </form>
+        </div>
+        <div class="col-md-3">
+          <form action="/admin/system/maintenance" method="POST">
+            <input type="hidden" name="action" value="recalculate_levels">
+            <button type="submit" class="btn btn-outline-primary w-100">
+              <i class="bi bi-lightning-charge"></i> Пересчитать уровни
+            </button>
+          </form>
+        </div>
+        <div class="col-md-3">
+          <form action="/admin/system/maintenance" method="POST">
+            <input type="hidden" name="action" value="check_achievements">
+            <button type="submit" class="btn btn-outline-warning w-100">
+              <i class="bi bi-trophy"></i> Проверить достижения
+            </button>
+          </form>
+        </div>
+        <div class="col-md-3">
+          <form action="/admin/system/maintenance" method="POST">
+            <input type="hidden" name="action" value="health_check">
+            <button type="submit" class="btn btn-outline-secondary w-100">
+              <i class="bi bi-heart-pulse"></i> Health check
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

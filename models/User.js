@@ -131,10 +131,16 @@ module.exports = (sequelize, DataTypes) => {
 
 
   User.prototype.addEcoPoints = async function (points) {
-    this.ecoPoints += points;
+    const { getSettings, calculateLevel } = require('../services/settingsService');
+    const settings = await getSettings();
+    const pointsToAdd = settings.gamification.enabled
+      ? Math.round(Number(points || 0))
+      : 0;
+
+    this.ecoPoints += pointsToAdd;
 
 
-    const newLevel = Math.floor(this.ecoPoints / 100) + 1;
+    const newLevel = calculateLevel(this.ecoPoints, settings.gamification.pointsPerLevel);
     if (newLevel > this.level) {
       this.level = newLevel;
     }

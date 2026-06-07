@@ -20,13 +20,13 @@ router.post('/users/:id/delete', adminController.destroyUser);
 router.get('/roles', adminController.rolesIndex);
 router.post('/roles', adminController.createRole);
 
+router.get('/settings', adminController.settings);
+router.post('/settings', adminController.updateSettings);
+router.post('/system/maintenance', adminController.runMaintenance);
+
 router.get('/logs', adminController.showLogs);
 router.post('/logs/clear', adminController.clearLogs);
 
-router.post('/system/maintenance', (req, res) => {
-  console.log('Запущено системное обслуживание');
-  res.json({ success: true, message: 'Обслуживание завершено' });
-});
 
 router.post('/users/create', adminController.createUser);
 
