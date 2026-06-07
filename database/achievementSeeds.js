@@ -72,7 +72,7 @@ const DEFAULT_ACHIEVEMENTS = [
   {
     title: 'Непрерывный рост',
     description: 'Выполнял привычки 30 дней подряд',
-    icon: 'trophy',
+    icon: 'sun',
     points: 100,
     conditionType: 'streak',
     conditionValue: 30,
@@ -92,7 +92,7 @@ const DEFAULT_ACHIEVEMENTS = [
   {
     title: 'Легенда устойчивости',
     description: 'Выполнял привычки 100 дней подряд',
-    icon: 'crown',
+    icon: 'yin-yang',
     points: 250,
     conditionType: 'streak',
     conditionValue: 100,
@@ -122,7 +122,7 @@ const DEFAULT_ACHIEVEMENTS = [
   {
     title: 'Зеленый титан',
     description: 'Заработал 1000 эко-очков',
-    icon: 'crown',
+    icon: 'trophy',
     points: 150,
     conditionType: 'eco_points',
     conditionValue: 1000,
