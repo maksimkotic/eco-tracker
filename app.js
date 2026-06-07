@@ -54,14 +54,10 @@ const settingsLocals = async (req, res, next) => {
     const isAuthRequest = req.path.startsWith('/auth') || req.path === '/logout';
     const isStaticAsset = req.path.startsWith('/uploads') || req.path.startsWith('/css') || req.path.startsWith('/js');
 
-    const publicPagePaths = new Set(['/', '/contacts', '/guide', '/terms', '/privacy']);
+    const publicInfoPagePaths = new Set(['/', '/contacts', '/guide', '/terms', '/privacy']);
+    const isPublicInfoPage = publicInfoPagePaths.has(req.path);
 
-    if (!appSettings.publicPagesEnabled && publicPagePaths.has(req.path) && !req.session.user) {
-      req.flash('info', 'Публичные страницы временно отключены администратором. Войдите в аккаунт, чтобы продолжить.');
-      return res.redirect('/auth/login');
-    }
-
-    if (appSettings.maintenanceMode && !isAdminRequest && !isAuthRequest && !isStaticAsset) {
+    if (appSettings.maintenanceMode && !isPublicInfoPage && !isAdminRequest && !isAuthRequest && !isStaticAsset) {
       return res.status(503).render('shared/under-construction', {
         title: 'Техническое обслуживание',
         heading: 'Сервис временно на обслуживании',
