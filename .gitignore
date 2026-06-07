@@ -3,5 +3,6 @@ node_modules/
 *.db
 sessions/
 logs/
-.env
+env
 sessions/sessions.db
+.env
