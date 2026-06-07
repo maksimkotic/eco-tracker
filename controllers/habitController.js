@@ -29,6 +29,64 @@ function getPreviousUtcDayKey(dayKey) {
   return getUtcDayKey(date);
 }
 
+
+function getUtcPeriodRange(frequency, referenceDate = new Date()) {
+  const date = new Date(referenceDate);
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth();
+  const day = date.getUTCDate();
+  let start;
+  let end;
+
+  if (frequency === 'monthly') {
+    start = new Date(Date.UTC(year, month, 1));
+    end = new Date(Date.UTC(year, month + 1, 1));
+  } else if (frequency === 'weekly') {
+    start = new Date(Date.UTC(year, month, day));
+    const dayOfWeek = start.getUTCDay() || 7;
+    start.setUTCDate(start.getUTCDate() - dayOfWeek + 1);
+    end = new Date(start);
+    end.setUTCDate(end.getUTCDate() + 7);
+  } else {
+    start = new Date(Date.UTC(year, month, day));
+    end = new Date(start);
+    end.setUTCDate(end.getUTCDate() + 1);
+  }
+
+  return { start, end };
+}
+
+async function getHabitPeriodValue(habit, referenceDate = new Date()) {
+  const { start, end } = getUtcPeriodRange(habit.frequency, referenceDate);
+  const value = await Checkin.sum('value', {
+    where: {
+      habitId: habit.id,
+      userId: habit.userId,
+      date: {
+        [Op.gte]: start,
+        [Op.lt]: end,
+      },
+    },
+  });
+
+  return value || 0;
+}
+
+async function attachHabitProgress(habit, referenceDate = new Date()) {
+  const periodValue = await getHabitPeriodValue(habit, referenceDate);
+  const targetValue = Number(habit.targetValue) || 1;
+  const progressPercentage = Math.min((periodValue / targetValue) * 100, 100);
+
+  habit.setDataValue('periodValue', periodValue);
+  habit.setDataValue('progressPercentage', progressPercentage);
+
+  return habit;
+}
+
+async function attachHabitsProgress(habits, referenceDate = new Date()) {
+  return Promise.all(habits.map((habit) => attachHabitProgress(habit, referenceDate)));
+}
+
 function calculateUserStreakFromCheckins(checkins) {
   const dayKeys = [...new Set(checkins.map((checkin) => getUtcDayKey(checkin.date)))].sort();
 
@@ -71,10 +129,6 @@ const habitController = {
         whereCondition.isActive = true;
       } else if (status === "inactive") {
         whereCondition.isActive = false;
-      } else if (status === "completed") {
-        whereCondition.currentStreak = {
-          [Op.gte]: Habit.sequelize.col("targetValue"),
-        };
       }
 
 
@@ -82,12 +136,32 @@ const habitController = {
         whereCondition.title = { [Op.iLike]: `%${search}%` };
       }
 
-      const { count, rows: habits } = await Habit.findAndCountAll({
-        where: whereCondition,
-        order: [["createdAt", "DESC"]],
-        limit,
-        offset,
-      });
+      let count;
+      let habits;
+
+      if (status === "completed") {
+        const allHabits = await Habit.findAll({
+          where: whereCondition,
+          order: [["createdAt", "DESC"]],
+        });
+        const habitsWithProgress = await attachHabitsProgress(allHabits);
+        const completedHabits = habitsWithProgress.filter((habit) => (
+          Number(habit.getDataValue('periodValue')) >= Number(habit.targetValue)
+        ));
+
+        count = completedHabits.length;
+        habits = completedHabits.slice(offset, offset + limit);
+      } else {
+        const result = await Habit.findAndCountAll({
+          where: whereCondition,
+          order: [["createdAt", "DESC"]],
+          limit,
+          offset,
+        });
+
+        count = result.count;
+        habits = await attachHabitsProgress(result.rows);
+      }
 
 
       const totalActive = await Habit.count({
@@ -278,15 +352,14 @@ const habitController = {
         order: [["date", "DESC"]],
         limit: 10,
       });
+      await attachHabitProgress(habit);
 
       res.render("habits/show", {
         title: habit.title,
         habit,
         checkins,
-        progressPercentage: Math.min(
-          (habit.currentStreak / habit.targetValue) * 100,
-          100
-        ),
+        progressPercentage: habit.getDataValue('progressPercentage'),
+        periodValue: habit.getDataValue('periodValue'),
       });
     } catch (error) {
       console.error("Ошибка загрузки привычки:", error);
@@ -480,6 +553,8 @@ const habitController = {
         req.flash("error", "Привычка не найдена");
         return res.redirect("/habits");
       }
+
+      await attachHabitProgress(habit);
 
       res.render("habits/check", {
         title: `Отметить выполнение: ${habit.title}`,
