@@ -388,41 +388,24 @@ const adminController = {
       const username = user.username;
 
 
-      await sequelize.query("PRAGMA foreign_keys = OFF");
-
-      try {
-
+      await sequelize.transaction(async (transaction) => {
         await Checkin.destroy({
           where: { userId: user.id },
+          transaction,
         });
-
-
-        const userHabits = await Habit.findAll({
-          where: { userId: user.id },
-        });
-
-        for (const habit of userHabits) {
-          await Checkin.destroy({
-            where: { habitId: habit.id },
-          });
-        }
-
 
         await Habit.destroy({
           where: { userId: user.id },
+          transaction,
         });
-
 
         await UserAchievement.destroy({
           where: { userId: user.id },
+          transaction,
         });
 
-
-        await user.destroy();
-      } finally {
-
-        await sequelize.query("PRAGMA foreign_keys = ON");
-      }
+        await user.destroy({ transaction });
+      });
 
       console.log(
         `Администратор ${req.currentUser.username} удалил пользователя ${username}`
@@ -442,11 +425,6 @@ const adminController = {
       res.redirect("/admin/users");
     } catch (error) {
       console.error("Ошибка удаления пользователя:", error);
-
-
-      try {
-        await sequelize.query("PRAGMA foreign_keys = ON");
-      } catch (e) {}
 
       let errorMessage = "Не удалось удалить пользователя";
 
