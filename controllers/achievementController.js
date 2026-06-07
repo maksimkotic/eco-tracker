@@ -1,4 +1,4 @@
-const { Achievement, UserAchievement, User } = require('../models');
+const { Achievement, UserAchievement, User, Habit } = require('../models');
 const { Op } = require('sequelize');
 
 const achievementController = {
@@ -24,15 +24,15 @@ const achievementController = {
         ]
       });
 
-      const earnedAchievements = achievements.filter(a => a.Users && a.Users.length > 0);
-      const availableAchievements = achievements.filter(a =>
-        !a.Users || a.Users.length === 0
-      ).filter(a => !a.isHidden);
-      const lockedAchievements = achievements.filter(a => a.isHidden);
+      const isAchievementEarned = (achievement) => achievement.Users && achievement.Users.length > 0;
+      const earnedAchievements = achievements.filter(isAchievementEarned);
+      const availableAchievements = achievements.filter(a => !isAchievementEarned(a) && !a.isHidden);
+      const lockedAchievements = achievements.filter(a => !isAchievementEarned(a) && a.isHidden);
 
       const earnedCount = earnedAchievements.length;
+      const visibleEarnedCount = earnedAchievements.filter(a => !a.isHidden).length;
       const totalCount = achievements.filter(a => !a.isHidden).length;
-      const progressPercentage = totalCount > 0 ? Math.round((earnedCount / totalCount) * 100) : 0;
+      const progressPercentage = totalCount > 0 ? Math.round((visibleEarnedCount / totalCount) * 100) : 0;
       const totalPoints = earnedAchievements.reduce((sum, a) => sum + a.points, 0);
 
       res.render('achievements/index', {
@@ -157,7 +157,7 @@ const achievementController = {
 
       const achievements = await Achievement.findAll({
         where: { isHidden: false },
-        attributes: ['id', 'title', 'conditionType', 'conditionValue']
+        attributes: ['id', 'title', 'conditionType', 'conditionValue', 'conditionExtra']
       });
 
       const progress = await Promise.all(achievements.map(async (achievement) => {
@@ -169,8 +169,7 @@ const achievementController = {
             current = user.currentStreak;
             break;
           case 'total_habits':
-            const habitCount = await user.countHabits();
-            current = habitCount;
+            current = await user.countHabits();
             break;
           case 'eco_points':
             current = user.ecoPoints;
@@ -178,6 +177,29 @@ const achievementController = {
           case 'days_active':
             current = user.currentStreak;
             break;
+          case 'category_master':
+            current = await Habit.count({
+              where: {
+                userId: user.id,
+                category: achievement.conditionExtraParsed?.category
+              }
+            });
+            break;
+          case 'specific_habit': {
+            const habitName = achievement.conditionExtraParsed?.habitName;
+            if (habitName) {
+              const habit = await Habit.findOne({
+                where: {
+                  userId: user.id,
+                  title: { [Op.iLike]: `%${habitName}%` }
+                },
+                order: [['currentStreak', 'DESC']]
+              });
+
+              current = habit ? habit.currentStreak : 0;
+            }
+            break;
+          }
         }
 
         return {
