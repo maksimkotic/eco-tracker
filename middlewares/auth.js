@@ -30,7 +30,7 @@ const loadUser = async (req, res, next) => {
 
       if (user) {
         if (user.isBanned) {
-          req.session.destroy();
+          delete req.session.user;
           req.flash('error', 'Ваш аккаунт заблокирован');
           return res.redirect('/auth/login');
         }
@@ -43,7 +43,7 @@ const loadUser = async (req, res, next) => {
           await user.save();
         }
       } else {
-        req.session.destroy();
+        delete req.session.user;
       }
     } catch (error) {
       console.error('Ошибка загрузки пользователя:', error);
@@ -52,7 +52,12 @@ const loadUser = async (req, res, next) => {
   next();
 };
 
+const generateCsrfToken = () => require('crypto').randomBytes(32).toString('hex');
+
 const csrfProtection = (req, res, next) => {
+  req.session.csrfToken = req.session.csrfToken || generateCsrfToken();
+  res.locals.csrfToken = req.session.csrfToken;
+
   if (req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE') {
     const csrfToken = req.body._csrf || req.query._csrf || req.get('x-csrf-token');
 
@@ -62,10 +67,10 @@ const csrfProtection = (req, res, next) => {
         message: 'Недействительный CSRF токен'
       });
     }
-  }
 
-  req.session.csrfToken = require('crypto').randomBytes(32).toString('hex');
-  res.locals.csrfToken = req.session.csrfToken;
+    req.session.csrfToken = generateCsrfToken();
+    res.locals.csrfToken = req.session.csrfToken;
+  }
 
   next();
 };

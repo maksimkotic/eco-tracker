@@ -1,4 +1,5 @@
 const { User, Habit, UserAchievement, Achievement, Role } = require('../models');
+const { validationResult } = require('express-validator');
 const { Op } = require('sequelize');
 
 const profileController = {
@@ -71,35 +72,68 @@ const profileController = {
   edit: (req, res) => {
     res.render('profile/edit', {
       title: 'Редактирование профиля',
-      user: req.currentUser
+      user: req.currentUser,
+      oldInput: req.flash('oldInput')[0] || {},
+      errors: req.flash('errors') || []
     });
   },
 
 
   update: async (req, res) => {
     try {
+      const errors = validationResult(req);
+      const safeOldInput = {
+        username: req.body.username,
+        email: req.body.email
+      };
+
+      if (!errors.isEmpty()) {
+        req.flash('errors', errors.array());
+        req.flash('oldInput', safeOldInput);
+        return res.redirect('/profile/edit');
+      }
+
       const { username, email, currentPassword, newPassword } = req.body;
-      const user = req.currentUser;
+      const user = await User.findByPk(req.currentUser.id);
 
+      if (!user) {
+        delete req.session.user;
+        req.flash('error', 'Пользователь не найден. Войдите в систему снова');
+        return res.redirect('/auth/login');
+      }
 
-      if (username !== user.username || email !== user.email) {
-        const isValidPassword = await user.comparePassword(currentPassword);
+      const profileChanged = username !== user.username || email !== user.email;
+      const passwordChangeRequested = Boolean(newPassword && newPassword.trim() !== '');
+
+      if (profileChanged || passwordChangeRequested) {
+        const isValidPassword = await user.comparePassword(currentPassword || '');
         if (!isValidPassword) {
           req.flash('error', 'Неверный текущий пароль');
+          req.flash('oldInput', safeOldInput);
           return res.redirect('/profile/edit');
         }
       }
 
+      const existingUser = await User.findOne({
+        where: {
+          id: { [Op.ne]: user.id },
+          [Op.or]: [{ username }, { email }]
+        }
+      });
+
+      if (existingUser) {
+        req.flash('error', 'Пользователь с таким email или именем уже существует');
+        req.flash('oldInput', safeOldInput);
+        return res.redirect('/profile/edit');
+      }
 
       const updateData = { username, email };
 
-
-      if (newPassword && newPassword.trim() !== '') {
+      if (passwordChangeRequested) {
         updateData.password = newPassword;
       }
 
       await user.update(updateData);
-
 
       req.session.user.username = user.username;
       req.session.user.email = user.email;
@@ -115,6 +149,10 @@ const profileController = {
         req.flash('error', 'Не удалось обновить профиль');
       }
 
+      req.flash('oldInput', {
+        username: req.body.username,
+        email: req.body.email
+      });
       res.redirect('/profile/edit');
     }
   },
@@ -123,10 +161,15 @@ const profileController = {
   destroy: async (req, res) => {
     try {
       const { password } = req.body;
-      const user = req.currentUser;
+      const user = await User.findByPk(req.currentUser.id);
 
+      if (!user) {
+        delete req.session.user;
+        req.flash('error', 'Пользователь не найден. Войдите в систему снова');
+        return res.redirect('/auth/login');
+      }
 
-      const isValidPassword = await user.comparePassword(password);
+      const isValidPassword = await user.comparePassword(password || '');
       if (!isValidPassword) {
         req.flash('error', 'Неверный пароль');
         return res.redirect('/profile/edit');
@@ -135,12 +178,12 @@ const profileController = {
 
       await user.destroy();
 
-
       req.session.destroy((err) => {
         if (err) {
-          console.error('Ошибка при выходе:', err);
+          console.error('Ошибка при очистке сессии после удаления аккаунта:', err);
+          return res.redirect('/');
         }
-        req.flash('info', 'Ваш аккаунт успешно удален');
+
         res.redirect('/');
       });
     } catch (error) {
