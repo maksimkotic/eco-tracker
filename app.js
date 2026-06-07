@@ -74,6 +74,20 @@ function configureApp() {
   app.use(express.json());
   app.use(methodOverride('_method'));
   app.use(express.static(path.join(__dirname, 'public')));
+  app.get('/uploads/avatars/:filename', (req, res) => {
+    const initial = path.basename(req.params.filename || '').charAt(0).toUpperCase() || 'Э';
+    const safeInitial = initial.replace(/[<>&"']/g, '');
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" role="img" aria-label="Аватар пользователя">
+        <rect width="160" height="160" rx="80" fill="#198754"/>
+        <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-size="72" font-weight="700">${safeInitial}</text>
+      </svg>
+    `.trim();
+
+    res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.send(svg);
+  });
   app.use(securityHeaders);
 
   app.set('view engine', 'ejs');
