@@ -102,9 +102,16 @@ router.use(isAuthenticated);
 router.get('/', profileController.show);
 
 router.get('/edit', profileController.edit);
-router.post('/', profileUpdateValidation, profileController.update);
+router.post('/', (req, res, next) => {
+  if ((req.body._method || '').toUpperCase() === 'DELETE') {
+    return profileController.destroy(req, res, next);
+  }
+
+  next();
+}, profileUpdateValidation, profileController.update);
 router.put('/', profileUpdateValidation, profileController.update);
 
+router.post('/delete', profileController.destroy);
 router.delete('/', profileController.destroy);
 
 router.post('/avatar', handleAvatarUpload, profileController.uploadAvatar);

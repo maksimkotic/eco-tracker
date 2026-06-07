@@ -172,9 +172,8 @@
         <p class="text-danger"><strong>Это действие нельзя отменить!</strong></p>
         <p>Все ваши данные будут безвозвратно удалены.</p>
 
-        <form action="/profile" method="POST" id="deleteAccountForm">
+        <form action="/profile/delete" method="POST" id="deleteAccountForm">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-          <input type="hidden" name="_method" value="DELETE">
           <div class="mb-3">
             <label for="confirmPasswordDelete" class="form-label">
               Для подтверждения введите свой пароль:
