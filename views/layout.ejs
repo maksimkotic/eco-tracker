@@ -236,6 +236,15 @@
         --bs-table-hover-bg: rgba(111, 66, 193, 0.2);
       }
 
+
+      .habit-frequency-value {
+        font-size: clamp(1.15rem, 2.2vw, 1.65rem);
+        line-height: 1.15;
+        overflow-wrap: normal;
+        word-break: keep-all;
+        hyphens: none;
+      }
+
       .color-option {
         width: 30px;
         height: 30px;
@@ -529,15 +538,9 @@
 
           const form = document.createElement("form");
           form.method = "POST";
-          form.action = "/habits/" + habitId;
+          form.action = "/habits/" + habitId + "/delete";
           form.style.display = "none";
 
-          const methodInput = document.createElement("input");
-          methodInput.type = "hidden";
-          methodInput.name = "_method";
-          methodInput.value = "DELETE";
-
-          form.appendChild(methodInput);
 
           if (csrfToken) {
             const csrfInput = document.createElement("input");
@@ -703,9 +706,9 @@
         location.reload();
       }, 60000);
 
-      document
-        .getElementById("subject")
-        .addEventListener("change", function () {
+      const subjectSelect = document.getElementById("subject");
+      if (subjectSelect) {
+        subjectSelect.addEventListener("change", function () {
           const messageField = document.getElementById("message");
           const subject = this.value;
 
@@ -719,14 +722,17 @@
             other: "Опишите ваше сообщение...",
           };
 
-          messageField.placeholder =
-            placeholders[subject] ||
-            "Опишите вашу проблему, вопрос или предложение...";
+          if (messageField) {
+            messageField.placeholder =
+              placeholders[subject] ||
+              "Опишите вашу проблему, вопрос или предложение...";
+          }
         });
+      }
 
-      document
-        .getElementById("contactForm")
-        .addEventListener("submit", function (e) {
+      const contactForm = document.getElementById("contactForm");
+      if (contactForm) {
+        contactForm.addEventListener("submit", function (e) {
           const name = document.getElementById("name").value.trim();
           const email = document.getElementById("email").value.trim();
           const subject = document.getElementById("subject").value;
@@ -737,68 +743,73 @@
             alert("Пожалуйста, заполните все обязательные поля (отмечены *)");
           }
         });
+      }
+
+      window.resetHabit = function (habitId, habitTitle) {
+        if (
+          confirm(
+            `Сбросить всю статистику для привычки "${habitTitle}"? Текущая серия и история выполнений будут обнулены.`
+          )
+        ) {
+          fetch(`/habits/${habitId}/reset`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          })
+            .then((response) => {
+              if (response.ok) {
+                alert("Статистика сброшена");
+                location.reload();
+              } else {
+                alert("Ошибка при сбросе статистики");
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              alert("Ошибка сети");
+            });
+        }
+      };
 
       document.addEventListener("DOMContentLoaded", function () {
         const colorOptions = document.querySelectorAll(".color-option");
         const colorInput = document.getElementById("color");
 
-        colorOptions.forEach((option) => {
-          option.addEventListener("click", function () {
-            colorOptions.forEach((opt) => opt.classList.remove("selected"));
+        if (colorInput) {
+          colorOptions.forEach((option) => {
+            option.addEventListener("click", function () {
+              colorOptions.forEach((opt) => opt.classList.remove("selected"));
 
-            this.classList.add("selected");
+              this.classList.add("selected");
 
-            colorInput.value = this.dataset.color;
+              colorInput.value = this.dataset.color;
+            });
           });
-        });
+        }
 
         const categorySelect = document.getElementById("category");
         const unitSelect = document.getElementById("unit");
 
-        categorySelect.addEventListener("change", function () {
+        if (categorySelect && unitSelect) {
+          categorySelect.addEventListener("change", function () {
           const category = this.value;
 
-          switch (category) {
-            case "water":
-              unitSelect.value = "liters";
-              break;
-            case "energy":
-              unitSelect.value = "kwh";
-              break;
-            case "waste":
-              unitSelect.value = "kg";
-              break;
-            default:
-              unitSelect.value = "times";
-          }
-        });
-
-        window.resetHabit = function (habitId, habitTitle) {
-          if (
-            confirm(
-              `Сбросить всю статистику для привычки "${habitTitle}"? Текущая серия и история выполнений будут обнулены.`
-            )
-          ) {
-            fetch(`/habits/${habitId}/reset`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-            })
-              .then((response) => {
-                if (response.ok) {
-                  alert("Статистика сброшена");
-                  location.reload();
-                } else {
-                  alert("Ошибка при сбросе статистики");
-                }
-              })
-              .catch((error) => {
-                console.error("Error:", error);
-                alert("Ошибка сети");
-              });
-          }
-        };
+            switch (category) {
+              case "water":
+                unitSelect.value = "liters";
+                break;
+              case "energy":
+                unitSelect.value = "kwh";
+                break;
+              case "waste":
+                unitSelect.value = "kg";
+                break;
+              default:
+                unitSelect.value = "times";
+            }
+          });
+        }
       });
       function confirmDeleteHabit(habitId, habitTitle) {
         if (
