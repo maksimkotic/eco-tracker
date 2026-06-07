@@ -90,16 +90,120 @@ module.exports = (sequelize, DataTypes) => {
   });
 
 
+  const getUtcDateParts = (date) => {
+    const parsedDate = new Date(date);
+
+    return {
+      year: parsedDate.getUTCFullYear(),
+      month: parsedDate.getUTCMonth() + 1,
+      day: parsedDate.getUTCDate()
+    };
+  };
+
+  const getPeriodKey = (date, frequency) => {
+    const { year, month, day } = getUtcDateParts(date);
+
+    if (frequency === 'monthly') {
+      return `${year}-${String(month).padStart(2, '0')}`;
+    }
+
+    if (frequency === 'weekly') {
+      const utcDate = new Date(Date.UTC(year, month - 1, day));
+      const dayOfWeek = utcDate.getUTCDay() || 7;
+      utcDate.setUTCDate(utcDate.getUTCDate() + 4 - dayOfWeek);
+      const weekYear = utcDate.getUTCFullYear();
+      const yearStart = new Date(Date.UTC(weekYear, 0, 1));
+      const week = Math.ceil((((utcDate - yearStart) / 86400000) + 1) / 7);
+
+      return `${weekYear}-W${String(week).padStart(2, '0')}`;
+    }
+
+    return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  };
+
+  const getPreviousPeriodKey = (periodKey, frequency) => {
+    if (frequency === 'monthly') {
+      const [year, month] = periodKey.split('-').map(Number);
+      const date = new Date(Date.UTC(year, month - 1, 1));
+      date.setUTCMonth(date.getUTCMonth() - 1);
+
+      return getPeriodKey(date, frequency);
+    }
+
+    if (frequency === 'weekly') {
+      const [year, week] = periodKey.split('-W').map(Number);
+      const date = new Date(Date.UTC(year, 0, 4));
+      const dayOfWeek = date.getUTCDay() || 7;
+      date.setUTCDate(date.getUTCDate() - dayOfWeek + 1 + ((week - 1) * 7) - 7);
+
+      return getPeriodKey(date, frequency);
+    }
+
+    const [year, month, day] = periodKey.split('-').map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
+    date.setUTCDate(date.getUTCDate() - 1);
+
+    return getPeriodKey(date, frequency);
+  };
+
+  const calculateStreakFromDates = (dates, frequency) => {
+    const periodKeys = [...new Set(dates.map((date) => getPeriodKey(date, frequency)))].sort();
+
+    if (!periodKeys.length) {
+      return 0;
+    }
+
+    const completedPeriods = new Set(periodKeys);
+    let streak = 1;
+    let previousPeriodKey = getPreviousPeriodKey(periodKeys[periodKeys.length - 1], frequency);
+
+    while (completedPeriods.has(previousPeriodKey)) {
+      streak += 1;
+      previousPeriodKey = getPreviousPeriodKey(previousPeriodKey, frequency);
+    }
+
+    return streak;
+  };
+
+  const calculateUserStreakFromCheckins = (checkins) => {
+    const dayKeys = [...new Set(checkins.map((checkin) => getPeriodKey(checkin.date, 'daily')))].sort();
+
+    if (!dayKeys.length) {
+      return 0;
+    }
+
+    const activeDays = new Set(dayKeys);
+    let streak = 1;
+    let previousDayKey = getPreviousPeriodKey(dayKeys[dayKeys.length - 1], 'daily');
+
+    while (activeDays.has(previousDayKey)) {
+      streak += 1;
+      previousDayKey = getPreviousPeriodKey(previousDayKey, 'daily');
+    }
+
+    return streak;
+  };
+
+
   Habit.prototype.markCompleted = async function (value = 1, date = new Date()) {
     console.log(`📝 Отмечаем выполнение привычки ${this.id}: ${this.title}`);
 
-    const currentStreak = this.currentStreak || 0;
-    const totalCompletions = this.totalCompletions || 0;
+    const { Checkin, User } = require('./index');
+    const habitCheckins = await Checkin.findAll({
+      where: { habitId: this.id },
+      attributes: ['date'],
+      order: [['date', 'ASC']]
+    });
+    const completionDates = habitCheckins.map((checkin) => checkin.date);
+    const recalculatedStreak = calculateStreakFromDates(completionDates, this.frequency);
+    const totalCompletions = habitCheckins.length;
+    const previousStreak = this.currentStreak || 0;
 
-    this.currentStreak = currentStreak + 1;
-    this.totalCompletions = totalCompletions + 1;
-    this.lastCompleted = date;
-
+    this.currentStreak = recalculatedStreak;
+    this.totalCompletions = totalCompletions;
+    this.lastCompleted = completionDates.length
+      ? new Date(Math.max(...completionDates.map((completionDate) => new Date(completionDate).getTime())))
+      : date;
 
     if (this.currentStreak > (this.bestStreak || 0)) {
       this.bestStreak = this.currentStreak;
@@ -107,14 +211,17 @@ module.exports = (sequelize, DataTypes) => {
 
     await this.save();
 
-    console.log(`   📈 Серия: ${currentStreak} → ${this.currentStreak}`);
+    console.log(`   📈 Серия: ${previousStreak} → ${this.currentStreak}`);
 
-
-    const { User } = require('./index');
     const user = await User.findByPk(this.userId);
     if (user) {
+      const userCheckins = await Checkin.findAll({
+        where: { userId: this.userId },
+        attributes: ['date'],
+        order: [['date', 'ASC']]
+      });
       const userCurrentStreak = user.currentStreak || 0;
-      user.currentStreak = userCurrentStreak + 1;
+      user.currentStreak = calculateUserStreakFromCheckins(userCheckins);
       user.lastActive = new Date();
       await user.save();
 
