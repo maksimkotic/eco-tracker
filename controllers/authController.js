@@ -2,14 +2,18 @@ const { User, Role } = require("../models");
 const { validationResult } = require("express-validator");
 const bcrypt = require("bcrypt");
 const { Op } = require("sequelize");
+const { getSettings, getDefaultRole } = require("../services/settingsService");
 
 const authController = {
 
-  showRegisterForm: (req, res) => {
+  showRegisterForm: async (req, res) => {
+    const settings = await getSettings();
+
     res.render("auth/register", {
       title: "Регистрация",
       oldInput: req.flash("oldInput")[0] || {},
       errors: req.flash("errors") || [],
+      registrationSettings: settings.registration,
     });
   },
 
@@ -24,6 +28,42 @@ const authController = {
       }
 
       const { username, email, password } = req.body;
+      const settings = await getSettings();
+
+      if (!settings.registration.registrationEnabled) {
+        req.flash("error", "Регистрация временно отключена администратором");
+        req.flash("oldInput", req.body);
+        return res.redirect("/auth/register");
+      }
+
+      const normalizedEmail = String(email || "").toLowerCase();
+      const emailDomain = normalizedEmail.split("@")[1] || "";
+      const allowedDomains = String(settings.registration.allowedEmailDomains || "")
+        .split(",")
+        .map((domain) => domain.trim().toLowerCase())
+        .filter(Boolean);
+      const blockedDomains = String(settings.security.blockedEmailDomains || "")
+        .split(",")
+        .map((domain) => domain.trim().toLowerCase())
+        .filter(Boolean);
+
+      if (password.length < Number(settings.registration.minPasswordLength || 6)) {
+        req.flash("error", `Пароль должен быть не менее ${settings.registration.minPasswordLength} символов`);
+        req.flash("oldInput", req.body);
+        return res.redirect("/auth/register");
+      }
+
+      if (allowedDomains.length && !allowedDomains.includes(emailDomain)) {
+        req.flash("error", "Регистрация разрешена только для утвержденных email-доменов");
+        req.flash("oldInput", req.body);
+        return res.redirect("/auth/register");
+      }
+
+      if (blockedDomains.includes(emailDomain)) {
+        req.flash("error", "Регистрация с этим email-доменом запрещена");
+        req.flash("oldInput", req.body);
+        return res.redirect("/auth/register");
+      }
 
 
       const existingUser = await User.findOne({
@@ -42,7 +82,7 @@ const authController = {
       }
 
 
-      const userRole = await Role.findOne({ where: { name: "user" } });
+      const userRole = await getDefaultRole();
       if (!userRole) {
         throw new Error("Роль пользователя не найдена в системе");
       }
@@ -57,21 +97,26 @@ const authController = {
         passwordHash,
         roleId: userRole.id,
         lastActive: new Date(),
+        isBanned: Boolean(settings.registration.autoBanNewUsers),
       });
 
 
-      req.session.user = {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        role: "user",
-      };
+      if (!settings.registration.autoBanNewUsers) {
+        req.session.user = {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          role: userRole.name,
+        };
+      }
 
       req.flash(
         "success",
-        "Регистрация успешна! Добро пожаловать в Эко-Трекер!"
+        settings.registration.autoBanNewUsers
+          ? "Регистрация успешна! Аккаунт ожидает проверки администратора."
+          : "Регистрация успешна! Добро пожаловать в Эко-Трекер!"
       );
-      res.redirect("/profile");
+      res.redirect(settings.registration.autoBanNewUsers ? "/auth/login" : "/profile");
     } catch (error) {
       console.error("Ошибка регистрации:", error);
       req.flash("error", "Произошла ошибка при регистрации");
