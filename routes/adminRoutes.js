@@ -10,6 +10,7 @@ router.use(hasRole('admin'));
 router.get('/', adminController.dashboard);
 
 router.get('/users', adminController.usersIndex);
+router.get('/users/export', adminController.exportUsers);
 router.get('/users/:id', adminController.showUser);
 router.post('/users/:id/role', adminController.updateUserRole);
 router.post('/users/:id/ban', adminController.toggleBan);
