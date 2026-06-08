@@ -130,6 +130,7 @@ const authController = {
     res.render("auth/login", {
       title: "Вход в систему",
       error: req.flash("error")[0],
+      errors: req.flash("errors") || [],
       oldInput: req.flash("oldInput")[0] || {},
     });
   },
@@ -139,7 +140,7 @@ const authController = {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        req.flash("error", errors.array()[0].msg);
+        req.flash("errors", errors.array());
         req.flash("oldInput", { email: req.body.email });
         return res.redirect("/auth/login");
       }
