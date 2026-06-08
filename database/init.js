@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-const { Op } = require('sequelize');
+const { DataTypes, Op } = require('sequelize');
 const { sequelize, User, Role, Habit, Achievement, UserAchievement } = require('../models');
 const { ensureDefaultRoles } = require('./roleobj');
 const { ensureDefaultAchievements } = require('./achievementSeeds');
@@ -15,6 +15,8 @@ async function initializeDatabase(options = {}) {
   try {
     await sequelize.sync({ force: shouldForceSync });
     console.log(shouldForceSync ? '✅ Таблицы пересозданы успешно' : '✅ Таблицы синхронизированы успешно');
+
+    await ensureAvatarColumnSupportsStoredImages();
 
     console.log('⚙️ Подготовка настроек...');
     await ensureDefaultSettings();
@@ -320,3 +322,15 @@ if (require.main === module) {
 }
 
 module.exports = initializeDatabase;
+
+
+async function ensureAvatarColumnSupportsStoredImages() {
+  const queryInterface = sequelize.getQueryInterface();
+
+  await queryInterface.changeColumn('users', 'avatar', {
+    type: DataTypes.TEXT,
+    defaultValue: 'default-avatar.png'
+  });
+
+  console.log('✅ Колонка аватаров готова для хранения изображений');
+}

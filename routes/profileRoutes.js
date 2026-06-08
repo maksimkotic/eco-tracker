@@ -1,25 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const { body } = require('express-validator');
-const fs = require('fs');
 const multer = require('multer');
 const path = require('path');
 const profileController = require('../controllers/profileController');
 const { isAuthenticated } = require('../middlewares/auth');
 
-const avatarsDir = path.join(__dirname, '../public/uploads/avatars');
-fs.mkdirSync(avatarsDir, { recursive: true });
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    fs.mkdirSync(avatarsDir, { recursive: true });
-    cb(null, avatarsDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, req.currentUser.id + '-' + uniqueSuffix + path.extname(file.originalname).toLowerCase());
-  }
-});
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage: storage,

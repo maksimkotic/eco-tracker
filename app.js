@@ -12,6 +12,7 @@ const { sequelize } = require('./models');
 const initializeDatabase = require('./database/init');
 const { loadUser, csrfProtection } = require('./middlewares/auth');
 const { getPublicSettings } = require('./services/settingsService');
+const { getAvatarSrc, getInitial, hasCustomAvatar } = require('./utils/avatar');
 
 
 const indexRoutes = require('./routes/index');
@@ -82,6 +83,9 @@ const settingsLocals = async (req, res, next) => {
 
 const templateLocals = (req, res, next) => {
   res.locals.user = req.session.user;
+  res.locals.getAvatarSrc = getAvatarSrc;
+  res.locals.getAvatarInitial = getInitial;
+  res.locals.hasCustomAvatar = hasCustomAvatar;
   res.locals.success = req.flash('success');
   res.locals.error = req.flash('error');
   res.locals.info = req.flash('info');
@@ -112,7 +116,8 @@ function configureApp() {
   app.use(methodOverride('_method'));
   app.use(express.static(path.join(__dirname, 'public')));
   app.get('/uploads/avatars/:filename', (req, res) => {
-    const initial = path.basename(req.params.filename || '').charAt(0).toUpperCase() || 'Э';
+    const requestedInitial = String(req.query.initial || '').trim();
+    const initial = (requestedInitial.charAt(0) || path.basename(req.params.filename || '').charAt(0) || 'Э').toUpperCase();
     const safeInitial = initial.replace(/[<>&"']/g, '');
     const svg = `
       <svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" role="img" aria-label="Аватар пользователя">

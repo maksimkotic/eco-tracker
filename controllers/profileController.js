@@ -220,15 +220,9 @@ const profileController = {
       }
 
       const user = req.currentUser;
+      const avatar = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
 
-
-
-
-      await user.update({ avatar: req.file.filename });
-
-      if (req.session.user) {
-        req.session.user.avatar = req.file.filename;
-      }
+      await user.update({ avatar });
 
       req.flash('success', 'Аватар успешно обновлен');
       res.redirect('/profile');
