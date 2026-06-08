@@ -1,4 +1,4 @@
-const bcrypt = require("bcrypt");
+const bcrypt = require("../utils/passwordHash");
 
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define(

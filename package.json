@@ -9,8 +9,7 @@
     "init-db": "node database/init.js",
     "reset-db": "node database/init.js --force",
     "check:syntax": "node --check app.js && node --check controllers/*.js && node --check routes/*.js && node --check middlewares/*.js && node --check models/*.js && node --check services/*.js && node --check database/*.js && node --check utils/*.js",
-    "check": "npm run check:syntax",
-    "postinstall": "npm rebuild bcrypt --build-from-source"
+    "check": "npm run check:syntax"
   },
   "keywords": [
     "eco",
@@ -22,7 +21,6 @@
   "author": "Eco Tracker",
   "license": "MIT",
   "dependencies": {
-    "bcrypt": "5.1.1",
     "connect-flash": "^0.1.1",
     "date-fns": "^4.1.0",
     "dotenv": "^16.3.1",

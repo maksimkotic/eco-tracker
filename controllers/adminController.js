@@ -8,7 +8,7 @@ const {
   sequelize
 } = require("../models");
 const { Op } = require("sequelize");
-const bcrypt = require("bcrypt");
+const bcrypt = require("../utils/passwordHash");
 const logger = require('../utils/logger');
 const packageJson = require('../package.json');
 const { getSettings, updateSettingsFromBody, HABIT_CATEGORIES, calculateLevel } = require('../services/settingsService');

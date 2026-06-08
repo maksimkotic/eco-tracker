@@ -5,7 +5,7 @@ const { sequelize, User, Role, Habit, Achievement, UserAchievement } = require('
 const { ensureDefaultRoles } = require('./roleobj');
 const { ensureDefaultAchievements } = require('./achievementSeeds');
 const { ensureDefaultSettings } = require('../services/settingsService');
-const bcrypt = require('bcrypt');
+const bcrypt = require('../utils/passwordHash');
 
 async function initializeDatabase(options = {}) {
   const shouldForceSync = Boolean(options.force);
