@@ -9,7 +9,8 @@
     "init-db": "node database/init.js",
     "reset-db": "node database/init.js --force",
     "check:syntax": "node --check app.js && node --check controllers/*.js && node --check routes/*.js && node --check middlewares/*.js && node --check models/*.js && node --check services/*.js && node --check database/*.js && node --check utils/*.js",
-    "check": "npm run check:syntax"
+    "check": "npm run check:syntax",
+    "postinstall": "npm rebuild bcrypt --build-from-source"
   },
   "keywords": [
     "eco",
