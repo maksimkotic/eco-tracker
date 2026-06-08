@@ -39,7 +39,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       avatar: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         defaultValue: "default-avatar.png",
       },
       ecoPoints: {

@@ -6,8 +6,9 @@
         <div class="card-body text-center">
 
           <div class="mb-3">
-            <% if (user.avatar && user.avatar !== 'default-avatar.png') { %>
-              <img src="/uploads/avatars/<%= user.avatar %>"
+            <% const profileAvatarSrc = getAvatarSrc(user); %>
+            <% if (profileAvatarSrc) { %>
+              <img src="<%= profileAvatarSrc %>"
                    class="rounded-circle"
                    width="120" height="120"
                    alt="Аватар <%= user.username %>">
@@ -15,7 +16,7 @@
               <div class="rounded-circle bg-success d-inline-flex align-items-center justify-content-center"
                    style="width: 120px; height: 120px;">
                 <span class="text-white display-5">
-                  <%= user.username.charAt(0).toUpperCase() %>
+                  <%= getAvatarInitial(user) %>
                 </span>
               </div>
             <% } %>

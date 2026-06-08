@@ -24,8 +24,9 @@
                 </div>
                 <div class="card-body">
                     <div class="text-center mb-4">
-                        <% if (user.avatar) { %>
-                            <img src="/uploads/avatars/<%= user.avatar %>"
+                        <% const userAvatarSrc = getAvatarSrc(user); %>
+                        <% if (userAvatarSrc) { %>
+                            <img src="<%= userAvatarSrc %>"
                                  class="rounded-circle" width="150" height="150">
                         <% } else { %>
                             <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto"

@@ -159,8 +159,9 @@
                                         </td>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <% if (habit.User && habit.User.avatar) { %>
-                                                <img src="/uploads/avatars/<%= habit.User.avatar %>"
+                                                <% const habitUserAvatarSrc = getAvatarSrc(habit.User); %>
+                                                <% if (habitUserAvatarSrc) { %>
+                                                <img src="<%= habitUserAvatarSrc %>"
                                                      width="24" height="24" class="rounded-circle me-2">
                                                 <% } else { %>
                                                 <i class="bi bi-person-circle me-2"></i>

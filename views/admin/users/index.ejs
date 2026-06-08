@@ -75,8 +75,9 @@
                                 <td><%= user.id %></td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <% if (user.avatar) { %>
-                                            <img src="/uploads/avatars/<%= user.avatar %>"
+                                        <% const userAvatarSrc = getAvatarSrc(user); %>
+                                        <% if (userAvatarSrc) { %>
+                                            <img src="<%= userAvatarSrc %>"
                                                  width="40" height="40" class="rounded-circle me-3">
                                         <% } else { %>
                                             <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-3"
