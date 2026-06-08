@@ -1,6 +1,6 @@
 const { User, Role } = require("../models");
 const { validationResult } = require("express-validator");
-const bcrypt = require("bcrypt");
+const bcrypt = require("../utils/passwordHash");
 const { Op } = require("sequelize");
 const { getSettings, getDefaultRole } = require("../services/settingsService");
 
