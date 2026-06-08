@@ -47,6 +47,90 @@ const getDatabaseSize = async () => {
 const wantsJson = (req) =>
   req.xhr || (typeof req.get === 'function' && (req.get('accept') || '').includes('json'));
 
+const buildUsersWhereCondition = async (query = {}) => {
+  const search = query.search || "";
+  const roleFilter = query.role;
+  const statusFilter = query.status;
+  const whereCondition = {};
+
+  if (search) {
+    whereCondition[Op.or] = [
+      { username: { [Op.iLike]: `%${search}%` } },
+      { email: { [Op.iLike]: `%${search}%` } },
+    ];
+  }
+
+  if (roleFilter && roleFilter !== "all") {
+    const role = await Role.findOne({ where: { name: roleFilter } });
+    if (role) {
+      whereCondition.roleId = role.id;
+    }
+  }
+
+  if (statusFilter === "active") {
+    whereCondition.lastActive = {
+      [Op.gte]: new Date(new Date() - 7 * 24 * 60 * 60 * 1000),
+    };
+  } else if (statusFilter === "inactive") {
+    whereCondition.lastActive = {
+      [Op.lt]: new Date(new Date() - 30 * 24 * 60 * 60 * 1000),
+    };
+  } else if (statusFilter === "banned") {
+    whereCondition.isBanned = true;
+  }
+
+  return whereCondition;
+};
+
+const escapeCsvValue = (value) => {
+  if (value === null || value === undefined) {
+    return '""';
+  }
+
+  return `"${String(value).replace(/"/g, '""')}"`;
+};
+
+const formatCsvDate = (value) => {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return date.toISOString().replace("T", " ").slice(0, 19);
+};
+
+const convertUsersToCSV = (users) => {
+  const header = [
+    "ID",
+    "Имя пользователя",
+    "Email",
+    "Роль",
+    "Эко-очки",
+    "Уровень",
+    "Статус",
+    "Дата регистрации",
+    "Последняя активность",
+  ];
+
+  const rows = users.map((user) => [
+    user.id,
+    user.username,
+    user.email,
+    user.Role?.name || "",
+    user.ecoPoints,
+    user.level,
+    user.isBanned ? "Заблокирован" : "Активен",
+    formatCsvDate(user.createdAt),
+    formatCsvDate(user.lastActive),
+  ].map(escapeCsvValue).join(";"));
+
+  return "\uFEFF" + [header.map(escapeCsvValue).join(";"), ...rows].join("\n");
+};
+
 const adminController = {
 
   dashboard: async (req, res) => {
@@ -124,36 +208,15 @@ const adminController = {
       const roleFilter = req.query.role;
       const statusFilter = req.query.status;
 
-      let whereCondition = {};
-
-
-      if (search) {
-        whereCondition[Op.or] = [
-          { username: { [Op.iLike]: `%${search}%` } },
-          { email: { [Op.iLike]: `%${search}%` } },
-        ];
+      if (req.query.action === "export") {
+        return adminController.exportUsers(req, res);
       }
 
-
-      if (roleFilter && roleFilter !== "all") {
-        const role = await Role.findOne({ where: { name: roleFilter } });
-        if (role) {
-          whereCondition.roleId = role.id;
-        }
-      }
-
-
-      if (statusFilter === "active") {
-        whereCondition.lastActive = {
-          [Op.gte]: new Date(new Date() - 7 * 24 * 60 * 60 * 1000),
-        };
-      } else if (statusFilter === "inactive") {
-        whereCondition.lastActive = {
-          [Op.lt]: new Date(new Date() - 30 * 24 * 60 * 60 * 1000),
-        };
-      } else if (statusFilter === "banned") {
-        whereCondition.isBanned = true;
-      }
+      const whereCondition = await buildUsersWhereCondition(req.query);
+      const exportQuery = new URLSearchParams(
+        Object.entries({ search, role: roleFilter, status: statusFilter })
+          .filter(([, value]) => value && value !== "all")
+      ).toString();
 
       const { count, rows: users } = await User.findAndCountAll({
         where: whereCondition,
@@ -179,11 +242,41 @@ const adminController = {
         totalPages: Math.ceil(count / limit),
         totalUsers: count,
         filters: { search, role: roleFilter, status: statusFilter },
+        exportHref: `/admin/users/export${exportQuery ? `?${exportQuery}` : ""}`,
       });
     } catch (error) {
       console.error("Ошибка загрузки пользователей:", error);
       req.flash("error", "Не удалось загрузить пользователей");
       res.redirect("/admin");
+    }
+  },
+
+
+  exportUsers: async (req, res) => {
+    try {
+      const whereCondition = await buildUsersWhereCondition(req.query);
+      const users = await User.findAll({
+        where: whereCondition,
+        include: [
+          {
+            model: Role,
+            as: "Role",
+          },
+        ],
+        attributes: { exclude: ["passwordHash"] },
+        order: [["createdAt", "DESC"]],
+      });
+
+      const csv = convertUsersToCSV(users);
+      const exportDate = new Date().toISOString().split("T")[0];
+
+      res.header("Content-Type", "text/csv; charset=utf-8");
+      res.attachment(`users-${exportDate}.csv`);
+      res.send(csv);
+    } catch (error) {
+      console.error("Ошибка экспорта пользователей:", error);
+      req.flash("error", "Не удалось экспортировать пользователей");
+      res.redirect("/admin/users");
     }
   },
 
