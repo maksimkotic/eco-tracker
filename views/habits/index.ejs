@@ -1,8 +1,8 @@
 
 <div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
     <h1><i class="bi bi-list-check"></i> Мои привычки</h1>
-    <div class="btn-group">
+    <div class="responsive-actions">
       <a href="/habits/ai" class="btn btn-outline-success">
         <i class="bi bi-stars"></i> ИИ-помощник
       </a>
@@ -54,14 +54,14 @@
     <% const periodValue = habit.getDataValue ? (habit.getDataValue('periodValue') || 0) : (habit.periodValue || 0); %>
     <% const progressPercentage = habit.getDataValue ? (habit.getDataValue('progressPercentage') || 0) : (habit.progressPercentage || 0); %>
     <div
-      class="col-md-6 mb-4 habit-item"
+      class="col-12 col-lg-6 mb-4 habit-item"
       data-category="<%= habit.category %>"
       data-status="<%= habit.isActive ? 'active' : 'inactive' %>"
       data-name="<%= habit.title.toLowerCase() %>"
     >
       <div class="card shadow h-100">
         <div
-          class="card-header d-flex justify-content-between align-items-center"
+          class="card-header d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2"
           style="border-left: 5px solid <%= habit.color || '#28a745' %>"
         >
           <div>
@@ -127,17 +127,17 @@
           </div>
         </div>
         <div class="card-footer bg-transparent">
-          <div class="d-flex justify-content-between">
+          <div class="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-2">
             <a
               href="/habits/<%= habit.id %>"
               class="btn btn-sm btn-outline-primary"
             >
               <i class="bi bi-eye"></i> Подробнее
             </a>
-            <div>
+            <div class="responsive-actions justify-content-start justify-content-sm-end">
               <a
                 href="/habits/<%= habit.id %>/check"
-                class="btn btn-sm btn-success me-2"
+                class="btn btn-sm btn-success"
               >
                 <i class="bi bi-check-lg"></i> Отметить
               </a>
