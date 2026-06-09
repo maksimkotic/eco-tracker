@@ -76,7 +76,7 @@ router.post(
       return res.redirect('/contacts');
     } catch (error) {
       console.error('Ошибка отправки сообщения с контактов:', error);
-      req.flash('error', 'Не удалось отправить сообщение. Проверьте настройки email и попробуйте еще раз.');
+      req.flash('error', 'Не удалось отправить сообщение. Проверьте настройки Resend и попробуйте еще раз.');
       return res.redirect('/contacts');
     }
   }
