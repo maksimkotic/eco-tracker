@@ -66,10 +66,13 @@
         flex: 1;
         display: flex;
         align-items: center;
+        justify-content: center;
+        padding-block: 1.5rem;
       }
 
       .auth-page > .row {
-        width: 100%;
+        width: min(100%, 34rem);
+        margin-inline: auto;
       }
 
       .footer {
@@ -290,6 +293,47 @@
         object-fit: contain;
         margin-right: 0.5rem;
         vertical-align: middle;
+      }
+
+      .tabs-scroll-mobile {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 0.25rem;
+      }
+
+      .tabs-scroll-mobile > .nav-item {
+        flex: 0 0 auto;
+      }
+
+      .tabs-scroll-mobile .nav-link {
+        white-space: nowrap;
+      }
+
+      .responsive-actions {
+        display: grid;
+        gap: 0.5rem;
+      }
+
+      .responsive-actions > .btn,
+      .responsive-actions > .btn-group,
+      .responsive-actions > .btn-toolbar {
+        width: 100%;
+      }
+
+      @media (min-width: 576px) {
+        .responsive-actions {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+        }
+
+        .responsive-actions > .btn,
+        .responsive-actions > .btn-group,
+        .responsive-actions > .btn-toolbar {
+          width: auto;
+        }
       }
     </style>
   </head>
