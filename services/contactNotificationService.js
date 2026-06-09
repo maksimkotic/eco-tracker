@@ -22,10 +22,45 @@ function toBase64(value) {
   return Buffer.from(String(value), 'utf8').toString('base64');
 }
 
+function getSmtpConfig() {
+  const host = String(process.env.SMTP_HOST || 'smtp.gmail.com').trim();
+  const user = String(process.env.SMTP_USER || '').trim();
+  const pass = String(process.env.SMTP_PASS || '').trim();
+
+  if (host.includes('@')) {
+    throw new Error('SMTP_HOST должен быть адресом SMTP-сервера, например smtp.gmail.com. Email отправителя укажите в SMTP_USER.');
+  }
+
+  if (!user || !pass) {
+    return null;
+  }
+
+  return {
+    host,
+    user,
+    pass,
+    port: Number(process.env.SMTP_PORT || 587),
+    secure: String(process.env.SMTP_SECURE || 'false').trim() === 'true'
+  };
+}
+
 function createConnection({ host, port, secure }) {
   return secure
     ? tls.connect({ host, port, servername: host })
     : net.connect({ host, port });
+}
+
+function upgradeToTls(socket, host) {
+  return new Promise((resolve, reject) => {
+    const secureSocket = tls.connect({
+      socket,
+      servername: host
+    });
+
+    secureSocket.setEncoding('utf8');
+    secureSocket.once('secureConnect', () => resolve(secureSocket));
+    secureSocket.once('error', reject);
+  });
 }
 
 function readLine(socket) {
@@ -73,22 +108,26 @@ async function sendCommand(socket, command, expectedCodes) {
 }
 
 async function sendEmailNotification({ from, to, replyTo, subject, text }) {
-  const host = String(process.env.SMTP_HOST || '').trim();
-  const user = String(process.env.SMTP_USER || '').trim();
-  const pass = String(process.env.SMTP_PASS || '').trim();
+  const smtpConfig = getSmtpConfig();
 
-  if (!host || !user || !pass) {
+  if (!smtpConfig) {
     return false;
   }
 
-  const port = Number(process.env.SMTP_PORT || 465);
-  const secure = String(process.env.SMTP_SECURE || 'true').trim() === 'true';
-  const socket = createConnection({ host, port, secure });
+  const { host, user, pass, port, secure } = smtpConfig;
+  let socket = createConnection({ host, port, secure });
   socket.setEncoding('utf8');
 
   try {
     await readLine(socket);
     await sendCommand(socket, `EHLO ${process.env.SMTP_EHLO_HOST || 'localhost'}`, [250]);
+
+    if (!secure) {
+      await sendCommand(socket, 'STARTTLS', [220]);
+      socket = await upgradeToTls(socket, host);
+      await sendCommand(socket, `EHLO ${process.env.SMTP_EHLO_HOST || 'localhost'}`, [250]);
+    }
+
     await sendCommand(socket, 'AUTH LOGIN', [334]);
     await sendCommand(socket, toBase64(user), [334]);
     await sendCommand(socket, toBase64(pass), [235]);
@@ -115,8 +154,16 @@ async function sendEmailNotification({ from, to, replyTo, subject, text }) {
 
     await sendCommand(socket, 'QUIT', [221]);
     return true;
+  } catch (error) {
+    if (['ETIMEDOUT', 'ENETUNREACH', 'ECONNREFUSED', 'EHOSTUNREACH'].includes(error.code)) {
+      throw new Error(
+        `Не удалось подключиться к SMTP-серверу ${host}:${port}. Проверьте SMTP_HOST, SMTP_PORT и доступность сервера.`
+      );
+    }
+
+    throw error;
   } finally {
-    if (!socket.destroyed) {
+    if (socket && !socket.destroyed) {
       socket.end();
     }
   }
@@ -124,7 +171,7 @@ async function sendEmailNotification({ from, to, replyTo, subject, text }) {
 
 async function sendContactNotification(payload) {
   const recipientEmail = String(process.env.CONTACT_RECIPIENT_EMAIL || 'mkutov13@gmail.com').trim();
-  const senderEmail = String(process.env.CONTACT_FROM_EMAIL || process.env.SMTP_USER || recipientEmail).trim();
+  const senderEmail = String(process.env.SMTP_USER || recipientEmail).trim();
 
   const subjectLabel = SUBJECT_LABELS[payload.subject] || SUBJECT_LABELS.other;
   const subject = `[Eco Tracker] ${subjectLabel}`;
