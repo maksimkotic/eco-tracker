@@ -65,7 +65,7 @@
                 </div>
             </div>
             
-            <div class="card shadow">
+            <div class="card shadow mb-3">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0"><i class="bi bi-gear"></i> Техническая информация</h5>
                 </div>
@@ -180,17 +180,6 @@
                                       rows="5" placeholder="Опишите вашу проблему, вопрос или предложение..."
                                       required></textarea>
                         </div>
-
-                        <% if (!user) { %>
-                        <div class="mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="copy" name="copy">
-                                <label class="form-check-label" for="copy">
-                                    Отправить копию себе на email
-                                </label>
-                            </div>
-                        </div>
-                        <% } %>
 
                         <div class="d-grid">
                             <button type="submit" class="btn btn-success btn-lg">
